@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { useForm, useFieldArray } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
@@ -84,6 +84,17 @@ export function InvoiceForm({ invoiceId }: { invoiceId?: string }) {
   const bundleRate = form.watch('bundle_rate')
   const bundleQuantity = form.watch('bundle_quantity')
 
+  const getItemPrice = useCallback((itemId: number) => {
+    const item = itemsData.find(i => i.id === itemId)
+    if (!item) return 0
+
+    if (selectedPartyId) {
+      const partyPrice = item.item_party_prices.find(pp => pp.party_id === selectedPartyId)
+      if (partyPrice) return partyPrice.price
+    }
+    return item.default_rate
+  }, [itemsData, selectedPartyId])
+
   useEffect(() => {
     const subscription = form.watch((value, { name, type }) => {
       if (name && (name.startsWith('items') || ['bundle_rate', 'bundle_quantity', 'total_bundle_charge'].includes(name))) {
@@ -153,21 +164,21 @@ export function InvoiceForm({ invoiceId }: { invoiceId?: string }) {
       const defaultBundleRate = settings.find(s => s.key === 'default_bundle_rate')?.value || '0'
       form.setValue('bundle_rate', parseFloat(defaultBundleRate))
     }
+    
     const calculatedBundleCharge = (form.getValues('bundle_rate') || 0) * (form.getValues('bundle_quantity') || 0);
     form.setValue('total_bundle_charge', calculatedBundleCharge);
-  }, [selectedPartyId, partiesData, settings, form])
+    
+    // Recalculate prices for existing items when party changes
+    const currentItems = form.getValues('items')
+    currentItems.forEach((item, index) => {
+      const newPrice = getItemPrice(item.item_id)
+      if (item.rate !== newPrice) {
+        update(index, { ...item, rate: newPrice })
+      }
+    })
 
-  const getItemPrice = (itemId: number) => {
-    const item = itemsData.find(i => i.id === itemId)
-    if (!item) return 0
+  }, [selectedPartyId, partiesData, settings, form, update, getItemPrice])
 
-    if (selectedPartyId) {
-      const partyPrice = item.item_party_prices.find(pp => pp.party_id === selectedPartyId)
-      if (partyPrice) return partyPrice.price
-    }
-    return item.default_rate
-  }
-  
   const quickAddItem = (itemId: number) => {
     const price = getItemPrice(itemId)
     append({ item_id: itemId, quantity: 1, rate: price })
@@ -462,6 +473,7 @@ export function InvoiceForm({ invoiceId }: { invoiceId?: string }) {
         itemSearch={itemSearch}
         setItemSearch={setItemSearch}
         fields={fields}
+        selectedPartyId={selectedPartyId}
       />
     </Form>
   )
@@ -476,45 +488,40 @@ type AddItemDialogProps = {
   itemSearch: string;
   setItemSearch: (value: string) => void;
   fields: { item_id: number }[];
+  selectedPartyId?: number;
 }
 
-const AddItemDialog = ({ isOpen, onOpenChange, itemsData, quickAddItem, getItemPrice, itemSearch, setItemSearch, fields }: AddItemDialogProps) => (
+const AddItemDialog = ({ isOpen, onOpenChange, itemsData, quickAddItem, getItemPrice, itemSearch, setItemSearch, fields, selectedPartyId }: AddItemDialogProps) => (
   <Dialog open={isOpen} onOpenChange={onOpenChange}>
-    <DialogContent>
+    <DialogContent className="max-w-4xl">
       <DialogHeader>
-        <DialogTitle>Add Item to Invoice</DialogTitle>
+        <DialogTitle>Add Items to Invoice</DialogTitle>
       </DialogHeader>
       <Command>
         <CommandInput 
-          placeholder="Search items..." 
+          placeholder="Search for an item to add..."
           value={itemSearch}
           onValueChange={setItemSearch}
         />
         <CommandList>
-          <CommandEmpty>No item found.</CommandEmpty>
+          <CommandEmpty>No items found.</CommandEmpty>
           <CommandGroup>
-            {itemsData.filter(item => {
-              const isAlreadyAdded = fields.some(field => field.item_id === item.id)
-              const matchesSearch = item.name.toLowerCase().includes(itemSearch.toLowerCase())
-              return !isAlreadyAdded && matchesSearch
-            }).map((item) => (
+            {itemsData.filter(item => !fields.some(f => f.item_id === item.id)).map(item => (
               <CommandItem
-                value={item.name}
                 key={item.id}
-                onSelect={() => {
-                  quickAddItem(item.id)
-                  // onOpenChange(false) // Keep dialog open
-                }}
+                onSelect={() => quickAddItem(item.id)}
+                className="flex justify-between"
               >
-                <div className="flex justify-between w-full">
-                  <span>{item.name}</span>
-                  <span className="text-muted-foreground">{formatCurrency(getItemPrice(item.id))}</span>
-                </div>
+                <span>{item.name} ({item.units?.name})</span>
+                <span>{formatCurrency(getItemPrice(item.id))}</span>
               </CommandItem>
             ))}
           </CommandGroup>
         </CommandList>
       </Command>
+      <DialogFooter>
+        <Button variant="outline" onClick={() => onOpenChange(false)}>Done</Button>
+      </DialogFooter>
     </DialogContent>
   </Dialog>
-); 
+) 
