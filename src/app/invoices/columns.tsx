@@ -5,6 +5,7 @@ import { ArrowUpDown } from 'lucide-react'
 import { Checkbox } from '@/components/ui/checkbox'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
+import { format } from 'date-fns'
 
 export type Invoice = {
   id: string
@@ -52,7 +53,7 @@ export const columns = (
         <ArrowUpDown className="ml-2 h-4 w-4" />
       </div>
     ),
-    cell: ({ row }) => new Date(row.original.invoice_date).toLocaleDateString(),
+    cell: ({ row }) => format(new Date(row.original.invoice_date), 'dd/MM/yyyy'),
   },
   {
     accessorKey: 'party.name',
@@ -115,6 +116,9 @@ export const columns = (
       return (
         <div className="text-right space-x-2">
           <Button variant="outline" size="sm" asChild>
+            <Link href={`/invoices/edit/${invoice.id}`}>Edit</Link>
+          </Button>
+          <Button variant="outline" size="sm" asChild>
             <Link href={`/invoices/${invoice.id}`}>View</Link>
           </Button>
           <Button
@@ -144,7 +148,7 @@ export const deletedInvoicesColumns = (
             <ArrowUpDown className="ml-2 h-4 w-4" />
         </div>
     ),
-    cell: ({ row }) => new Date(row.original.invoice_date).toLocaleDateString(),
+    cell: ({ row }) => format(new Date(row.original.invoice_date), 'dd/MM/yyyy'),
   },
   {
       accessorKey: "party.name",
@@ -213,7 +217,7 @@ export const deletedInvoicesColumns = (
       ),
       cell: ({ row }) =>
           row.original.deleted_at
-              ? new Date(row.original.deleted_at).toLocaleDateString()
+              ? format(new Date(row.original.deleted_at), 'dd/MM/yyyy')
               : "N/A",
   },
   {

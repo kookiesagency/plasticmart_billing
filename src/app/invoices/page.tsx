@@ -11,6 +11,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { ConfirmationDialog } from '@/components/confirmation-dialog'
 import { toast } from 'sonner'
 import { ColumnDef } from '@tanstack/react-table'
+import { format } from 'date-fns'
 
 export default function InvoicesPage() {
   const supabase = createClient()
@@ -124,7 +125,7 @@ export default function InvoicesPage() {
           <ArrowUpDown className="ml-2 h-4 w-4" />
         </Button>
       ),
-      cell: ({ row }) => new Date(row.original.invoice_date).toLocaleDateString()
+      cell: ({ row }) => format(new Date(row.original.invoice_date), 'dd/MM/yyyy')
     },
     {
       accessorKey: 'party.name',
@@ -158,7 +159,7 @@ export default function InvoicesPage() {
           <ArrowUpDown className="ml-2 h-4 w-4" />
         </Button>
       ),
-      cell: ({ row }) => new Date(row.original.deleted_at).toLocaleString()
+      cell: ({ row }) => format(new Date(row.original.deleted_at), 'dd/MM/yyyy, hh:mm a')
     },
     {
       id: 'actions',
