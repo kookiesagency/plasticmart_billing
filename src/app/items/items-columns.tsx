@@ -1,9 +1,9 @@
 'use client'
 
 import { ColumnDef } from '@tanstack/react-table'
-import { Button } from '@/components/ui/button'
 import { ArrowUpDown, Pencil, Trash } from 'lucide-react'
-import { formatCurrency } from '@/lib/utils'
+import { Button } from '@/components/ui/button'
+import { Checkbox } from '@/components/ui/checkbox'
 
 export type Item = {
   id: number
@@ -21,43 +21,72 @@ export const columns = (
   handleDelete: (itemId: number) => void
 ): ColumnDef<Item>[] => [
   {
-    accessorKey: 'name',
-    header: ({ column }) => {
-      return (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
-        >
-          Name
-          <ArrowUpDown className="ml-2 h-4 w-4" />
-        </Button>
-      )
-    },
+    id: 'select',
+    header: ({ table }) => (
+      <Checkbox
+        checked={
+          table.getIsAllPageRowsSelected() ||
+          (table.getIsSomePageRowsSelected() && 'indeterminate')
+        }
+        onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
+        aria-label="Select all"
+      />
+    ),
+    cell: ({ row }) => (
+      <Checkbox
+        checked={row.getIsSelected()}
+        onCheckedChange={(value) => row.toggleSelected(!!value)}
+        aria-label="Select row"
+      />
+    ),
+    enableSorting: false,
+    enableHiding: false,
   },
   {
-    accessorKey: 'default_rate',
-    header: ({ column }) => {
-      return (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
-        >
-          Default Rate
-          <ArrowUpDown className="ml-2 h-4 w-4" />
-        </Button>
-      )
-    },
-    cell: ({ row }) => {
-      const amount = parseFloat(row.getValue('default_rate'))
-      return <div className="text-left font-medium">{formatCurrency(amount)}</div>
-    }
+    accessorKey: 'name',
+    header: ({ column }) => (
+      <div
+        className="flex items-center cursor-pointer"
+        onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
+      >
+        Name
+        <ArrowUpDown className="ml-2 h-4 w-4" />
+      </div>
+    ),
   },
   {
     accessorKey: 'units.abbreviation',
-    header: 'Unit',
+    header: ({ column }) => (
+        <div
+            className="flex items-center cursor-pointer"
+            onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
+        >
+            Unit
+            <ArrowUpDown className="ml-2 h-4 w-4" />
+        </div>
+    ),
+    cell: ({ row }) => row.original.units?.abbreviation ?? 'N/A',
+  },
+  {
+    accessorKey: 'default_rate',
+    header: ({ column }) => (
+        <div
+            className="flex items-center cursor-pointer"
+            onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
+        >
+            Default Rate
+            <ArrowUpDown className="ml-2 h-4 w-4" />
+        </div>
+    ),
     cell: ({ row }) => {
-        return row.original.units?.abbreviation || 'N/A'
-    }
+      const amount = parseFloat(row.getValue("default_rate"))
+      const formatted = new Intl.NumberFormat("en-IN", {
+        style: "currency",
+        currency: "INR",
+      }).format(amount)
+ 
+      return <div className="font-medium">{formatted}</div>
+    },
   },
   {
     id: 'actions',

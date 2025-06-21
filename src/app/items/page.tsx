@@ -50,6 +50,7 @@ export default function ItemManager() {
   const [itemToDelete, setItemToDelete] = useState<number | null>(null)
   const [itemToRestore, setItemToRestore] = useState<number | null>(null)
   const [isConfirmOpen, setIsConfirmOpen] = useState(false)
+  const [bulkDeleteIds, setBulkDeleteIds] = useState<number[] | null>(null)
 
   const form = useForm<z.infer<typeof itemSchema>>({
     resolver: zodResolver(itemSchema),
@@ -195,6 +196,23 @@ export default function ItemManager() {
     }
     setItemToRestore(null)
   }
+
+  const handleBulkDelete = (selectedItems: Item[]) => {
+    setBulkDeleteIds(selectedItems.map(i => i.id))
+    setIsConfirmOpen(true)
+  }
+
+  const confirmBulkDelete = async () => {
+    if (!bulkDeleteIds) return
+    const { error } = await supabase.from('items').update({ deleted_at: new Date().toISOString() }).in('id', bulkDeleteIds)
+    if (error) {
+      toast.error(`Failed to delete ${bulkDeleteIds.length} items: ` + error.message)
+    } else {
+      toast.success(`${bulkDeleteIds.length} items deleted successfully!`)
+      fetchData()
+    }
+    setBulkDeleteIds(null)
+  }
   
   const deletedItemColumns: ColumnDef<Item & { deleted_at: string }>[] = [
     { 
@@ -274,7 +292,7 @@ export default function ItemManager() {
           <TabsTrigger value="deleted">Deleted</TabsTrigger>
         </TabsList>
         <TabsContent value="active">
-          {loading ? <p>Loading...</p> : <DataTable columns={columns(openDialog, handleDeleteRequest)} data={items} searchKey="name" initialSorting={[{ id: 'name', desc: false }]} />}
+          {loading ? <p>Loading...</p> : <DataTable columns={columns(openDialog, handleDeleteRequest)} data={items} searchKey="name" initialSorting={[{ id: 'name', desc: false }]} onBulkDelete={handleBulkDelete} />}
         </TabsContent>
         <TabsContent value="deleted">
           {loading ? <p>Loading...</p> : <DataTable columns={deletedItemColumns} data={deletedItems as (Item & { deleted_at: string })[]} searchKey="name" initialSorting={[{ id: 'deleted_at', desc: true }]} />}
@@ -472,10 +490,25 @@ export default function ItemManager() {
       
       <ConfirmationDialog
         isOpen={isConfirmOpen}
-        onClose={() => setIsConfirmOpen(false)}
-        onConfirm={itemToDelete ? confirmDelete : confirmRestore}
-        title={`Confirm ${itemToDelete ? 'Deletion' : 'Restoration'}`}
-        description={`Are you sure you want to ${itemToDelete ? 'delete' : 'restore'} this item?`}
+        onClose={() => {
+          setIsConfirmOpen(false)
+          setItemToDelete(null)
+          setItemToRestore(null)
+          setBulkDeleteIds(null)
+        }}
+        onConfirm={() => {
+          if (itemToDelete) confirmDelete()
+          else if (itemToRestore) confirmRestore()
+          else if (bulkDeleteIds) confirmBulkDelete()
+        }}
+        title="Are you sure?"
+        description={
+          bulkDeleteIds
+            ? `This will permanently delete ${bulkDeleteIds.length} items.`
+            : itemToDelete
+            ? 'This will permanently delete the item.'
+            : 'This will restore the item to the active list.'
+        }
       />
     </div>
   )

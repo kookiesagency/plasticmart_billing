@@ -141,10 +141,10 @@ export default function InvoicesPage() {
     },
     {
         id: 'amount',
-        header: () => <div className="text-right">Amount</div>,
+        header: () => <div className="text-left">Amount</div>,
         cell: ({ row }) => {
           const amount = (row.original.invoice_items || []).reduce((acc, item) => acc + item.quantity * item.rate, 0) + (row.original.bundle_rate || 0) * (row.original.bundle_quantity || 0)
-          return <div className="text-right font-medium">{new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR' }).format(amount)}</div>
+          return <div className="text-left font-medium">{new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR' }).format(amount)}</div>
         },
     },
     { 
@@ -188,10 +188,10 @@ export default function InvoicesPage() {
           <TabsTrigger value="deleted">Deleted</TabsTrigger>
         </TabsList>
         <TabsContent value="active">
-          {loading ? <p>Loading...</p> : <DataTable columns={columns(handleDelete)} data={invoices} searchKey="partyName" onBulkDelete={handleBulkDelete} initialSorting={[{ id: 'invoice_date', desc: true }]} />}
+          {loading ? <p>Loading...</p> : <DataTable columns={columns(handleDelete)} data={invoices} searchKey="party.name" onBulkDelete={handleBulkDelete} initialSorting={[{ id: 'invoice_date', desc: true }]} />}
         </TabsContent>
         <TabsContent value="deleted">
-          {loading ? <p>Loading...</p> : <DataTable columns={deletedInvoiceColumns} data={deletedInvoices as (Invoice & { deleted_at: string })[]} searchKey="partyName" initialSorting={[{ id: 'deleted_at', desc: true }]} />}
+          {loading ? <p>Loading...</p> : <DataTable columns={deletedInvoiceColumns} data={deletedInvoices as (Invoice & { deleted_at: string })[]} searchKey="party.name" initialSorting={[{ id: 'deleted_at', desc: true }]} />}
         </TabsContent>
       </Tabs>
       

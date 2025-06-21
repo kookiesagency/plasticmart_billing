@@ -39,6 +39,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { ConfirmationDialog } from '@/components/confirmation-dialog'
 import { DataTable } from '@/components/data-table'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Checkbox } from '@/components/ui/checkbox'
 
 // Schema for form validation
 const partySchema = z.object({
@@ -64,22 +65,45 @@ export default function PartyManager() {
   const [isConfirmOpen, setIsConfirmOpen] = useState(false)
   const [deletingPartyId, setDeletingPartyId] = useState<number | null>(null)
   const [restoringPartyId, setRestoringPartyId] = useState<number | null>(null)
+  const [bulkDeleteIds, setBulkDeleteIds] = useState<number[] | null>(null)
 
   const columns = (
     openDialog: (party: Party) => void,
     handleDelete: (partyId: number) => void
   ): ColumnDef<Party>[] => [
     {
+      id: 'select',
+      header: ({ table }) => (
+        <Checkbox
+          checked={
+            table.getIsAllPageRowsSelected() ||
+            (table.getIsSomePageRowsSelected() && 'indeterminate')
+          }
+          onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
+          aria-label="Select all"
+        />
+      ),
+      cell: ({ row }) => (
+        <Checkbox
+          checked={row.getIsSelected()}
+          onCheckedChange={(value) => row.toggleSelected(!!value)}
+          aria-label="Select row"
+        />
+      ),
+      enableSorting: false,
+      enableHiding: false,
+    },
+    {
       accessorKey: 'name',
       header: ({ column }) => {
         return (
-          <Button
-            variant="ghost"
+          <div
+            className="flex items-center cursor-pointer"
             onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
           >
             Name
             <ArrowUpDown className="ml-2 h-4 w-4" />
-          </Button>
+          </div>
         )
       },
     },
@@ -87,13 +111,13 @@ export default function PartyManager() {
       accessorKey: 'bundle_rate',
       header: ({ column }) => {
         return (
-          <Button
-            variant="ghost"
+          <div
+            className="flex items-center cursor-pointer"
             onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
           >
             Bundle Rate
             <ArrowUpDown className="ml-2 h-4 w-4" />
-          </Button>
+          </div>
         )
       },
       cell: ({ row }) => row.original.bundle_rate ?? 'Default',
@@ -208,6 +232,23 @@ export default function PartyManager() {
     setDeletingPartyId(null)
   }
 
+  const handleBulkDelete = (selectedParties: Party[]) => {
+    setBulkDeleteIds(selectedParties.map(p => p.id))
+    setIsConfirmOpen(true)
+  }
+
+  const confirmBulkDelete = async () => {
+    if (!bulkDeleteIds) return
+    const { error } = await supabase.from('parties').update({ deleted_at: new Date().toISOString() }).in('id', bulkDeleteIds)
+    if (error) {
+      toast.error(`Failed to delete ${bulkDeleteIds.length} parties: ` + error.message)
+    } else {
+      toast.success(`${bulkDeleteIds.length} parties deleted successfully!`)
+      fetchData()
+    }
+    setBulkDeleteIds(null)
+  }
+
   const handleRestore = (partyId: number) => {
     setRestoringPartyId(partyId)
     setIsConfirmOpen(true)
@@ -226,49 +267,53 @@ export default function PartyManager() {
   }
 
   const deletedPartyColumns: ColumnDef<Party & { deleted_at: string }>[] = [
-    { 
-      accessorKey: 'name', 
+    {
+      accessorKey: 'name',
       header: ({ column }) => (
-        <Button
-          variant="ghost"
+        <div
+          className="flex items-center cursor-pointer"
           onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
         >
           Name
           <ArrowUpDown className="ml-2 h-4 w-4" />
-        </Button>
+        </div>
       ),
     },
-    { 
-      accessorKey: 'bundle_rate', 
+    {
+      accessorKey: 'bundle_rate',
       header: ({ column }) => (
-        <Button
-          variant="ghost"
+        <div
+          className="flex items-center cursor-pointer"
           onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
         >
           Bundle Rate
           <ArrowUpDown className="ml-2 h-4 w-4" />
-        </Button>
+        </div>
       ),
-      cell: ({ row }) => row.original.bundle_rate ?? 'Default' 
+      cell: ({ row }) => row.original.bundle_rate ?? 'Default',
     },
-    { 
-      accessorKey: 'deleted_at', 
+    {
+      accessorKey: 'deleted_at',
       header: ({ column }) => (
-        <Button
-          variant="ghost"
+        <div
+          className="flex items-center cursor-pointer"
           onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
         >
           Deleted At
           <ArrowUpDown className="ml-2 h-4 w-4" />
-        </Button>
+        </div>
       ),
-      cell: ({ row }) => new Date(row.original.deleted_at).toLocaleDateString()
+      cell: ({ row }) => new Date(row.original.deleted_at).toLocaleDateString(),
     },
     {
       id: 'actions',
       cell: ({ row }) => (
         <div className="text-right">
-          <Button variant="outline" size="sm" onClick={() => handleRestore(row.original.id)}>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => handleRestore(row.original.id)}
+          >
             Restore
           </Button>
         </div>
@@ -287,7 +332,7 @@ export default function PartyManager() {
           <Button onClick={() => openDialog()}>Create Party</Button>
         </div>
         <TabsContent value="active">
-          {loading ? <p>Loading...</p> : <DataTable columns={columns(openDialog, handleDelete)} data={parties} searchKey="name" initialSorting={[{ id: 'name', desc: false }]} />}
+          {loading ? <p>Loading...</p> : <DataTable columns={columns(openDialog, handleDelete)} data={parties} searchKey="name" onBulkDelete={handleBulkDelete} initialSorting={[{ id: 'name', desc: false }]} />}
         </TabsContent>
         <TabsContent value="deleted">
           {loading ? <p>Loading...</p> : <DataTable columns={deletedPartyColumns} data={deletedParties as (Party & { deleted_at: string })[]} searchKey="name" initialSorting={[{ id: 'deleted_at', desc: true }]} />}
@@ -348,14 +393,18 @@ export default function PartyManager() {
           setIsConfirmOpen(false)
           setDeletingPartyId(null)
           setRestoringPartyId(null)
+          setBulkDeleteIds(null)
         }}
         onConfirm={() => {
           if (deletingPartyId) confirmDelete()
           else if (restoringPartyId) confirmRestore()
+          else if (bulkDeleteIds) confirmBulkDelete()
         }}
         title="Are you sure?"
         description={
-          deletingPartyId
+          bulkDeleteIds
+            ? `This action cannot be undone. This will mark ${bulkDeleteIds.length} parties as deleted.`
+            : deletingPartyId
             ? "This action cannot be undone. This will mark the party as deleted."
             : "This will restore the party and make it active again."
         }

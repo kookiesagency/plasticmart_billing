@@ -1,29 +1,23 @@
 'use client'
 
 import { ColumnDef } from '@tanstack/react-table'
-import { Button } from '@/components/ui/button'
 import { ArrowUpDown } from 'lucide-react'
 import { Checkbox } from '@/components/ui/checkbox'
 import Link from 'next/link'
-import { formatCurrency } from '@/lib/utils'
+import { Button } from '@/components/ui/button'
 
 export type Invoice = {
   id: string
   invoice_date: string
   party: { name: string } | null
   invoice_items: { quantity: number; rate: number }[]
-  bundle_rate: number
-  bundle_quantity: number
-}
-
-const calculateTotal = (invoice: Invoice) => {
-    const itemsTotal = invoice.invoice_items.reduce((acc, item) => acc + item.quantity * item.rate, 0)
-    const bundleCharge = (invoice.bundle_rate || 0) * (invoice.bundle_quantity || 0)
-    return itemsTotal + bundleCharge
+  bundle_rate: number | null
+  bundle_quantity: number | null
+  deleted_at?: string | null
 }
 
 export const columns = (
-    handleDelete: (invoiceId: string) => void
+  handleDelete: (invoiceId: string) => void
 ): ColumnDef<Invoice>[] => [
   {
     id: 'select',
@@ -49,32 +43,70 @@ export const columns = (
   },
   {
     accessorKey: 'invoice_date',
-    header: ({ column }) => {
+    header: ({ column }) => (
+      <div
+        className="flex items-center cursor-pointer"
+        onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
+      >
+        Invoice Date
+        <ArrowUpDown className="ml-2 h-4 w-4" />
+      </div>
+    ),
+    cell: ({ row }) => new Date(row.original.invoice_date).toLocaleDateString(),
+  },
+  {
+    accessorKey: 'party.name',
+    header: ({ column }) => (
+      <div
+        className="flex items-center cursor-pointer"
+        onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
+      >
+        Party
+        <ArrowUpDown className="ml-2 h-4 w-4" />
+      </div>
+    ),
+    cell: ({ row }) => row.original.party?.name ?? 'N/A',
+  },
+  {
+    id: 'total_amount',
+    header: ({ column }) => (
+      <div
+        className="flex items-center cursor-pointer"
+        onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
+      >
+        Amount
+        <ArrowUpDown className="ml-2 h-4 w-4" />
+      </div>
+    ),
+    cell: ({ row }) => {
+      const invoice = row.original
+      const itemsTotal = (invoice.invoice_items || []).reduce(
+        (acc, item) => acc + item.quantity * item.rate,
+        0
+      )
+      const bundleTotal =
+        (invoice.bundle_rate || 0) * (invoice.bundle_quantity || 0)
+      const totalAmount = itemsTotal + bundleTotal
       return (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
-        >
-          Date
-          <ArrowUpDown className="ml-2 h-4 w-4" />
-        </Button>
+        <div className="text-left font-medium">
+          {new Intl.NumberFormat('en-IN', {
+            style: 'currency',
+            currency: 'INR',
+          }).format(totalAmount)}
+        </div>
       )
     },
-    cell: ({ row }) => new Date(row.original.invoice_date).toLocaleDateString()
-  },
-  {
-    accessorKey: 'partyName',
-    accessorFn: row => row.party?.name,
-    header: 'Party',
-    cell: ({ row }) => row.original.party?.name || 'N/A'
-  },
-  {
-    id: 'amount',
-    header: () => <div className="text-right">Amount</div>,
-    cell: ({ row }) => {
-      const amount = calculateTotal(row.original)
-      return <div className="text-right font-medium">{formatCurrency(amount)}</div>
-    },
+    sortingFn: (rowA, rowB, id) => {
+        const getAmount = (row: any) => {
+            const itemsTotal = (row.original.invoice_items || []).reduce(
+                (acc: number, item: { quantity: number; rate: number; }) => acc + item.quantity * item.rate,
+                0
+            );
+            const bundleTotal = (row.original.bundle_rate || 0) * (row.original.bundle_quantity || 0);
+            return itemsTotal + bundleTotal;
+        }
+        return getAmount(rowA) - getAmount(rowB)
+    }
   },
   {
     id: 'actions',
@@ -82,12 +114,121 @@ export const columns = (
       const invoice = row.original
       return (
         <div className="text-right space-x-2">
-            <Button variant="outline" size="sm" asChild>
-                <Link href={`/invoices/${invoice.id}`}>View</Link>
-            </Button>
-            <Button variant="destructive" size="sm" onClick={() => handleDelete(invoice.id)}>
-                Delete
-            </Button>
+          <Button variant="outline" size="sm" asChild>
+            <Link href={`/invoices/${invoice.id}`}>View</Link>
+          </Button>
+          <Button
+            variant="destructive"
+            size="sm"
+            onClick={() => handleDelete(invoice.id)}
+          >
+            Delete
+          </Button>
+        </div>
+      )
+    },
+  },
+]
+
+export const deletedInvoicesColumns = (
+  handleRestore: (invoiceId: string) => void
+): ColumnDef<Invoice>[] => [
+  {
+    accessorKey: 'invoice_date',
+    header: ({ column }) => (
+        <div
+            className="flex items-center cursor-pointer"
+            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+        >
+            Invoice Date
+            <ArrowUpDown className="ml-2 h-4 w-4" />
+        </div>
+    ),
+    cell: ({ row }) => new Date(row.original.invoice_date).toLocaleDateString(),
+  },
+  {
+      accessorKey: "party.name",
+      header: ({ column }) => (
+          <div
+              className="flex items-center cursor-pointer"
+              onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          >
+              Party
+              <ArrowUpDown className="ml-2 h-4 w-4" />
+          </div>
+      ),
+      cell: ({ row }) => row.original.party?.name ?? "N/A",
+  },
+  {
+      id: "total_amount",
+      header: ({ column }) => (
+          <div
+              className="flex items-center cursor-pointer"
+              onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          >
+              Amount
+              <ArrowUpDown className="ml-2 h-4 w-4" />
+          </div>
+      ),
+      cell: ({ row }) => {
+          const invoice = row.original
+          const itemsTotal = (invoice.invoice_items || []).reduce(
+            (acc, item) => acc + item.quantity * item.rate,
+            0
+          )
+          const bundleTotal =
+            (invoice.bundle_rate || 0) * (invoice.bundle_quantity || 0)
+          const totalAmount = itemsTotal + bundleTotal
+          return (
+            <div className="text-left font-medium">
+              {new Intl.NumberFormat("en-IN", {
+                style: "currency",
+                currency: "INR",
+              }).format(totalAmount)}
+            </div>
+          )
+      },
+      sortingFn: (rowA, rowB, id) => {
+        const getAmount = (row: any) => {
+            const itemsTotal = (row.original.invoice_items || []).reduce(
+                (acc: number, item: { quantity: number; rate: number; }) => acc + item.quantity * item.rate,
+                0
+            );
+            const bundleTotal = (row.original.bundle_rate || 0) * (row.original.bundle_quantity || 0);
+            return itemsTotal + bundleTotal;
+        }
+        return getAmount(rowA) - getAmount(rowB)
+    }
+  },
+  {
+      accessorKey: "deleted_at",
+      header: ({ column }) => (
+          <div
+              className="flex items-center cursor-pointer"
+              onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          >
+              Deleted At
+              <ArrowUpDown className="ml-2 h-4 w-4" />
+          </div>
+      ),
+      cell: ({ row }) =>
+          row.original.deleted_at
+              ? new Date(row.original.deleted_at).toLocaleDateString()
+              : "N/A",
+  },
+  {
+    id: 'actions',
+    cell: ({ row }) => {
+      const invoice = row.original
+      return (
+        <div className="text-right">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => handleRestore(invoice.id)}
+          >
+            Restore
+          </Button>
         </div>
       )
     },

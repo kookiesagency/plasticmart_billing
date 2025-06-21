@@ -50,7 +50,7 @@ export function DataTable<TData, TValue>({
   initialSorting = [],
 }: DataTableProps<TData, TValue>) {
   const [sorting, setSorting] = useState<SortingState>(initialSorting)
-  const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
+  const [globalFilter, setGlobalFilter] = useState('')
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({})
   const [rowSelection, setRowSelection] = useState<RowSelectionState>({})
 
@@ -61,15 +61,25 @@ export function DataTable<TData, TValue>({
     getPaginationRowModel: getPaginationRowModel(),
     onSortingChange: setSorting,
     getSortedRowModel: getSortedRowModel(),
-    onColumnFiltersChange: setColumnFilters,
+    onGlobalFilterChange: setGlobalFilter,
     getFilteredRowModel: getFilteredRowModel(),
     onColumnVisibilityChange: setColumnVisibility,
     onRowSelectionChange: setRowSelection,
     state: {
       sorting,
-      columnFilters,
+      globalFilter,
       columnVisibility,
       rowSelection,
+    },
+    filterFns: {
+      custom: (row, columnId, filterValue) => {
+        const value = columnId.split('.').reduce((acc, curr) => acc?.[curr], row.original as any)
+        return (value as string)?.toLowerCase().includes(filterValue.toLowerCase())
+      }
+    },
+    globalFilterFn: (row, columnId, filterValue) => {
+      const value = searchKey.split('.').reduce((acc, curr) => acc?.[curr], row.original as any)
+      return (value as string)?.toLowerCase().includes(filterValue.toLowerCase())
     },
   })
 
@@ -145,9 +155,9 @@ export function DataTable<TData, TValue>({
             <Button onClick={handleExport}>Export to CSV</Button>
             <Input
                 placeholder={`Search by ${searchKey}...`}
-                value={(table.getColumn(searchKey)?.getFilterValue() as string) ?? ''}
+                value={globalFilter ?? ''}
                 onChange={(event) =>
-                    table.getColumn(searchKey)?.setFilterValue(event.target.value)
+                    setGlobalFilter(event.target.value)
                 }
                 className="max-w-sm"
             />
