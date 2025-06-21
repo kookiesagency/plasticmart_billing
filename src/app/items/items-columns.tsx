@@ -4,6 +4,7 @@ import { ColumnDef } from '@tanstack/react-table'
 import { ArrowUpDown, Pencil, Trash } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 
 export type Item = {
   id: number
@@ -93,13 +94,27 @@ export const columns = (
     cell: ({ row }) => {
       const item = row.original
       return (
-        <div className="text-right space-x-2 flex items-center justify-end">
-          <Button variant="outline" size="icon" onClick={() => openDialog(item)}>
-            <Pencil className="h-4 w-4" />
-          </Button>
-          <Button variant="destructive" size="icon" onClick={() => handleDelete(item.id)}>
-            <Trash className="h-4 w-4" />
-          </Button>
+        <div className="flex items-center justify-end gap-2">
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button variant="ghost" size="icon" onClick={() => openDialog(item)}>
+                <Pencil className="h-4 w-4" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>Edit Item</p>
+            </TooltipContent>
+          </Tooltip>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button variant="ghost" size="icon" onClick={() => handleDelete(item.id)}>
+                <Trash className="h-4 w-4 text-red-600" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>Delete Item</p>
+            </TooltipContent>
+          </Tooltip>
         </div>
       )
     },

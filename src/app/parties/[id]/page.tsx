@@ -165,42 +165,27 @@ export default function PartyReportPage() {
       />
       <div className="space-y-6">
         <div className="grid gap-4 md:grid-cols-3">
-          <Card>
-            <CardHeader>
-              <CardTitle>Total Billed</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-2xl font-bold">{formatCurrency(summary.totalBilled)}</p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader>
-              <CardTitle>Total Received</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-2xl font-bold">{formatCurrency(summary.totalReceived)}</p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader>
-              <CardTitle>Current Balance</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-2xl font-bold">{formatCurrency(summary.balance)}</p>
-            </CardContent>
-          </Card>
+          <div className="rounded-lg border bg-card text-card-foreground shadow-sm p-6">
+            <h3 className="text-sm font-medium text-muted-foreground mb-2">Total Billed</h3>
+            <p className="text-2xl font-bold">{formatCurrency(summary.totalBilled)}</p>
+          </div>
+          <div className="rounded-lg border bg-card text-card-foreground shadow-sm p-6">
+            <h3 className="text-sm font-medium text-muted-foreground mb-2">Total Received</h3>
+            <p className="text-2xl font-bold">{formatCurrency(summary.totalReceived)}</p>
+          </div>
+          <div className="rounded-lg border bg-card text-card-foreground shadow-sm p-6">
+            <h3 className="text-sm font-medium text-muted-foreground mb-2">Current Balance</h3>
+            <p className="text-2xl font-bold">{formatCurrency(summary.balance)}</p>
+          </div>
         </div>
 
-        <div>
-          <h2 className="text-xl font-semibold mb-4">Invoice History</h2>
-          <DataTable
-            columns={invoiceColumns}
-            data={party.invoices}
-            loading={loading}
-            onBulkDelete={handleBulkDelete}
-            searchPlaceholder="Search invoices..."
-          />
-        </div>
+        <DataTable
+          columns={invoiceColumns}
+          data={party.invoices}
+          loading={loading}
+          onBulkDelete={handleBulkDelete}
+          searchPlaceholder="Search invoices..."
+        />
       </div>
     </>
   )

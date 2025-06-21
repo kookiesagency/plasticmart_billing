@@ -5,8 +5,10 @@ import React, { createContext, useContext, useState, ReactNode, useEffect } from
 interface HeaderContextType {
   title: string | null
   actions: ReactNode | null
+  isSidebarOpen: boolean
   setTitle: (title: string) => void
   setActions: (actions: ReactNode) => void
+  toggleSidebar: () => void
   clearHeader: () => void
 }
 
@@ -15,16 +17,18 @@ const HeaderContext = createContext<HeaderContextType | undefined>(undefined)
 export function HeaderProvider({ children }: { children: ReactNode }) {
   const [title, setTitleState] = useState<string | null>(null)
   const [actions, setActionsState] = useState<ReactNode | null>(null)
+  const [isSidebarOpen, setSidebarOpen] = useState(false)
 
   const setTitle = (newTitle: string) => setTitleState(newTitle)
   const setActions = (newActions: ReactNode) => setActionsState(newActions)
+  const toggleSidebar = () => setSidebarOpen(prev => !prev)
   const clearHeader = () => {
     setTitleState(null)
     setActionsState(null)
   }
 
   return (
-    <HeaderContext.Provider value={{ title, actions, setTitle, setActions, clearHeader }}>
+    <HeaderContext.Provider value={{ title, actions, isSidebarOpen, setTitle, setActions, toggleSidebar, clearHeader }}>
       {children}
     </HeaderContext.Provider>
   )

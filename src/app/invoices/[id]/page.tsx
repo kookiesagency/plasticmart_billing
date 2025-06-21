@@ -17,6 +17,7 @@ import { PaymentForm } from './payment-form'
 import { toast } from 'sonner'
 import { ConfirmationDialog } from '@/components/confirmation-dialog'
 import { SetHeader } from '@/components/layout/header-context'
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 
 export type Payment = {
   id: number
@@ -162,104 +163,113 @@ export default function InvoiceDetailsPage() {
         title="Delete Payment"
         description={`Are you sure you want to delete the payment of ${formatCurrency(paymentToDelete?.amount || 0)}? This action cannot be undone.`}
       />
-      <div className="space-y-6">
-        <div className="grid md:grid-cols-3 gap-6">
-          <div className="md:col-span-2 space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>Items</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Item</TableHead>
-                      <TableHead className="text-center">Quantity</TableHead>
-                      <TableHead className="text-right">Rate</TableHead>
-                      <TableHead className="text-right">Amount</TableHead>
+      <div className="grid md:grid-cols-3 gap-6">
+        <div className="md:col-span-2 space-y-6">
+          <div className="space-y-4">
+            <h3 className="text-lg font-medium">Items</h3>
+            <div className="border rounded-md">
+              <Table>
+                <TableHeader>
+                  <TableRow className="bg-muted hover:bg-muted">
+                    <TableHead>Item</TableHead>
+                    <TableHead className="text-center">Quantity</TableHead>
+                    <TableHead className="text-right">Rate</TableHead>
+                    <TableHead className="text-right">Amount</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {invoice.invoice_items.map((item, index) => (
+                    <TableRow key={index}>
+                      <TableCell className="max-w-[200px] truncate">
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <span>{item.items?.name}</span>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p>{item.items?.name}</p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </TableCell>
+                      <TableCell className="text-center">
+                        {item.quantity} {item.items?.units?.abbreviation}
+                      </TableCell>
+                      <TableCell className="text-right">{formatCurrency(item.rate)}</TableCell>
+                      <TableCell className="text-right">{formatCurrency(item.quantity * item.rate)}</TableCell>
                     </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {invoice.invoice_items.map((item, index) => (
-                      <TableRow key={index}>
-                        <TableCell>{item.items?.name}</TableCell>
-                        <TableCell className="text-center">
-                          {item.quantity} {item.items?.units?.abbreviation}
-                        </TableCell>
-                        <TableCell className="text-right">{formatCurrency(item.rate)}</TableCell>
-                        <TableCell className="text-right">{formatCurrency(item.quantity * item.rate)}</TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle>Payment History</CardTitle>
-              </CardHeader>
-              <CardContent>
-                  {invoice.payments.length === 0 ? (
-                      <p className="text-muted-foreground">No payments have been recorded for this invoice.</p>
-                  ) : (
-                      <Table>
-                          <TableHeader>
-                              <TableRow>
-                                  <TableHead>Payment Date</TableHead>
-                                  <TableHead className="text-right">Amount Paid</TableHead>
-                                  <TableHead className="text-right">Actions</TableHead>
-                              </TableRow>
-                          </TableHeader>
-                          <TableBody>
-                              {invoice.payments.map((payment) => (
-                                  <TableRow key={payment.id}>
-                                      <TableCell>{format(new Date(payment.payment_date), 'dd MMMM, yyyy')}</TableCell>
-                                      <TableCell className="text-right">{formatCurrency(payment.amount)}</TableCell>
-                                      <TableCell className="text-right space-x-2">
-                                          <Button variant="ghost" size="icon" onClick={() => setPaymentToEdit(payment)}><Edit className="h-4 w-4" /></Button>
-                                          <Button variant="ghost" size="icon" onClick={() => setPaymentToDelete(payment)}><Trash className="h-4 w-4 text-red-500" /></Button>
-                                      </TableCell>
-                                  </TableRow>
-                              ))}
-                          </TableBody>
-                      </Table>
-                  )}
-              </CardContent>
-            </Card>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
           </div>
 
-          <div className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>Billed To</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="font-bold text-lg">{invoice.party?.name}</p>
-                {/* <pre>{JSON.stringify(invoice.party?.contact_details, null, 2)}</pre> */}
-              </CardContent>
-            </Card>
+          <div className="space-y-4">
+            <h3 className="text-lg font-medium">Payment History</h3>
+            <div className="border rounded-md">
+              {invoice.payments.length === 0 ? (
+                  <div className="p-6 text-center text-muted-foreground">No payments have been recorded for this invoice.</div>
+              ) : (
+                  <Table>
+                      <TableHeader>
+                          <TableRow className="bg-muted hover:bg-muted">
+                              <TableHead>Payment Date</TableHead>
+                              <TableHead className="text-right">Amount Paid</TableHead>
+                              <TableHead className="text-right">Actions</TableHead>
+                          </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                          {invoice.payments.map((payment) => (
+                              <TableRow key={payment.id}>
+                                  <TableCell>{format(new Date(payment.payment_date), 'dd MMMM, yyyy')}</TableCell>
+                                  <TableCell className="text-right">{formatCurrency(payment.amount)}</TableCell>
+                                  <TableCell className="text-right space-x-2">
+                                    <Tooltip>
+                                      <TooltipTrigger asChild>
+                                        <Button variant="ghost" size="icon" onClick={() => setPaymentToEdit(payment)}><Edit className="h-4 w-4" /></Button>
+                                      </TooltipTrigger>
+                                      <TooltipContent><p>Edit Payment</p></TooltipContent>
+                                    </Tooltip>
+                                    <Tooltip>
+                                      <TooltipTrigger asChild>
+                                        <Button variant="ghost" size="icon" onClick={() => setPaymentToDelete(payment)}><Trash className="h-4 w-4 text-red-500" /></Button>
+                                      </TooltipTrigger>
+                                      <TooltipContent><p>Delete Payment</p></TooltipContent>
+                                    </Tooltip>
+                                  </TableCell>
+                              </TableRow>
+                          ))}
+                      </TableBody>
+                  </Table>
+              )}
+            </div>
+          </div>
+        </div>
 
-            <Card>
-              <CardHeader>
-                  <CardTitle>Summary</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-2">
-                  <div className="flex justify-between">
-                      <span className="text-muted-foreground">Total Amount:</span>
-                      <span className="font-medium">{formatCurrency(invoice.total_amount)}</span>
-                  </div>
-                  <div className="flex justify-between">
-                      <span className="text-muted-foreground">Total Paid:</span>
-                      <span className="font-medium">{formatCurrency(invoice.amount_received)}</span>
-                  </div>
-                  <Separator className="my-2" />
-                  <div className="flex justify-between font-bold text-lg">
-                      <span>Balance Due:</span>
-                      <span>{formatCurrency(invoice.amount_pending)}</span>
-                  </div>
-              </CardContent>
-            </Card>
+        <div className="sticky top-20 space-y-6">
+          <div className="space-y-4">
+            <h3 className="text-lg font-medium">Billed To</h3>
+            <div className="border rounded-md p-4">
+              <p className="font-bold text-lg">{invoice.party?.name}</p>
+              {/* <pre>{JSON.stringify(invoice.party?.contact_details, null, 2)}</pre> */}
+            </div>
+          </div>
+          
+          <div className="space-y-4">
+            <h3 className="text-lg font-medium">Summary</h3>
+            <div className="border rounded-md p-4 space-y-4">
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">Total Amount:</span>
+                <span className="font-semibold">{formatCurrency(invoice.total_amount)}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">Total Paid:</span>
+                <span className="font-semibold text-green-600">{formatCurrency(invoice.amount_received)}</span>
+              </div>
+              <Separator />
+              <div className="flex justify-between text-lg">
+                <span className="font-bold">Balance Due:</span>
+                <span className="font-bold">{formatCurrency(invoice.amount_pending)}</span>
+              </div>
+            </div>
           </div>
         </div>
       </div>

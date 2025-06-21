@@ -1,7 +1,7 @@
 'use client'
 
 import { ColumnDef } from '@tanstack/react-table'
-import { MoreHorizontal } from 'lucide-react'
+import { Eye, Pencil, Trash } from 'lucide-react'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -15,6 +15,7 @@ import Link from 'next/link'
 import { Badge } from '../../components/ui/badge'
 import { Checkbox } from '@/components/ui/checkbox'
 import { formatCurrency } from '@/lib/utils'
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 
 export type Invoice = {
   id: number
@@ -114,20 +115,37 @@ export const columns = (
       const invoice = row.original
 
       return (
-        <div className="text-right space-x-2">
-          <Button variant="outline" size="sm" asChild>
-            <Link href={`/invoices/edit/${invoice.id}`}>Edit</Link>
+        <div className="flex items-center justify-end gap-2">
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button variant="ghost" size="icon" asChild>
+                <Link href={`/invoices/${invoice.id}`}><Eye className="h-4 w-4" /></Link>
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>View Invoice</p>
+            </TooltipContent>
+          </Tooltip>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button variant="ghost" size="icon" asChild>
+                <Link href={`/invoices/edit/${invoice.id}`}><Pencil className="h-4 w-4" /></Link>
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>Edit Invoice</p>
+            </TooltipContent>
+          </Tooltip>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button variant="ghost" size="icon" onClick={() => handleDelete(invoice.id)}>
+                <Trash className="h-4 w-4 text-red-600" />
           </Button>
-          <Button variant="outline" size="sm" asChild>
-            <Link href={`/invoices/${invoice.id}`}>View</Link>
-          </Button>
-          <Button
-            variant="destructive"
-            size="sm"
-            onClick={() => handleDelete(invoice.id)}
-          >
-            Delete
-          </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>Delete Invoice</p>
+            </TooltipContent>
+          </Tooltip>
         </div>
       )
     },

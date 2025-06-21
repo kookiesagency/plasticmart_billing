@@ -1,19 +1,13 @@
 'use client'
 import React, { useState } from 'react'
 import { ColumnDef } from '@tanstack/react-table'
-import { ArrowUpDown, MoreHorizontal, Pencil, Trash, Undo } from 'lucide-react'
+import { ArrowUpDown, FileText, Pencil, Trash, Undo } from 'lucide-react'
 import Link from 'next/link'
 import { toast } from 'sonner'
 
 import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu'
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { ConfirmationDialog } from '@/components/confirmation-dialog'
 import { Party } from '@/lib/types'
 import { createClient } from '@/lib/supabase/client'
@@ -63,38 +57,54 @@ const ActionsCell = ({ row, onEdit, refetch, isDeleted }: { row: any, onEdit: (i
         title={`Are you sure you want to ${isDeleted ? 'restore' : 'delete'} this party?`}
         description="This action can be modified later."
       />
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <Button variant="ghost" className="h-8 w-8 p-0">
-            <span className="sr-only">Open menu</span>
-            <MoreHorizontal className="h-4 w-4" />
-          </Button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent align="end">
-          <DropdownMenuLabel>Actions</DropdownMenuLabel>
-          {!isDeleted && (
-            <>
-              <DropdownMenuItem asChild>
-                <Link href={`/parties/${party.id}`}>View Report</Link>
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => onEdit(party.id)}>
-                <Pencil className="mr-2 h-4 w-4" />
-                Edit
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => setIsConfirmOpen(true)} className="text-red-600">
-                <Trash className="mr-2 h-4 w-4" />
-                Delete
-              </DropdownMenuItem>
-            </>
-          )}
-          {isDeleted && (
-            <DropdownMenuItem onClick={() => setIsConfirmOpen(true)}>
-              <Undo className="mr-2 h-4 w-4" />
-              Restore
-            </DropdownMenuItem>
-          )}
-        </DropdownMenuContent>
-      </DropdownMenu>
+      <div className="flex items-center justify-end gap-2">
+        {!isDeleted && (
+          <>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button variant="ghost" size="icon" asChild>
+                  <Link href={`/parties/${party.id}`}><FileText className="h-4 w-4" /></Link>
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>View Report</p>
+              </TooltipContent>
+            </Tooltip>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button variant="ghost" size="icon" onClick={() => onEdit(party.id)}>
+                  <Pencil className="h-4 w-4" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Edit Party</p>
+              </TooltipContent>
+            </Tooltip>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button variant="ghost" size="icon" onClick={() => setIsConfirmOpen(true)}>
+                  <Trash className="h-4 w-4 text-red-600" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Delete Party</p>
+              </TooltipContent>
+            </Tooltip>
+          </>
+        )}
+        {isDeleted && (
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button variant="ghost" size="icon" onClick={() => setIsConfirmOpen(true)}>
+                <Undo className="h-4 w-4" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>Restore Party</p>
+            </TooltipContent>
+          </Tooltip>
+        )}
+      </div>
     </>
   )
 }

@@ -6,6 +6,7 @@ import { cn } from '@/lib/utils'
 import { Sidebar } from '@/components/layout/sidebar'
 import { Header } from '@/components/layout/header'
 import { HeaderProvider } from '@/components/layout/header-context'
+import { TooltipProvider } from "@/components/ui/tooltip";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -15,6 +16,9 @@ const geistSans = Geist({
 export const metadata: Metadata = {
   title: "Smart Billing",
   description: "A smart billing system.",
+  icons: {
+    icon: '/logo.png',
+  }
 };
 
 export default function RootLayout({
@@ -30,17 +34,17 @@ export default function RootLayout({
           geistSans.variable
         )}
       >
-        <HeaderProvider>
-          <div className="flex min-h-screen w-full flex-col">
-            <Sidebar />
-            <div className="flex flex-col sm:pl-60">
-              <Header />
-              <main className="flex-1 p-6 md:gap-8">
-                {children}
-              </main>
+        <TooltipProvider>
+          <HeaderProvider>
+            <div className="relative flex min-h-screen w-full flex-col">
+              <Sidebar />
+              <div className="flex flex-col md:pl-60">
+                <Header />
+                <main className="flex-1 p-4 sm:p-6">{children}</main>
+              </div>
             </div>
-          </div>
-        </HeaderProvider>
+          </HeaderProvider>
+        </TooltipProvider>
         <Toaster />
       </body>
     </html>
