@@ -13,7 +13,12 @@ import {
   ColumnFiltersState,
   VisibilityState,
   RowSelectionState,
+  FilterFn,
 } from '@tanstack/react-table'
+import { rankItem, type RankingInfo } from '@tanstack/match-sorter-utils'
+import { download, generateCsv, mkConfig } from 'export-to-csv'
+import { Trash2 } from 'lucide-react'
+import { toast } from 'sonner'
 
 import {
   Table,
@@ -32,27 +37,38 @@ import {
 } from "@/components/ui/select"
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Trash2 } from 'lucide-react'
+import { ConfirmationDialog } from '@/components/confirmation-dialog'
+import { CSVLink } from 'react-csv'
+import { Skeleton } from '@/components/ui/skeleton'
+
+declare module '@tanstack/react-table' {
+  interface FilterFns {
+    fuzzy: FilterFn<unknown>
+  }
+  interface FilterMeta {
+    itemRank: RankingInfo
+  }
+}
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[]
   data: TData[]
-  searchKey: string
+  searchPlaceholder?: string
   onBulkDelete?: (selectedRows: TData[]) => void
-  initialSorting?: SortingState
+  loading?: boolean
 }
 
 export function DataTable<TData, TValue>({
   columns,
   data,
-  searchKey,
+  searchPlaceholder,
   onBulkDelete,
-  initialSorting = [],
+  loading,
 }: DataTableProps<TData, TValue>) {
-  const [sorting, setSorting] = useState<SortingState>(initialSorting)
+  const [sorting, setSorting] = useState<SortingState>([])
   const [globalFilter, setGlobalFilter] = useState('')
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({})
-  const [rowSelection, setRowSelection] = useState<RowSelectionState>({})
+  const [rowSelection, setRowSelection] = useState({})
 
   const table = useReactTable({
     data,
@@ -72,95 +88,76 @@ export function DataTable<TData, TValue>({
       rowSelection,
     },
     filterFns: {
-      custom: (row, columnId, filterValue) => {
-        const value = columnId.split('.').reduce((acc, curr) => acc?.[curr], row.original as any)
-        return (value as string)?.toLowerCase().includes(filterValue.toLowerCase())
+      fuzzy: (row, columnId, value, addMeta) => {
+        const itemRank = rankItem(row.getValue(columnId), value)
+        addMeta({ itemRank })
+        return itemRank.passed
       }
     },
-    globalFilterFn: (row, columnId, filterValue) => {
-      const value = searchKey.split('.').reduce((acc, curr) => acc?.[curr], row.original as any)
-      return (value as string)?.toLowerCase().includes(filterValue.toLowerCase())
-    },
+    globalFilterFn: 'fuzzy',
   })
 
+  const selectedRows = table.getFilteredSelectedRowModel().rows
+
   const handleExport = () => {
-    const columnsToExport = table.getVisibleLeafColumns().filter(col => 
-        col.id !== 'select' && col.id !== 'actions'
+    const visibleColumns = table.getVisibleFlatColumns().filter(
+      (col) => !['select', 'actions'].includes(col.id)
     );
-
-    const getHeaderText = (col: any) => {
-      const def = col.columnDef;
-      if (!def) return col.id;
-
-      if (typeof def.header === 'string') {
-        return def.header;
+  
+    const getHeader = (column: any): string => {
+      const header = column.columnDef.header;
+      if (typeof header === 'string') {
+        return header;
       }
-      
-      const key = (def.accessorKey || col.id) as string;
-      const readableKey = key.split('.').pop() || '';
-      return readableKey.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
-    }
+      return column.id.replace(/_/g, ' ').replace(/\b\w/g, (l: string) => l.toUpperCase());
+    };
+  
+    const dataToExport = table.getCoreRowModel().rows.map(row => {
+      const rowData: { [key: string]: any } = {};
+      visibleColumns.forEach(col => {
+        const header = getHeader(col);
+        rowData[header] = row.getValue(col.id);
+      });
+      return rowData;
+    });
 
-    const headers = columnsToExport.map(getHeaderText).join(',');
+    if (dataToExport.length === 0) {
+      toast.error("No data to export.");
+      return;
+    }
+  
+    const csvConfig = mkConfig({
+      fieldSeparator: ',',
+      decimalSeparator: '.',
+      useKeysAsHeaders: true,
+    });
     
-    const csvData = table.getFilteredRowModel().rows.map(row =>
-      columnsToExport.map(col => {
-          let value = row.getValue(col.id);
-          if (col.id === 'party.name') {
-            value = (row.original as any).party?.name ?? 'N/A'
-          } else if (col.id === 'units.abbreviation') {
-            value = (row.original as any).units?.abbreviation ?? 'N/A'
-          }
-
-          if (typeof value === 'string') {
-            return `"${value.replace(/"/g, '""')}"`;
-          }
-          return `"${value}"`;
-        }).join(',')
-    ).join('\n');
-
-    const csvContent = [headers, csvData].join('\n');
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-    const link = document.createElement('a');
-    link.href = URL.createObjectURL(blob);
-    link.download = `export-${new Date().toISOString()}.csv`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-  }
-
-  const handleBulkDelete = () => {
-    const selectedRows = table.getFilteredSelectedRowModel().rows.map(row => row.original);
-    if (onBulkDelete) {
-      onBulkDelete(selectedRows);
-    }
-    table.resetRowSelection();
-  }
+    const csv = generateCsv(csvConfig)(dataToExport);
+    download(csvConfig)(csv);
+  };
 
   return (
     <div>
       <div className="flex items-center justify-between py-4">
-        <div>
-            {table.getFilteredSelectedRowModel().rows.length > 0 && onBulkDelete && (
-            <Button
-                variant="destructive"
-                onClick={handleBulkDelete}
-            >
-                <Trash2 className="mr-2 h-4 w-4" />
-                Delete ({table.getFilteredSelectedRowModel().rows.length})
-            </Button>
-            )}
+        <div className="flex-grow">
+          <Input
+            placeholder={searchPlaceholder ?? `Search all columns...`}
+            value={globalFilter ?? ''}
+            onChange={(event) => setGlobalFilter(event.target.value)}
+            className="max-w-sm"
+          />
         </div>
         <div className="flex items-center gap-2">
-            <Button onClick={handleExport}>Export to CSV</Button>
-            <Input
-                placeholder={`Search by ${searchKey}...`}
-                value={globalFilter ?? ''}
-                onChange={(event) =>
-                    setGlobalFilter(event.target.value)
-                }
-                className="max-w-sm"
-            />
+          <Button onClick={handleExport}>Export to CSV</Button>
+          {selectedRows.length > 0 && onBulkDelete && (
+            <Button
+              variant="destructive"
+              onClick={() => onBulkDelete(selectedRows.map((row) => row.original))}
+            >
+              <Trash2 className="mr-2 h-4 w-4" />
+              Delete ({selectedRows.length})
+            </Button>
+          )}
         </div>
       </div>
       <div className="rounded-md border overflow-hidden">
@@ -184,7 +181,13 @@ export function DataTable<TData, TValue>({
             ))}
           </TableHeader>
           <TableBody>
-            {table.getRowModel().rows?.length ? (
+            {loading ? (
+              <TableRow>
+                <TableCell colSpan={columns.length}>
+                  <Skeleton className="h-10" />
+                </TableCell>
+              </TableRow>
+            ) : table.getRowModel().rows?.length ? (
               table.getRowModel().rows.map((row) => (
                 <TableRow
                   key={row.id}

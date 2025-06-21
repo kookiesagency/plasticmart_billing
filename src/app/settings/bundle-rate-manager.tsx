@@ -68,7 +68,10 @@ export default function BundleRateManager() {
 
   return (
     <div>
-      <h2 className="text-xl font-semibold mb-4">Default Bundle Rate</h2>
+      <h3 className="text-lg font-medium">Default Bundle Rate</h3>
+      <p className="text-sm text-muted-foreground mb-4">
+        Set the default rate used for calculating invoice totals based on bundle quantity.
+      </p>
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 max-w-sm">
           <FormField

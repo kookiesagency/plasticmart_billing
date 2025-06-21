@@ -8,6 +8,7 @@ export type Party = {
   address: string | null
   bundle_rate: number | null
   created_at: string
+  deleted_at?: string | null
 }
 
 export type Item = {

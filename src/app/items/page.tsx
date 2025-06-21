@@ -21,6 +21,7 @@ import { DataTable } from '@/components/data-table'
 import { columns, Item } from './items-columns'
 import { ConfirmationDialog } from '@/components/confirmation-dialog'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { SetHeader } from '@/components/layout/header-context'
 
 const partyPriceSchema = z.object({
   party_id: z.coerce.number(),
@@ -278,27 +279,41 @@ export default function ItemManager() {
   ]
 
   return (
-    <div className="p-4 md:p-6">
-      <div className="flex items-center justify-between mb-4">
-        <h1 className="text-2xl font-semibold">Items</h1>
-        <Button onClick={() => openDialog()}>
-          <PlusCircle className="mr-2 h-4 w-4" />
-          Create Item
-        </Button>
-      </div>
+    <>
+      <SetHeader 
+        title="Items"
+        actions={
+          <Button onClick={() => openDialog()}>
+            <PlusCircle className="h-4 w-4 mr-2" />
+            Create Item
+          </Button>
+        }
+      />
+      
       <Tabs defaultValue="active">
-        <TabsList className="mb-4">
+        <TabsList>
           <TabsTrigger value="active">Active</TabsTrigger>
           <TabsTrigger value="deleted">Deleted</TabsTrigger>
         </TabsList>
         <TabsContent value="active">
-          {loading ? <p>Loading...</p> : <DataTable columns={columns(openDialog, handleDeleteRequest)} data={items} searchKey="name" initialSorting={[{ id: 'name', desc: false }]} onBulkDelete={handleBulkDelete} />}
+          <DataTable
+            columns={columns(openDialog, handleDeleteRequest)}
+            data={items}
+            loading={loading}
+            onBulkDelete={handleBulkDelete}
+            searchPlaceholder="Search items..."
+          />
         </TabsContent>
         <TabsContent value="deleted">
-          {loading ? <p>Loading...</p> : <DataTable columns={deletedItemColumns} data={deletedItems as (Item & { deleted_at: string })[]} searchKey="name" initialSorting={[{ id: 'deleted_at', desc: true }]} />}
+          <DataTable
+            columns={deletedItemColumns}
+            data={deletedItems as (Item & { deleted_at: string })[]}
+            loading={loading}
+            searchPlaceholder="Search deleted items..."
+          />
         </TabsContent>
       </Tabs>
-
+      
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
         <DialogContent className="sm:max-w-[625px]">
           <DialogHeader><DialogTitle>{editingItem ? 'Edit Item' : 'Create Item'}</DialogTitle></DialogHeader>
@@ -500,16 +515,17 @@ export default function ItemManager() {
           if (itemToDelete) confirmDelete()
           else if (itemToRestore) confirmRestore()
           else if (bulkDeleteIds) confirmBulkDelete()
+          setIsConfirmOpen(false)
         }}
         title="Are you sure?"
         description={
           bulkDeleteIds
-            ? `This will permanently delete ${bulkDeleteIds.length} items.`
+            ? `This action cannot be undone. This will mark ${bulkDeleteIds.length} items as deleted.`
             : itemToDelete
-            ? 'This will permanently delete the item.'
-            : 'This will restore the item to the active list.'
+            ? "This action cannot be undone. This will mark the item as deleted."
+            : "This will restore the item and make it active again."
         }
       />
-    </div>
+    </>
   )
 } 

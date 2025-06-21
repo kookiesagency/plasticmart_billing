@@ -12,6 +12,7 @@ import { ConfirmationDialog } from '@/components/confirmation-dialog'
 import { toast } from 'sonner'
 import { ColumnDef } from '@tanstack/react-table'
 import { format } from 'date-fns'
+import { SetHeader } from '@/components/layout/header-context'
 
 export default function InvoicesPage() {
   const supabase = createClient()
@@ -19,9 +20,9 @@ export default function InvoicesPage() {
   const [deletedInvoices, setDeletedInvoices] = useState<Invoice[]>([])
   const [loading, setLoading] = useState(true)
   const [isConfirmOpen, setIsConfirmOpen] = useState(false)
-  const [deletingInvoiceId, setDeletingInvoiceId] = useState<string | null>(null)
-  const [restoringInvoiceId, setRestoringInvoiceId] = useState<string | null>(null)
-  const [bulkDeleteIds, setBulkDeleteIds] = useState<string[] | null>(null)
+  const [deletingInvoiceId, setDeletingInvoiceId] = useState<number | null>(null)
+  const [restoringInvoiceId, setRestoringInvoiceId] = useState<number | null>(null)
+  const [bulkDeleteIds, setBulkDeleteIds] = useState<number[] | null>(null)
 
   const fetchData = useCallback(async () => {
     setLoading(true)
@@ -32,7 +33,9 @@ export default function InvoicesPage() {
       party:parties (name),
       invoice_items (quantity, rate),
       bundle_rate,
-      bundle_quantity
+      bundle_quantity,
+      total_amount,
+      payments (amount)
     `
     
     const { data: activeData, error: activeError } = await supabase
@@ -50,10 +53,29 @@ export default function InvoicesPage() {
     if (activeError || deletedError) {
       toast.error('Failed to fetch invoices: ' + (activeError?.message || deletedError?.message))
     } else {
-        const parsedActiveData = activeData.map(d => ({...d, party: Array.isArray(d.party) ? d.party[0] : d.party}))
-        const parsedDeletedData = deletedData.map(d => ({...d, party: Array.isArray(d.party) ? d.party[0] : d.party}))
-        setInvoices(parsedActiveData as Invoice[])
-        setDeletedInvoices(parsedDeletedData as Invoice[])
+        const parseData = (data: any[]) => data.map(d => {
+            const totalAmount = d.total_amount || 0;
+            const amountReceived = d.payments.reduce((acc: number, p: { amount: number }) => acc + p.amount, 0)
+            const amountPending = totalAmount - amountReceived
+            let status = 'Pending'
+            if (amountReceived >= totalAmount) {
+                status = 'Paid'
+            } else if (amountReceived > 0) {
+                status = 'Partial'
+            }
+
+            return {
+                ...d,
+                party: Array.isArray(d.party) ? d.party[0] : d.party,
+                total_amount: totalAmount,
+                amount_received: amountReceived,
+                amount_pending: amountPending,
+                status: status
+            }
+        })
+        
+        setInvoices(parseData(activeData) as Invoice[])
+        setDeletedInvoices(parseData(deletedData) as Invoice[])
     }
     setLoading(false)
   }, [supabase])
@@ -62,14 +84,14 @@ export default function InvoicesPage() {
     fetchData()
   }, [fetchData])
 
-  const handleDelete = (invoiceId: string) => {
-    setDeletingInvoiceId(invoiceId);
-    setIsConfirmOpen(true);
+  const handleDelete = (invoiceId: number) => {
+    setDeletingInvoiceId(invoiceId)
+    setIsConfirmOpen(true)
   }
 
-  const handleRestore = (invoiceId: string) => {
-    setRestoringInvoiceId(invoiceId);
-    setIsConfirmOpen(true);
+  const handleRestore = (invoiceId: number) => {
+    setRestoringInvoiceId(invoiceId)
+    setIsConfirmOpen(true)
   }
 
   const confirmDelete = async () => {
@@ -81,7 +103,8 @@ export default function InvoicesPage() {
       toast.success('Invoice deleted successfully!');
       fetchData();
     }
-    setDeletingInvoiceId(null);
+    setIsConfirmOpen(false)
+    setDeletingInvoiceId(null)
   }
 
   const confirmRestore = async () => {
@@ -94,23 +117,31 @@ export default function InvoicesPage() {
       fetchData();
     }
     setRestoringInvoiceId(null);
+    setIsConfirmOpen(false);
   }
   
   const handleBulkDelete = (selectedInvoices: Invoice[]) => {
-    setBulkDeleteIds(selectedInvoices.map(i => i.id));
+    const ids = selectedInvoices.map((inv) => inv.id);
+    setBulkDeleteIds(ids);
     setIsConfirmOpen(true);
   }
 
   const confirmBulkDelete = async () => {
-    if (!bulkDeleteIds) return;
-    const { error } = await supabase.from('invoices').update({ deleted_at: new Date().toISOString() }).in('id', bulkDeleteIds);
+    if (!bulkDeleteIds || bulkDeleteIds.length === 0) return;
+    
+    const { error } = await supabase
+      .from('invoices')
+      .update({ deleted_at: new Date().toISOString() })
+      .in('id', bulkDeleteIds)
+
     if (error) {
-      toast.error(`Failed to delete ${bulkDeleteIds.length} invoices: ` + error.message);
+      toast.error(`Failed to delete ${bulkDeleteIds.length} invoices: ${error.message}`)
     } else {
-      toast.success(`${bulkDeleteIds.length} invoices deleted successfully!`);
-      fetchData();
+      toast.success(`${bulkDeleteIds.length} invoices deleted successfully!`)
+      fetchData()
     }
-    setBulkDeleteIds(null);
+    setIsConfirmOpen(false)
+    setBulkDeleteIds(null)
   }
   
   const deletedInvoiceColumns: ColumnDef<Invoice & { deleted_at: string }>[] = [
@@ -141,12 +172,20 @@ export default function InvoicesPage() {
       cell: ({ row }) => row.original.party?.name || 'N/A'
     },
     {
-        id: 'amount',
-        header: () => <div className="text-left">Amount</div>,
-        cell: ({ row }) => {
-          const amount = (row.original.invoice_items || []).reduce((acc, item) => acc + item.quantity * item.rate, 0) + (row.original.bundle_rate || 0) * (row.original.bundle_quantity || 0)
-          return <div className="text-left font-medium">{new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR' }).format(amount)}</div>
-        },
+      accessorKey: 'total_amount',
+      header: 'Total',
+    },
+    {
+      accessorKey: 'amount_received',
+      header: 'Received',
+    },
+    {
+      accessorKey: 'amount_pending',
+      header: 'Pending',
+    },
+    {
+      accessorKey: 'status',
+      header: 'Status',
     },
     { 
       accessorKey: 'deleted_at', 
@@ -172,27 +211,39 @@ export default function InvoicesPage() {
   ];
 
   return (
-    <div className="p-4 md:p-6">
-      <div className="flex items-center justify-between mb-4">
-        <h1 className="text-2xl font-semibold">Invoices</h1>
-        <Button asChild>
-          <Link href="/invoices/new">
-            <PlusCircle className="mr-2 h-4 w-4" />
-            Create Invoice
-          </Link>
-        </Button>
-      </div>
-
+    <>
+      <SetHeader 
+        title="Invoices"
+        actions={
+          <Button asChild>
+            <Link href="/invoices/new">
+              <PlusCircle className="h-4 w-4 mr-2" />
+              Create Invoice
+            </Link>
+          </Button>
+        }
+      />
       <Tabs defaultValue="active">
-        <TabsList className="mb-4">
+        <TabsList>
           <TabsTrigger value="active">Active</TabsTrigger>
           <TabsTrigger value="deleted">Deleted</TabsTrigger>
         </TabsList>
         <TabsContent value="active">
-          {loading ? <p>Loading...</p> : <DataTable columns={columns(handleDelete)} data={invoices} searchKey="party.name" onBulkDelete={handleBulkDelete} initialSorting={[{ id: 'invoice_date', desc: true }]} />}
+          <DataTable
+            columns={columns(handleDelete)}
+            data={invoices}
+            loading={loading}
+            onBulkDelete={handleBulkDelete}
+            searchPlaceholder="Search invoices..."
+          />
         </TabsContent>
         <TabsContent value="deleted">
-          {loading ? <p>Loading...</p> : <DataTable columns={deletedInvoiceColumns} data={deletedInvoices as (Invoice & { deleted_at: string })[]} searchKey="party.name" initialSorting={[{ id: 'deleted_at', desc: true }]} />}
+          <DataTable
+            columns={deletedInvoiceColumns}
+            data={deletedInvoices as (Invoice & { deleted_at: string })[]}
+            loading={loading}
+            searchPlaceholder="Search deleted invoices..."
+          />
         </TabsContent>
       </Tabs>
       
@@ -213,11 +264,11 @@ export default function InvoicesPage() {
         description={
           bulkDeleteIds
             ? `This action cannot be undone. This will mark ${bulkDeleteIds.length} invoices as deleted.`
-            : deletingInvoiceId 
-              ? "This action cannot be undone. This will mark the invoice as deleted." 
-              : "This will restore the invoice and make it active again."
+            : deletingInvoiceId
+            ? "This action cannot be undone. This will mark the invoice as deleted."
+            : "This will restore the invoice and make it active again."
         }
       />
-    </div>
-  )
+    </>
+  );
 } 

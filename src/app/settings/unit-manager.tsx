@@ -212,20 +212,29 @@ export default function UnitManager() {
 
   return (
     <div>
-      <h2 className="text-xl font-semibold mb-4">Manage Units</h2>
       <Tabs defaultValue="active">
         <div className="flex justify-between items-center mb-4">
           <TabsList>
             <TabsTrigger value="active">Active</TabsTrigger>
             <TabsTrigger value="deleted">Deleted</TabsTrigger>
           </TabsList>
-          <Button onClick={() => openDialog()}>Create Unit</Button>
         </div>
         <TabsContent value="active">
-          {loading ? <p>Loading...</p> : <DataTable columns={columns(openDialog, handleDelete)} data={units} searchKey="name" onBulkDelete={handleBulkDelete} initialSorting={[{ id: 'name', desc: false }]} />}
+          <DataTable 
+            columns={columns(openDialog, handleDelete)} 
+            data={units} 
+            loading={loading}
+            onBulkDelete={handleBulkDelete}
+            searchPlaceholder="Search units..." 
+          />
         </TabsContent>
         <TabsContent value="deleted">
-          {loading ? <p>Loading...</p> : <DataTable columns={deletedUnitColumns} data={deletedUnits as (Unit & { deleted_at: string })[]} searchKey="name" initialSorting={[{ id: 'deleted_at', desc: true }]} />}
+          <DataTable 
+            columns={deletedUnitColumns} 
+            data={deletedUnits as (Unit & { deleted_at: string })[]} 
+            loading={loading}
+            searchPlaceholder="Search deleted units..." 
+          />
         </TabsContent>
       </Tabs>
 
@@ -265,12 +274,14 @@ export default function UnitManager() {
                   </FormItem>
                 )}
               />
-              <Button type="submit">{editingUnit ? 'Save Changes' : 'Create Unit'}</Button>
+              <DialogFooter>
+                <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)}>Cancel</Button>
+                <Button type="submit">Save</Button>
+              </DialogFooter>
             </form>
           </Form>
         </DialogContent>
       </Dialog>
-
       <ConfirmationDialog
         isOpen={isConfirmOpen}
         onClose={() => {
@@ -280,17 +291,18 @@ export default function UnitManager() {
           setBulkDeleteIds(null)
         }}
         onConfirm={() => {
-          if (deletingUnitId) confirmDelete()
-          else if (restoringUnitId) confirmRestore()
-          else if (bulkDeleteIds) confirmBulkDelete()
+          if (deletingUnitId) { confirmDelete(); setDeletingUnitId(null); }
+          else if (restoringUnitId) { confirmRestore(); setRestoringUnitId(null); }
+          else if (bulkDeleteIds) { confirmBulkDelete(); setBulkDeleteIds(null); }
+          setIsConfirmOpen(false)
         }}
         title="Are you sure?"
         description={
           bulkDeleteIds
             ? `This action cannot be undone. This will mark ${bulkDeleteIds.length} units as deleted.`
-            : deletingUnitId 
-              ? "This action cannot be undone. This will mark the unit as deleted." 
-              : "This will restore the unit and make it active again."
+            : deletingUnitId
+            ? "This action cannot be undone. This will mark the unit as deleted."
+            : "This will restore the unit and make it active again."
         }
       />
     </div>
