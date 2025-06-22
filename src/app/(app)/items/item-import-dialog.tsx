@@ -9,7 +9,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { FileUp } from 'lucide-react'
-import { ItemToImport } from './item-preview-dialog'
+import { ItemToImport } from './item-preview-dialog.tsx'
 
 type Unit = { id: number; name: string; abbreviation: string }
 

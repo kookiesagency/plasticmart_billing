@@ -159,7 +159,7 @@ export const columns = (
 
         const onReady = () => {
           window.print();
-          cleanup();
+          setTimeout(cleanup, 0);
         };
 
         root.render(<PrintableInvoice invoiceId={invoice.id} onReady={onReady} />);

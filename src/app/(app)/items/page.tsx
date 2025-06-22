@@ -23,7 +23,7 @@ import { ConfirmationDialog } from '@/components/confirmation-dialog'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { SetHeader } from '@/components/layout/header-context'
 import { ItemImportDialog } from './item-import-dialog'
-import { ItemPreviewDialog, ItemToImport } from './item-preview-dialog'
+import { ItemPreviewDialog, ItemToImport } from './item-preview-dialog.tsx'
 
 const partyPriceSchema = z.object({
   party_id: z.coerce.number(),

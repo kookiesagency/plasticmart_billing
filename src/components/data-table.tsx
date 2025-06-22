@@ -182,11 +182,15 @@ export function DataTable<TData, TValue>({
           </TableHeader>
           <TableBody>
             {loading ? (
-              <TableRow>
-                <TableCell colSpan={columns.length}>
-                  <Skeleton className="h-10" />
-                </TableCell>
-              </TableRow>
+              Array.from({ length: 10 }).map((_, i) => (
+                <TableRow key={i}>
+                  {columns.map((column, j) => (
+                    <TableCell key={j}>
+                      <Skeleton className="h-6" />
+                    </TableCell>
+                  ))}
+                </TableRow>
+              ))
             ) : table.getRowModel().rows?.length ? (
               table.getRowModel().rows.map((row) => (
                 <TableRow
