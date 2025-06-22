@@ -6,7 +6,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { toast } from 'sonner'
 import { createClient } from '@/lib/supabase/client'
-import { Check, ChevronsUpDown, PlusCircle, ArrowUpDown } from 'lucide-react'
+import { Check, ChevronsUpDown, PlusCircle, ArrowUpDown, FileUp } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { ColumnDef } from '@tanstack/react-table'
 
@@ -22,6 +22,8 @@ import { columns, Item } from './items-columns'
 import { ConfirmationDialog } from '@/components/confirmation-dialog'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { SetHeader } from '@/components/layout/header-context'
+import { ItemImportDialog } from './item-import-dialog'
+import { ItemPreviewDialog, ItemToImport } from './item-preview-dialog'
 
 const partyPriceSchema = z.object({
   party_id: z.coerce.number(),
@@ -52,6 +54,9 @@ export default function ItemManager() {
   const [itemToRestore, setItemToRestore] = useState<number | null>(null)
   const [isConfirmOpen, setIsConfirmOpen] = useState(false)
   const [bulkDeleteIds, setBulkDeleteIds] = useState<number[] | null>(null)
+  const [isImporting, setIsImporting] = useState(false)
+  const [isPreviewing, setIsPreviewing] = useState(false)
+  const [dataToPreview, setDataToPreview] = useState<ItemToImport[]>([])
 
   const form = useForm<z.infer<typeof itemSchema>>({
     resolver: zodResolver(itemSchema),
@@ -204,7 +209,7 @@ export default function ItemManager() {
   }
 
   const confirmBulkDelete = async () => {
-    if (!bulkDeleteIds) return
+    if (!bulkDeleteIds || bulkDeleteIds.length === 0) return;
     const { error } = await supabase.from('items').update({ deleted_at: new Date().toISOString() }).in('id', bulkDeleteIds)
     if (error) {
       toast.error(`Failed to delete ${bulkDeleteIds.length} items: ` + error.message)
@@ -214,7 +219,22 @@ export default function ItemManager() {
     }
     setBulkDeleteIds(null)
   }
-  
+
+  const handleImport = () => {
+    setIsImporting(true)
+  }
+
+  const handlePreview = (data: ItemToImport[]) => {
+    setDataToPreview(data)
+    setIsImporting(false)
+    setIsPreviewing(true)
+  }
+
+  const handlePreviewSuccess = () => {
+    setIsPreviewing(false)
+    fetchData()
+  }
+
   const deletedItemColumns: ColumnDef<Item & { deleted_at: string }>[] = [
     { 
       accessorKey: 'name', 
@@ -283,12 +303,35 @@ export default function ItemManager() {
       <SetHeader 
         title="Items"
         actions={
-          <Button onClick={() => openDialog()}>
-            <PlusCircle className="h-4 w-4 mr-2" />
-            Create Item
-          </Button>
+          <div className="flex gap-2">
+            <Button onClick={handleImport} variant="outline">
+              <FileUp className="mr-2 h-4 w-4" />
+              Import
+            </Button>
+            <Button onClick={() => openDialog()}>
+              <PlusCircle className="mr-2 h-4 w-4" />
+              Add Item
+            </Button>
+          </div>
         }
       />
+      
+      <ItemImportDialog
+        isOpen={isImporting}
+        onOpenChange={setIsImporting}
+        onPreview={handlePreview}
+        units={units}
+      />
+      
+      {isPreviewing && (
+        <ItemPreviewDialog
+          isOpen={isPreviewing}
+          onOpenChange={setIsPreviewing}
+          onSuccess={handlePreviewSuccess}
+          units={units}
+          initialData={dataToPreview}
+        />
+      )}
       
       <Tabs defaultValue="active">
         <TabsList>
