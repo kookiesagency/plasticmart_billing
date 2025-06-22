@@ -1,7 +1,7 @@
 'use client'
 
 import { ColumnDef } from '@tanstack/react-table'
-import { Eye, Pencil, Trash, FilePenLine, FileDown, MoreHorizontal, Share2 } from 'lucide-react'
+import { Eye, Pencil, Trash, FilePenLine, FileDown, MoreHorizontal, Share2, MessageCircle } from 'lucide-react'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -14,7 +14,7 @@ import { Button } from '@/components/ui/button'
 import Link from 'next/link'
 import { Badge } from '@/components/ui/badge'
 import { Checkbox } from '@/components/ui/checkbox'
-import { formatCurrency } from '@/lib/utils'
+import { formatCurrency, formatDate } from '@/lib/utils'
 import { toast } from "sonner"
 import { createClient } from "@/lib/supabase/client"
 import { createRoot } from 'react-dom/client'
@@ -22,6 +22,7 @@ import { PrintableInvoice } from './printable-invoice'
 
 export type Invoice = {
   id: number
+  public_id: string
   invoice_date: string
   party: {
     name: string
@@ -155,6 +156,13 @@ export const columns = (
         root.render(<PrintableInvoice invoiceId={invoice.id} onReady={onReady} />);
       }
 
+      const handleShareOnWhatsApp = () => {
+        const publicUrl = `${window.location.origin}/invoices/view/${invoice.public_id}`;
+        const message = `Hello ${invoice.party.name},\n\nHere is your invoice from ${formatDate(invoice.invoice_date)}.\n\nYou can view it here: ${publicUrl}\n\nThank you.`;
+        const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(message)}`;
+        window.open(whatsappUrl, '_blank');
+      };
+
       return (
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
@@ -177,10 +185,14 @@ export const columns = (
               </Link>
             </DropdownMenuItem>
             <DropdownMenuItem asChild>
-              <Link href={`/invoices/view/${invoice.id}`} className="flex items-center cursor-pointer" target="_blank" rel="noopener noreferrer">
+              <Link href={`/invoices/view/${invoice.public_id}`} className="flex items-center cursor-pointer" target="_blank" rel="noopener noreferrer">
                 <Share2 className="mr-2 h-4 w-4" />
                 <span>Share</span>
               </Link>
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={handleShareOnWhatsApp}>
+              <MessageCircle className="mr-2 h-4 w-4" />
+              <span>Share on WhatsApp</span>
             </DropdownMenuItem>
             <DropdownMenuItem onClick={handlePrint}>
               <FileDown className="mr-2 h-4 w-4" />

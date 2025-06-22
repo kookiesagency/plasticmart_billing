@@ -5,7 +5,7 @@ import { useParams } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import { InvoicePDF } from '@/app/(app)/invoices/invoice-pdf';
 import { Button } from '@/components/ui/button';
-import { FileDown, Share2 } from 'lucide-react';
+import { FileDown, Share2, MessageCircle } from 'lucide-react';
 import { toast } from 'sonner';
 import { createRoot } from 'react-dom/client';
 import { PrintableInvoice } from '@/app/(app)/invoices/printable-invoice';
@@ -17,10 +17,11 @@ type FullInvoice = Invoice & {
   sub_total: number;
   bundle_quantity: number;
   bundle_charge: number;
+  public_id: string;
 };
 
 export default function PublicInvoicePage() {
-  const params = useParams<{ id: string }>();
+  const params = useParams<{ public_id: string }>();
   const supabase = createClient();
   const [invoice, setInvoice] = useState<FullInvoice | null>(null);
   const [settings, setSettings] = useState<{ [key: string]: string }>({});
@@ -28,12 +29,12 @@ export default function PublicInvoicePage() {
 
   useEffect(() => {
     const fetchInvoice = async () => {
-      if (!params.id) return;
+      if (!params.public_id) return;
 
       const { data: invoiceData, error: invoiceError } = await supabase
         .from('invoices')
         .select('*, party:parties(*), invoice_items(*, item:items(*, units(*)))')
-        .eq('id', params.id)
+        .eq('public_id', params.public_id)
         .single();
       
       const { data: settingsData, error: settingsError } = await supabase
@@ -57,7 +58,7 @@ export default function PublicInvoicePage() {
       setLoading(false);
     };
     fetchInvoice();
-  }, [params.id]);
+  }, [params.public_id]);
 
   const handleDownload = () => {
     window.print();
@@ -66,6 +67,14 @@ export default function PublicInvoicePage() {
   const handleCopyUrl = () => {
     navigator.clipboard.writeText(window.location.href);
     toast.success("Copied!");
+  };
+
+  const handleShareOnWhatsApp = () => {
+    if (!invoice) return;
+    const url = window.location.href;
+    const message = `Hello, here is the invoice for your reference. You can view it here: ${url}\n\nThank you.`;
+    const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(message)}`;
+    window.open(whatsappUrl, '_blank');
   };
 
   if (loading) {
@@ -80,6 +89,10 @@ export default function PublicInvoicePage() {
     <div className="bg-gray-50 flex items-center justify-center min-h-screen p-4 sm:p-8">
       <div className="w-full max-w-4xl mx-auto">
         <div className="flex justify-end gap-2 mb-4 no-print">
+          <Button onClick={handleShareOnWhatsApp} variant="outline">
+            <MessageCircle className="mr-2 h-4 w-4" />
+            Share on WhatsApp
+          </Button>
           <Button onClick={handleCopyUrl} variant="outline">
             <Share2 className="mr-2 h-4 w-4" />
             Copy URL

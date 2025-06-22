@@ -29,6 +29,7 @@ export default function InvoicesPage() {
     
     const baseQuery = `
       id,
+      public_id,
       invoice_date,
       party:parties (name),
       invoice_items (quantity, rate),
