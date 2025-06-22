@@ -42,7 +42,7 @@ const invoiceSchema = z.object({
   invoice_date: z.date(),
   bundle_rate: z.coerce.number().min(0),
   bundle_quantity: z.coerce.number().min(0),
-  total_bundle_charge: z.coerce.number().min(0),
+  bundle_charge: z.coerce.number().min(0),
   items: z.array(invoiceItemSchema).min(1, 'Please add at least one item.'),
   subTotal: z.number().optional(),
   grandTotal: z.number().optional(),
@@ -67,7 +67,7 @@ export function InvoiceForm({ invoiceId }: { invoiceId?: string }) {
       invoice_date: new Date(),
       bundle_rate: 0,
       bundle_quantity: 1,
-      total_bundle_charge: 0,
+      bundle_charge: 0,
       items: [],
       subTotal: 0,
       grandTotal: 0,
@@ -97,16 +97,16 @@ export function InvoiceForm({ invoiceId }: { invoiceId?: string }) {
 
   useEffect(() => {
     const subscription = form.watch((value, { name, type }) => {
-      if (name && (name.startsWith('items') || ['bundle_rate', 'bundle_quantity', 'total_bundle_charge'].includes(name))) {
+      if (name && (name.startsWith('items') || ['bundle_rate', 'bundle_quantity', 'bundle_charge'].includes(name))) {
         const items = value.items || [];
         const subTotal = items.reduce((acc, item) => acc + (item?.quantity || 0) * (item?.rate || 0), 0);
         
         if (name === 'bundle_rate' || name === 'bundle_quantity') {
           const calculatedBundleCharge = (value.bundle_rate || 0) * (value.bundle_quantity || 0);
-          form.setValue('total_bundle_charge', calculatedBundleCharge);
+          form.setValue('bundle_charge', calculatedBundleCharge);
         }
 
-        const grandTotal = subTotal + (value.total_bundle_charge || 0);
+        const grandTotal = subTotal + (value.bundle_charge || 0);
 
         if (form.getValues('subTotal') !== subTotal) {
           form.setValue('subTotal', subTotal, { shouldValidate: true });
@@ -166,7 +166,7 @@ export function InvoiceForm({ invoiceId }: { invoiceId?: string }) {
     }
     
     const calculatedBundleCharge = (form.getValues('bundle_rate') || 0) * (form.getValues('bundle_quantity') || 0);
-    form.setValue('total_bundle_charge', calculatedBundleCharge);
+    form.setValue('bundle_charge', calculatedBundleCharge);
     
     // Recalculate prices for existing items when party changes
     const currentItems = form.getValues('items')
@@ -441,7 +441,7 @@ export function InvoiceForm({ invoiceId }: { invoiceId?: string }) {
                       <FormLabel>Total Bundle Charge</FormLabel>
                       <FormField
                         control={form.control}
-                        name="total_bundle_charge"
+                        name="bundle_charge"
                         render={({ field }) => (
                           <FormItem>
                              <FormControl>

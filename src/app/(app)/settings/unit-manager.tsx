@@ -213,7 +213,7 @@ export default function UnitManager() {
   return (
     <div>
       <Tabs defaultValue="active">
-        <div className="flex justify-between items-center mb-4">
+        <div className="flex justify-between items-center">
           <TabsList>
             <TabsTrigger value="active">Active</TabsTrigger>
             <TabsTrigger value="deleted">Deleted</TabsTrigger>
