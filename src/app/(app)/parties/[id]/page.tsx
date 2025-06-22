@@ -141,7 +141,7 @@ export default function PartyReportPage() {
   if (loading && !party) return <div className="p-6">Loading party report...</div>
   if (!party) return <div className="p-6">Party not found.</div>
 
-  const invoiceColumns = columns(() => {})
+  const invoiceColumns = columns(() => {}, fetchPartyData)
 
   return (
     <>

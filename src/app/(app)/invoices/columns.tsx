@@ -1,7 +1,7 @@
 'use client'
 
 import { ColumnDef } from '@tanstack/react-table'
-import { Eye, Pencil, Trash, FilePenLine, FileDown, MoreHorizontal, Share2, MessageCircle } from 'lucide-react'
+import { Eye, Pencil, Trash, FilePenLine, FileDown, MoreHorizontal, Share2, MessageCircle, CreditCard } from 'lucide-react'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -19,11 +19,13 @@ import { toast } from "sonner"
 import { createClient } from "@/lib/supabase/client"
 import { createRoot } from 'react-dom/client'
 import { PrintableInvoice } from './printable-invoice'
+import { PaymentForm } from './[id]/payment-form'
 
 export type Invoice = {
   id: number
   public_id: string
   invoice_date: string
+  updated_at: string
   party: {
     name: string
   }
@@ -34,7 +36,8 @@ export type Invoice = {
 }
 
 export const columns = (
-  handleDelete: (id: number) => void
+  handleDelete: (id: number) => void,
+  onPaymentAdded?: () => void
 ): ColumnDef<Invoice>[] => [
   {
     id: 'select',
@@ -58,13 +61,14 @@ export const columns = (
     enableSorting: false,
     enableHiding: false,
   },
-  {
-    accessorKey: 'id',
-    header: 'Invoice ID',
-  },
+  // {
+  //   accessorKey: 'id',
+  //   header: 'Invoice ID',
+  // },
   {
     accessorKey: 'invoice_date',
     header: 'Invoice Date',
+    cell: ({ row }) => formatDate(row.getValue('invoice_date')),
   },
   {
     accessorKey: 'party.name',
@@ -112,6 +116,11 @@ export const columns = (
         </Badge>
       )
     },
+  },
+  {
+    accessorKey: 'updated_at',
+    header: 'Last Updated',
+    cell: ({ row }) => formatDate(row.getValue('updated_at')),
   },
   {
     id: 'actions',
@@ -173,17 +182,31 @@ export const columns = (
           <DropdownMenuContent align="end">
             <DropdownMenuLabel>Actions</DropdownMenuLabel>
             <DropdownMenuItem asChild>
-              <Link href={`/invoices/${invoice.id}`} className="flex items-center cursor-pointer">
+              <Link href={`/invoices/${invoice.id}`}>
                 <Eye className="mr-2 h-4 w-4" />
                 <span>View</span>
               </Link>
             </DropdownMenuItem>
             <DropdownMenuItem asChild>
-              <Link href={`/invoices/edit/${invoice.id}`} className="flex items-center cursor-pointer">
+              <Link href={`/invoices/edit/${invoice.id}`}>
                 <FilePenLine className="mr-2 h-4 w-4" />
                 <span>Edit</span>
               </Link>
             </DropdownMenuItem>
+            
+            {onPaymentAdded && invoice.status !== 'Paid' && (
+              <PaymentForm
+                invoiceId={invoice.id}
+                balanceDue={invoice.amount_pending}
+                onPaymentAdded={onPaymentAdded}
+              >
+                <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="flex items-center cursor-pointer">
+                  <CreditCard className="mr-2 h-4 w-4" />
+                  <span>Add Payment</span>
+                </DropdownMenuItem>
+              </PaymentForm>
+            )}
+
             <DropdownMenuItem asChild>
               <Link href={`/invoices/view/${invoice.public_id}`} className="flex items-center cursor-pointer" target="_blank" rel="noopener noreferrer">
                 <Share2 className="mr-2 h-4 w-4" />

@@ -31,6 +31,7 @@ export default function InvoicesPage() {
       id,
       public_id,
       invoice_date,
+      updated_at,
       party:parties (name),
       invoice_items (quantity, rate),
       bundle_rate,
@@ -231,7 +232,7 @@ export default function InvoicesPage() {
         </TabsList>
         <TabsContent value="active">
           <DataTable
-            columns={columns(handleDelete)}
+            columns={columns(handleDelete, fetchData)}
             data={invoices}
             loading={loading}
             onBulkDelete={handleBulkDelete}
