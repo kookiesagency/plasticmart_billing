@@ -2,11 +2,12 @@
 
 import Link from 'next/link'
 import Image from 'next/image'
-import { usePathname } from 'next/navigation'
+import { usePathname, useRouter } from 'next/navigation'
 import { Home, FileText, Users, Package, Settings, History } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useHeader } from './header-context'
 import { Button } from '../ui/button'
+import { createClient } from '@/lib/supabase/client'
 
 const navItems = [
   { href: '/', label: 'Dashboard', icon: Home },
@@ -20,6 +21,13 @@ const navItems = [
 export function Sidebar() {
   const pathname = usePathname()
   const { isSidebarOpen, toggleSidebar } = useHeader()
+  const router = useRouter()
+  const supabase = createClient()
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut()
+    router.replace('/login')
+  }
 
   return (
     <>
@@ -54,6 +62,11 @@ export function Sidebar() {
             </Link>
           ))}
         </nav>
+        <div className="absolute bottom-0 left-0 w-full p-4 border-t bg-background">
+          <Button variant="outline" className="w-full" onClick={handleLogout}>
+            Logout
+          </Button>
+        </div>
       </aside>
       {isSidebarOpen && (
         <div
