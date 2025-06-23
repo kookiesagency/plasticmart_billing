@@ -21,8 +21,9 @@ type Invoice = {
   bundle_charge: number
 }
 
+type PublicInvoicePageParams = { params: { public_id: string } }
 
-export default async function PublicInvoicePage({ params }: { params: { public_id: string } }) {
+export default async function PublicInvoicePage({ params }: PublicInvoicePageParams) {
   const supabase = createClient()
 
   const { data: invoice, error } = await supabase
