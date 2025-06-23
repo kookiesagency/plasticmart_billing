@@ -23,7 +23,8 @@ type Invoice = {
 
 type PublicInvoicePageParams = { params: { public_id: string } }
 
-export default async function PublicInvoicePage({ params }: PublicInvoicePageParams) {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export default async function PublicInvoicePage({ params }: any) {
   const supabase = createClient()
 
   const { data: invoice, error } = await supabase
