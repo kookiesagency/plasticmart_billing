@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { useForm, useFieldArray } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
@@ -67,6 +67,10 @@ export default function ItemManager() {
   const [bulkRestoreIds, setBulkRestoreIds] = useState<number[] | null>(null)
   const [partySearch, setPartySearch] = useState('')
   const [isPartySearchOpen, setIsPartySearchOpen] = useState(false)
+  const unitTriggerRef = useRef<HTMLButtonElement>(null);
+  const partyTriggerRef = useRef<HTMLButtonElement>(null);
+  const [unitPopoverWidth, setUnitPopoverWidth] = useState<number | undefined>(undefined);
+  const [partyPopoverWidth, setPartyPopoverWidth] = useState<number | undefined>(undefined);
 
   const form = useForm<z.infer<typeof itemSchema>>({
     resolver: zodResolver(itemSchema),
@@ -546,25 +550,31 @@ export default function ItemManager() {
                       <FormLabel>Unit</FormLabel>
                       <Popover>
                         <PopoverTrigger asChild>
-                          <FormControl>
-                            <Button
-                              variant="outline"
-                              role="combobox"
-                              className={cn(
-                                "w-full justify-between",
-                                !field.value && "text-muted-foreground"
-                              )}
-                            >
-                              {field.value
-                                ? units.find(
-                                    (unit) => unit.id === field.value
-                                  )?.name
-                                : "Select a unit"}
-                              <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                            </Button>
-                          </FormControl>
+                          <Button
+                            ref={unitTriggerRef}
+                            onClick={() => {
+                              if (unitTriggerRef.current) setUnitPopoverWidth(unitTriggerRef.current.offsetWidth);
+                            }}
+                            variant="outline"
+                            role="combobox"
+                            className={cn(
+                              "w-full justify-between",
+                              !field.value && "text-muted-foreground"
+                            )}
+                          >
+                            {field.value
+                              ? units.find(
+                                  (unit) => unit.id === field.value
+                                )?.name
+                              : "Select a unit"}
+                            <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                          </Button>
                         </PopoverTrigger>
-                        <PopoverContent className="w-[--radix-popover-trigger-width] p-0" align="start">
+                        <PopoverContent
+                          className="p-0"
+                          align="start"
+                          style={unitPopoverWidth ? { width: unitPopoverWidth } : {}}
+                        >
                           <Command>
                             <CommandInput placeholder="Search unit..." />
                             <CommandEmpty>No unit found.</CommandEmpty>
@@ -602,45 +612,29 @@ export default function ItemManager() {
               
               <div>
                 <h4 className="text-sm font-medium mb-2">Party-Specific Prices</h4>
-                <div className="space-y-2">
-                  {fields.map((field, index) => {
-                    const partyName = parties.find(p => p.id === field.party_id)?.name || 'Unknown Party'
-                    return (
-                      <div key={field.id} className="flex items-center gap-2">
-                        <Input value={partyName} readOnly className="flex-1 font-semibold" />
-                        <FormField
-                          control={form.control}
-                          name={`party_prices.${index}.price`}
-                          render={({ field: priceField }) => (
-                            <Input
-                              type="number"
-                              {...priceField}
-                              className="w-32"
-                              placeholder="Price"
-                            />
-                          )}
-                        />
-                        <Button type="button" variant="ghost" size="icon" onClick={() => remove(index)}>
-                          <Trash className="h-4 w-4 text-red-500" />
-                        </Button>
-                      </div>
-                    )
-                  })}
-                </div>
                 <div className="mt-4">
                   <Popover open={isPartySearchOpen} onOpenChange={setIsPartySearchOpen}>
                     <PopoverTrigger asChild>
                       <Button
+                        ref={partyTriggerRef}
+                        onClick={() => {
+                          if (partyTriggerRef.current) setPartyPopoverWidth(partyTriggerRef.current.offsetWidth);
+                        }}
                         variant="outline"
                         role="combobox"
-                        className="w-full justify-between"
+                        className="w-full justify-between border border-input data-[placeholder]:text-muted-foreground"
                         aria-expanded={isPartySearchOpen}
+                        data-placeholder={fields.length === 0 ? true : undefined}
                       >
                         Select party to add price...
                         <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                       </Button>
                     </PopoverTrigger>
-                    <PopoverContent className="w-[--radix-popover-trigger-width] p-0" align="start">
+                    <PopoverContent
+                      className="p-0"
+                      align="start"
+                      style={partyPopoverWidth ? { width: partyPopoverWidth } : {}}
+                    >
                       <Command>
                         <CommandInput 
                           placeholder="Search party..." 
@@ -671,6 +665,55 @@ export default function ItemManager() {
                     </PopoverContent>
                   </Popover>
                 </div>
+                {fields.length > 0 && (
+                  <div className="overflow-x-auto rounded-md border mt-4">
+                    <table className="w-full text-sm">
+                      <thead>
+                        <tr className="bg-muted text-muted-foreground">
+                          <th className="text-left px-3 py-2 font-medium text-xs">Party Name</th>
+                          <th className="text-left px-3 py-2 font-medium text-xs">Rate</th>
+                          <th className="text-center px-3 py-2 font-medium text-xs">Action</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {fields.map((field, index) => {
+                          const partyName = parties.find(p => p.id === field.party_id)?.name || 'Unknown Party'
+                          return (
+                            <tr key={field.id} className="border-t">
+                              <td className="px-3 py-2 align-middle">
+                                <span className="text-xs text-foreground select-none">{partyName}</span>
+                              </td>
+                              <td className="px-3 py-2 align-middle">
+                                <FormField
+                                  control={form.control}
+                                  name={`party_prices.${index}.price`}
+                                  render={({ field: priceField }) => (
+                                    <Input
+                                      type="number"
+                                      {...priceField}
+                                      className="w-32"
+                                      placeholder="Price"
+                                    />
+                                  )}
+                                />
+                              </td>
+                              <td className="px-3 py-2 align-middle text-center">
+                                <Tooltip>
+                                  <TooltipTrigger asChild>
+                                    <Button type="button" variant="ghost" size="icon" onClick={() => remove(index)}>
+                                      <Trash className="h-4 w-4 text-red-500" />
+                                    </Button>
+                                  </TooltipTrigger>
+                                  <TooltipContent>Remove party price</TooltipContent>
+                                </Tooltip>
+                              </td>
+                            </tr>
+                          )
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
               </div>
 
               <DialogFooter>
