@@ -46,35 +46,31 @@ function getChanges(oldData: any, newData: any): string[] {
 }
 
 function formatLogMessage(log: ActivityLog) {
-  const { action, target_table, target_id, user_email, details } = log;
+  const { action, target_table, target_id, details } = log;
   const targetName = target_table.replace(/_/g, ' ').slice(0, -1);
-  const user = user_email || 'System';
-  
   let targetLink = `/${target_table}/${target_id}`;
-  if (target_table === 'units') {
+  if (target_table === 'units' || target_table === 'app_settings') {
     targetLink = '/settings';
   } else if (target_table === 'items') {
     targetLink = '/items';
   }
-
   const getTargetIdentifier = () => {
     const data = details.new_data || details.old_data;
     return data?.name || data?.title || `#${target_id}`;
   };
-
   switch (action) {
     case 'INSERT':
-      return `<strong>${user}</strong> created a new ${targetName}: <Link href="${targetLink}" className="text-blue-500 hover:underline">${getTargetIdentifier()}</Link>`;
+      return `Created a new ${targetName}: <a href="${targetLink}" class="text-blue-500 hover:underline">${getTargetIdentifier()}</a>`;
     case 'DELETE':
-      return `<strong>${user}</strong> deleted ${targetName}: ${getTargetIdentifier()}`;
+      return `Deleted ${targetName}: ${getTargetIdentifier()}`;
     case 'UPDATE':
       const changes = getChanges(details.old_data, details.new_data);
       if (changes.length > 0) {
-        return `<strong>${user}</strong> updated ${targetName} <Link href="${targetLink}" className="text-blue-500 hover:underline">${getTargetIdentifier()}</Link>: <ul>${changes.map(c => `<li class="ml-4 list-disc">${c}</li>`).join('')}</ul>`;
+        return `Updated ${targetName} <a href="${targetLink}" class="text-blue-500 hover:underline">${getTargetIdentifier()}</a>: <ul>${changes.map(c => `<li class='ml-4 list-disc'>${c}</li>`).join('')}</ul>`;
       }
-      return `<strong>${user}</strong> updated ${targetName} <Link href="${targetLink}" className="text-blue-500 hover:underline">${getTargetIdentifier()}</Link> (no displayable changes).`;
+      return `Updated ${targetName} <a href="${targetLink}" class="text-blue-500 hover:underline">${getTargetIdentifier()}</a> (no displayable changes).`;
     default:
-      return `An action (${action}) was performed on ${targetName} by <strong>${user}</strong>.`;
+      return `An action (${action}) was performed on ${targetName}.`;
   }
 }
 
@@ -109,6 +105,7 @@ export default async function LogsPage() {
             <TableHeader>
               <TableRow>
                 <TableHead>Activity</TableHead>
+                <TableHead>User</TableHead>
                 <TableHead className="text-right">When</TableHead>
               </TableRow>
             </TableHeader>
@@ -117,6 +114,11 @@ export default async function LogsPage() {
                 <TableRow key={log.id}>
                   <TableCell>
                     <div dangerouslySetInnerHTML={{ __html: formatLogMessage(log) }} />
+                  </TableCell>
+                  <TableCell>
+                    <Badge variant="outline" className="text-xs font-mono px-2 py-1 bg-muted/50 border border-muted-foreground/20">
+                      {log.user_email || 'System'}
+                    </Badge>
                   </TableCell>
                   <TableCell className="text-right text-sm text-muted-foreground">
                     {formatDistanceToNow(new Date(log.created_at), { addSuffix: true })}
