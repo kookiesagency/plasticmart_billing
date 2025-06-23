@@ -8,7 +8,6 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogFooter,
   DialogTrigger,
   DialogClose,
 } from '@/components/ui/dialog'
@@ -25,12 +24,17 @@ import { Button } from '@/components/ui/button'
 import { createClient } from '@/lib/supabase/client'
 import { toast } from 'sonner'
 import { useEffect, useState } from 'react'
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
+import { Calendar } from '@/components/ui/calendar'
+import { CalendarIcon } from 'lucide-react'
+import { cn } from '@/lib/utils'
+import { format } from 'date-fns'
 import { type Payment } from './page'
 
 const paymentSchema = z.object({
   amount: z.coerce.number().positive('Amount must be positive'),
-  payment_date: z.string().refine((val) => !isNaN(Date.parse(val)), {
-    message: 'Invalid date',
+  payment_date: z.date({
+    required_error: "A payment date is required.",
   }),
 })
 
@@ -40,6 +44,8 @@ interface PaymentFormProps {
   onPaymentAdded: () => void
   children?: React.ReactNode
   paymentToEdit?: Payment | null
+  open?: boolean
+  onOpenChange?: (open: boolean) => void
 }
 
 export function PaymentForm({
@@ -48,8 +54,9 @@ export function PaymentForm({
   onPaymentAdded,
   children,
   paymentToEdit,
+  open,
+  onOpenChange
 }: PaymentFormProps) {
-  const [open, setOpen] = useState(false)
   const supabase = createClient()
   const isEditMode = !!paymentToEdit
 
@@ -57,7 +64,7 @@ export function PaymentForm({
     resolver: zodResolver(paymentSchema),
     defaultValues: {
       amount: 0,
-      payment_date: new Date().toISOString().split('T')[0],
+      payment_date: new Date(),
     },
   })
 
@@ -65,12 +72,12 @@ export function PaymentForm({
     if (isEditMode) {
       form.reset({
         amount: paymentToEdit.amount,
-        payment_date: new Date(paymentToEdit.payment_date).toISOString().split('T')[0],
+        payment_date: new Date(paymentToEdit.payment_date),
       })
     } else {
       form.reset({
         amount: balanceDue > 0 ? Number(balanceDue.toFixed(2)) : 0,
-        payment_date: new Date().toISOString().split('T')[0],
+        payment_date: new Date(),
       })
     }
   }, [isEditMode, paymentToEdit, balanceDue, form, open])
@@ -78,7 +85,7 @@ export function PaymentForm({
   // This useEffect will manage the dialog state when used for editing
   useEffect(() => {
     if (isEditMode) {
-      setOpen(true);
+      onOpenChange?.(true);
     }
   }, [paymentToEdit]);
 
@@ -113,11 +120,11 @@ export function PaymentForm({
         onPaymentAdded()
       }
     }
-    setOpen(false)
+    onOpenChange?.(false)
   }
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog open={open} onOpenChange={onOpenChange}>
       {children && <DialogTrigger asChild>{children}</DialogTrigger>}
       <DialogContent>
         <DialogHeader>
@@ -142,23 +149,49 @@ export function PaymentForm({
               control={form.control}
               name="payment_date"
               render={({ field }) => (
-                <FormItem>
+                <FormItem className="flex flex-col">
                   <FormLabel>Payment Date</FormLabel>
-                  <FormControl>
-                    <Input type="date" {...field} />
-                  </FormControl>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <FormControl>
+                        <Button
+                          variant={"outline"}
+                          className={cn(
+                            "pl-3 text-left font-normal",
+                            !field.value && "text-muted-foreground"
+                          )}
+                        >
+                          {field.value ? (
+                            format(field.value, "PPP")
+                          ) : (
+                            <span>Pick a date</span>
+                          )}
+                          <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                        </Button>
+                      </FormControl>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0" align="start">
+                      <Calendar
+                        mode="single"
+                        selected={field.value}
+                        onSelect={field.onChange}
+                        initialFocus
+                      />
+                    </PopoverContent>
+                  </Popover>
                   <FormMessage />
                 </FormItem>
               )}
             />
             <div className="flex justify-end gap-2">
-              <Button
-                type="button"
-                variant="secondary"
-                onClick={() => setOpen(false)}
-              >
-                Cancel
-              </Button>
+              <DialogClose asChild>
+                <Button
+                  type="button"
+                  variant="secondary"
+                >
+                  Cancel
+                </Button>
+              </DialogClose>
               <Button type="submit" disabled={form.formState.isSubmitting}>
                 {form.formState.isSubmitting ? 'Saving...' : 'Save'}
               </Button>

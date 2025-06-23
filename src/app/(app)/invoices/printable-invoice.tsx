@@ -4,15 +4,24 @@ import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { toast } from 'sonner'
 import { InvoicePDF } from './invoice-pdf'
-import { type Invoice } from './columns'
 
-type FullInvoice = Invoice & {
-  party: { name: string; address?: string; phone?: string; };
-  invoice_items: { quantity: number; rate: number; item: { name:string; units: { name: string; abbreviation: string; } } }[];
-  sub_total: number;
-  bundle_quantity: number;
-  bundle_charge: number;
-};
+type PrintableInvoiceItem = {
+  quantity: number
+  rate: number
+  item_name: string
+  item_unit: string
+}
+
+type FullInvoice = {
+  id: number
+  invoice_date: string
+  party_name: string
+  invoice_items: PrintableInvoiceItem[]
+  sub_total: number
+  bundle_quantity: number
+  bundle_charge: number
+  total_amount: number
+}
 
 type PrintableInvoiceProps = {
   invoiceId: number
@@ -28,7 +37,7 @@ export function PrintableInvoice({ invoiceId, onReady }: PrintableInvoiceProps) 
     const fetchInvoice = async () => {
       const { data: invoiceData, error: invoiceError } = await supabase
         .from('invoices')
-        .select('*, party:parties(*), invoice_items(*, item:items(*, units(*)))')
+        .select('*, invoice_items(quantity, rate, item_name, item_unit)')
         .eq('id', invoiceId)
         .single()
 
@@ -37,11 +46,12 @@ export function PrintableInvoice({ invoiceId, onReady }: PrintableInvoiceProps) 
         .select('*')
 
       if (invoiceError || settingsError || !invoiceData || !settingsData) {
-        toast.error('Failed to fetch invoice data for printing.')
+        toast.error('Failed to fetch invoice data for printing: ' + (invoiceError?.message || settingsError?.message))
         return
       }
       
       const sub_total = invoiceData.invoice_items.reduce((acc: number, item: { quantity: number; rate: number; }) => acc + (item.quantity * item.rate), 0)
+      
       const fullInvoiceData = { ...invoiceData, sub_total }
       setInvoice(fullInvoiceData as FullInvoice)
 
@@ -53,7 +63,7 @@ export function PrintableInvoice({ invoiceId, onReady }: PrintableInvoiceProps) 
     }
 
     fetchInvoice()
-  }, [invoiceId])
+  }, [invoiceId, supabase])
 
   useEffect(() => {
     // If invoice data is loaded, we are ready to print.

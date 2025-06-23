@@ -3,6 +3,7 @@ import { Geist } from "next/font/google";
 import "./globals.css";
 import { Toaster } from '@/components/ui/sonner'
 import { cn } from '@/lib/utils'
+import { TooltipProvider } from '@/components/ui/tooltip'
 
 const geist = Geist({
   subsets: ["latin"],
@@ -31,7 +32,9 @@ export default function RootLayout({
         )}
       >
         {children}
-        <Toaster />
+        <TooltipProvider>
+          <Toaster richColors />
+        </TooltipProvider>
       </body>
     </html>
   );

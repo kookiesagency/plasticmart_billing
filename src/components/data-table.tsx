@@ -14,10 +14,11 @@ import {
   VisibilityState,
   RowSelectionState,
   FilterFn,
+  Table as ReactTable,
 } from '@tanstack/react-table'
 import { rankItem, type RankingInfo } from '@tanstack/match-sorter-utils'
 import { download, generateCsv, mkConfig } from 'export-to-csv'
-import { Trash2 } from 'lucide-react'
+import { Trash2, Undo } from 'lucide-react'
 import { toast } from 'sonner'
 
 import {
@@ -51,19 +52,29 @@ declare module '@tanstack/react-table' {
 }
 
 interface DataTableProps<TData, TValue> {
-  columns: ColumnDef<TData, TValue>[]
+  columns: ColumnDef<TData, TValue>[] | ((table: ReactTable<TData>) => ColumnDef<TData, TValue>[])
   data: TData[]
   searchPlaceholder?: string
+  filterColumn?: string
+  filterPlaceholder?: string
   onBulkDelete?: (selectedRows: TData[]) => void
+  onBulkRestore?: (selectedRows: TData[]) => void
+  onBulkPermanentDelete?: (selectedRows: TData[]) => void
   loading?: boolean
+  bulkActionLabel?: string
 }
 
 export function DataTable<TData, TValue>({
   columns,
   data,
   searchPlaceholder,
+  filterColumn,
+  filterPlaceholder,
   onBulkDelete,
+  onBulkRestore,
+  onBulkPermanentDelete,
   loading,
+  bulkActionLabel = 'Delete',
 }: DataTableProps<TData, TValue>) {
   const [sorting, setSorting] = useState<SortingState>([])
   const [globalFilter, setGlobalFilter] = useState('')
@@ -72,7 +83,7 @@ export function DataTable<TData, TValue>({
 
   const table = useReactTable({
     data,
-    columns,
+    columns: typeof columns === 'function' ? columns(null as any) : columns,
     getCoreRowModel: getCoreRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
     onSortingChange: setSorting,
@@ -97,7 +108,33 @@ export function DataTable<TData, TValue>({
     globalFilterFn: 'fuzzy',
   })
 
+  // This is a bit of a hack to get around the circular dependency
+  if (typeof columns === 'function') {
+    table.options.columns = columns(table)
+  }
+
   const selectedRows = table.getFilteredSelectedRowModel().rows
+
+  const handleBulkDeleteAction = () => {
+    if (onBulkDelete) {
+      onBulkDelete(selectedRows.map((row) => row.original))
+      table.resetRowSelection()
+    }
+  }
+
+  const handleBulkRestoreAction = () => {
+    if (onBulkRestore) {
+      onBulkRestore(selectedRows.map((row) => row.original))
+      table.resetRowSelection()
+    }
+  }
+
+  const handleBulkPermanentDeleteAction = () => {
+    if (onBulkPermanentDelete) {
+      onBulkPermanentDelete(selectedRows.map((row) => row.original))
+      table.resetRowSelection()
+    }
+  }
 
   const handleExport = () => {
     const visibleColumns = table.getVisibleFlatColumns().filter(
@@ -149,13 +186,34 @@ export function DataTable<TData, TValue>({
         </div>
         <div className="flex items-center gap-2">
           <Button onClick={handleExport}>Export to CSV</Button>
+          
+          {selectedRows.length > 0 && onBulkRestore && (
+            <Button
+              variant="outline"
+              onClick={handleBulkRestoreAction}
+            >
+              <Undo className="mr-2 h-4 w-4" />
+              Restore ({selectedRows.length})
+            </Button>
+          )}
+
           {selectedRows.length > 0 && onBulkDelete && (
             <Button
               variant="destructive"
-              onClick={() => onBulkDelete(selectedRows.map((row) => row.original))}
+              onClick={handleBulkDeleteAction}
             >
               <Trash2 className="mr-2 h-4 w-4" />
-              Delete ({selectedRows.length})
+              {bulkActionLabel} ({selectedRows.length})
+            </Button>
+          )}
+
+          {selectedRows.length > 0 && onBulkPermanentDelete && (
+            <Button
+              variant="destructive"
+              onClick={handleBulkPermanentDeleteAction}
+            >
+              <Trash2 className="mr-2 h-4 w-4" />
+              Delete Permanently ({selectedRows.length})
             </Button>
           )}
         </div>
@@ -184,7 +242,7 @@ export function DataTable<TData, TValue>({
             {loading ? (
               Array.from({ length: 10 }).map((_, i) => (
                 <TableRow key={i}>
-                  {columns.map((column, j) => (
+                  {table.options.columns.map((column, j) => (
                     <TableCell key={j}>
                       <Skeleton className="h-6" />
                     </TableCell>

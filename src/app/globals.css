@@ -125,22 +125,37 @@
   }
 }
 
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --radius: 0.5rem;
+  }
+ 
+  .dark {
+    --radius: 0.5rem;
+  }
+}
+
 @media print {
   @page {
-    size: A4;
-    margin: 0;
+    size: auto;
+    margin: 0mm;
   }
   body * {
     visibility: hidden;
   }
-  .printable, .printable * {
+  .printable-area, .printable-area * {
     visibility: visible;
   }
-  .printable {
+  .printable-area {
     position: absolute;
     left: 0;
     top: 0;
     width: 100%;
+    height: 100%;
   }
   .no-print {
     display: none !important;

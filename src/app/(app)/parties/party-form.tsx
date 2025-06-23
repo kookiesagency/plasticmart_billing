@@ -28,7 +28,6 @@ import { Textarea } from '@/components/ui/textarea'
 const partySchema = z.object({
   name: z.string().min(1, 'Name is required'),
   bundle_rate: z.coerce.number().min(0).optional(),
-  contact_details: z.string().optional(),
 })
 
 type PartyFormValues = z.infer<typeof partySchema>
@@ -36,17 +35,17 @@ type PartyFormValues = z.infer<typeof partySchema>
 interface PartyFormProps {
   isOpen: boolean
   onClose: () => void
+  onSubmit: (values: PartyFormValues, partyId?: string | null) => void
   partyId?: string | null
 }
 
-export function PartyForm({ isOpen, onClose, partyId }: PartyFormProps) {
+export function PartyForm({ isOpen, onClose, onSubmit, partyId }: PartyFormProps) {
   const supabase = createClient()
   const form = useForm<PartyFormValues>({
     resolver: zodResolver(partySchema),
     defaultValues: {
       name: '',
       bundle_rate: 0,
-      contact_details: '',
     },
   })
 
@@ -65,7 +64,6 @@ export function PartyForm({ isOpen, onClose, partyId }: PartyFormProps) {
           form.reset({
             name: data.name,
             bundle_rate: data.bundle_rate ?? 0,
-            contact_details: data.contact_details ?? '',
           })
         }
       }
@@ -74,30 +72,12 @@ export function PartyForm({ isOpen, onClose, partyId }: PartyFormProps) {
       form.reset({
         name: '',
         bundle_rate: 0,
-        contact_details: '',
       })
     }
   }, [partyId, isOpen, form, supabase])
 
-  const onSubmit = async (values: PartyFormValues) => {
-    let error
-    if (partyId) {
-      const { error: updateError } = await supabase
-        .from('parties')
-        .update(values)
-        .eq('id', partyId)
-      error = updateError
-    } else {
-      const { error: insertError } = await supabase.from('parties').insert(values)
-      error = insertError
-    }
-
-    if (error) {
-      toast.error(`Failed to save party: ${error.message}`)
-    } else {
-      toast.success(`Party ${partyId ? 'updated' : 'created'} successfully.`)
-      onClose()
-    }
+  const handleFormSubmit = (values: PartyFormValues) => {
+    onSubmit(values, partyId)
   }
 
   return (
@@ -107,7 +87,7 @@ export function PartyForm({ isOpen, onClose, partyId }: PartyFormProps) {
           <DialogTitle>{partyId ? 'Edit Party' : 'Create Party'}</DialogTitle>
         </DialogHeader>
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+          <form onSubmit={form.handleSubmit(handleFormSubmit)} className="space-y-4">
             <FormField
               control={form.control}
               name="name"
@@ -129,22 +109,6 @@ export function PartyForm({ isOpen, onClose, partyId }: PartyFormProps) {
                   <FormLabel>Specific Bundle Rate (Optional)</FormLabel>
                   <FormControl>
                     <Input type="number" placeholder="Enter bundle rate" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="contact_details"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Contact Details</FormLabel>
-                  <FormControl>
-                    <Textarea
-                      placeholder="e.g., Phone: 123-456-7890"
-                      {...field}
-                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>

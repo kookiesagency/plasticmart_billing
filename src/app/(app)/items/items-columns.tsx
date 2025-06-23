@@ -10,10 +10,10 @@ export type Item = {
   id: number
   name: string
   default_rate: number
+  created_at: string
   units: {
     id: number
     name: string
-    abbreviation: string
   } | null
 }
 
@@ -56,7 +56,7 @@ export const columns = (
     ),
   },
   {
-    accessorKey: 'units.abbreviation',
+    accessorKey: 'units.name',
     header: ({ column }) => (
         <div
             className="flex items-center cursor-pointer"
@@ -66,7 +66,7 @@ export const columns = (
             <ArrowUpDown className="ml-2 h-4 w-4" />
         </div>
     ),
-    cell: ({ row }) => row.original.units?.abbreviation ?? 'N/A',
+    cell: ({ row }) => row.original.units?.name ?? 'N/A',
   },
   {
     accessorKey: 'default_rate',
@@ -75,7 +75,7 @@ export const columns = (
             className="flex items-center cursor-pointer"
             onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
         >
-            Default Rate
+            Rate
             <ArrowUpDown className="ml-2 h-4 w-4" />
         </div>
     ),
@@ -88,6 +88,19 @@ export const columns = (
  
       return <div className="font-medium">{formatted}</div>
     },
+  },
+  {
+    accessorKey: 'created_at',
+    header: ({ column }) => (
+      <div
+        className="flex items-center cursor-pointer"
+        onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
+      >
+        Created At
+        <ArrowUpDown className="ml-2 h-4 w-4" />
+      </div>
+    ),
+    cell: ({ row }) => new Date(row.original.created_at).toLocaleDateString(),
   },
   {
     id: 'actions',

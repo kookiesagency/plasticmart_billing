@@ -7,12 +7,12 @@ import { z } from 'zod'
 import { toast } from 'sonner'
 import { CalendarIcon, Check, ChevronsUpDown, Trash2, PlusCircle } from 'lucide-react'
 import { format } from 'date-fns'
+import { useRouter } from 'next/navigation'
 
 import { createClient } from '@/lib/supabase/client'
 import { cn, formatCurrency } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import { Calendar } from '@/components/ui/calendar'
-import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card'
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
@@ -20,25 +20,17 @@ import { Input } from '@/components/ui/input'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { Separator } from '@/components/ui/separator'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 
 const invoiceItemSchema = z.object({
-  item_id: z.coerce.number().positive('Please select an item.'),
+  item_id: z.coerce.number().nullable(),
   quantity: z.coerce.number().min(1),
   rate: z.coerce.number(),
-})
-
-const invoiceSubmitSchema = z.object({
-  party_id: z.coerce.number().positive('Please select a party.'),
-  invoice_date: z.date(),
-  bundle_rate: z.coerce.number().min(0),
-  bundle_quantity: z.coerce.number().min(0),
-  total_bundle_charge: z.coerce.number().min(0),
-  items: z.array(invoiceItemSchema).min(1, 'Please add at least one item.'),
+  item_name: z.string(),
+  item_unit: z.string(),
 })
 
 const invoiceSchema = z.object({
-  party_id: z.coerce.number().positive('Please select a party.'),
+  party_id: z.coerce.number().nullable(),
   invoice_date: z.date(),
   bundle_rate: z.coerce.number().min(0),
   bundle_quantity: z.coerce.number().min(0),
@@ -48,11 +40,16 @@ const invoiceSchema = z.object({
   grandTotal: z.number().optional(),
 })
 
-type Party = { id: number; name: string; bundle_rate: number | null }
-type Item = { id: number; name: string; default_rate: number; units: { name: string; abbreviation: string; } | null; item_party_prices: { party_id: number; price: number }[] }
+type Party = {
+  id: number;
+  name: string;
+  bundle_rate: number | null;
+}
+type Item = { id: number; name: string; default_rate: number; units: { name: string; } | null; item_party_prices: { party_id: number; price: number }[] }
 type AppSettings = { key: string; value: string }
 
 export function InvoiceForm({ invoiceId }: { invoiceId?: string }) {
+  const router = useRouter()
   const supabase = createClient()
   const [partiesData, setPartiesData] = useState<Party[]>([])
   const [itemsData, setItemsData] = useState<Item[]>([])
@@ -60,6 +57,9 @@ export function InvoiceForm({ invoiceId }: { invoiceId?: string }) {
   const [isPartyPopoverOpen, setIsPartyPopoverOpen] = useState(false)
   const [isAddItemDialogOpen, setIsAddItemDialogOpen] = useState(false)
   const [itemSearch, setItemSearch] = useState('')
+  const [isPartyLocked, setIsPartyLocked] = useState(!!invoiceId)
+  const [snapshottedPartyName, setSnapshottedPartyName] = useState<string | null>(null)
+
 
   const form = useForm<z.infer<typeof invoiceSchema>>({
     resolver: zodResolver(invoiceSchema),
@@ -80,9 +80,6 @@ export function InvoiceForm({ invoiceId }: { invoiceId?: string }) {
   });
 
   const selectedPartyId = form.watch('party_id')
-  const invoiceItems = form.watch('items')
-  const bundleRate = form.watch('bundle_rate')
-  const bundleQuantity = form.watch('bundle_quantity')
 
   const getItemPrice = useCallback((itemId: number) => {
     const item = itemsData.find(i => i.id === itemId)
@@ -106,7 +103,7 @@ export function InvoiceForm({ invoiceId }: { invoiceId?: string }) {
           form.setValue('bundle_charge', calculatedBundleCharge);
         }
 
-        const grandTotal = subTotal + (value.bundle_charge || 0);
+        const grandTotal = Number(subTotal) + Number(value.bundle_charge || 0);
 
         if (form.getValues('subTotal') !== subTotal) {
           form.setValue('subTotal', subTotal, { shouldValidate: true });
@@ -122,8 +119,8 @@ export function InvoiceForm({ invoiceId }: { invoiceId?: string }) {
   useEffect(() => {
     const fetchInitialData = async () => {
       const [partiesRes, itemsRes, settingsRes] = await Promise.all([
-        supabase.from('parties').select('*'),
-        supabase.from('items').select('*, units(name, abbreviation), item_party_prices(party_id, price)'),
+        supabase.from('parties').select('*').is('deleted_at', null),
+        supabase.from('items').select('*, units(name), item_party_prices(party_id, price)').is('deleted_at', null),
         supabase.from('app_settings').select('*'),
       ])
       
@@ -131,8 +128,11 @@ export function InvoiceForm({ invoiceId }: { invoiceId?: string }) {
       if (itemsRes.data) setItemsData(itemsRes.data)
       if (settingsRes.data) {
         setSettings(settingsRes.data)
-        const defaultBundleRate = settingsRes.data.find(s => s.key === 'default_bundle_rate')?.value || '0'
-        form.setValue('bundle_rate', parseFloat(defaultBundleRate))
+        // Set default bundle rate only for new invoices
+        if (!invoiceId) {
+          const defaultBundleRate = settingsRes.data.find(s => s.key === 'default_bundle_rate')?.value || '0'
+          form.setValue('bundle_rate', parseFloat(defaultBundleRate))
+        }
       }
       
       if (invoiceId) {
@@ -143,9 +143,15 @@ export function InvoiceForm({ invoiceId }: { invoiceId?: string }) {
           .single()
         
         if (invoiceData) {
+          setSnapshottedPartyName(invoiceData.party_name)
+          setIsPartyLocked(true)
+
           form.reset({
-            ...invoiceData,
+            party_id: invoiceData.party_id,
             invoice_date: new Date(invoiceData.invoice_date),
+            bundle_rate: invoiceData.bundle_rate,
+            bundle_quantity: invoiceData.bundle_quantity,
+            bundle_charge: invoiceData.bundle_charge,
             items: invoiceData.invoice_items,
           })
         } else if (error) {
@@ -154,34 +160,48 @@ export function InvoiceForm({ invoiceId }: { invoiceId?: string }) {
       }
     }
     fetchInitialData()
-  }, [invoiceId])
+  }, [invoiceId, form, supabase])
 
   useEffect(() => {
+    if (isPartyLocked) return; // Don't run this logic if the party is locked
+
     const party = partiesData.find(p => p.id === selectedPartyId)
-    if (party && party.bundle_rate !== null) {
-      form.setValue('bundle_rate', party.bundle_rate)
-    } else {
-      const defaultBundleRate = settings.find(s => s.key === 'default_bundle_rate')?.value || '0'
-      form.setValue('bundle_rate', parseFloat(defaultBundleRate))
-    }
+    const defaultBundleRate = settings.find(s => s.key === 'default_bundle_rate')?.value || '0'
     
-    const calculatedBundleCharge = (form.getValues('bundle_rate') || 0) * (form.getValues('bundle_quantity') || 0);
+    const newBundleRate = (party?.bundle_rate && party.bundle_rate > 0)
+      ? party.bundle_rate
+      : parseFloat(defaultBundleRate)
+
+    form.setValue('bundle_rate', newBundleRate)
+    
+    const calculatedBundleCharge = newBundleRate * (form.getValues('bundle_quantity') || 0);
     form.setValue('bundle_charge', calculatedBundleCharge);
     
-    // Recalculate prices for existing items when party changes
+    // Recalculate prices for existing active items when party changes
     const currentItems = form.getValues('items')
     currentItems.forEach((item, index) => {
-      const newPrice = getItemPrice(item.item_id)
-      if (item.rate !== newPrice) {
-        update(index, { ...item, rate: newPrice })
+      // Only update prices for items that still exist in the master list
+      if (item.item_id && itemsData.some(i => i.id === item.item_id)) {
+        const newPrice = getItemPrice(item.item_id)
+        if (item.rate !== newPrice) {
+          update(index, { ...item, rate: newPrice })
+        }
       }
     })
 
-  }, [selectedPartyId, partiesData, settings, form, update, getItemPrice])
+  }, [selectedPartyId, partiesData, settings, form, update, getItemPrice, isPartyLocked])
 
   const quickAddItem = (itemId: number) => {
+    const item = itemsData.find(i => i.id === itemId)
+    if (!item) return
     const price = getItemPrice(itemId)
-    append({ item_id: itemId, quantity: 1, rate: price })
+    append({ 
+      item_id: itemId, 
+      quantity: 1, 
+      rate: price,
+      item_name: item.name,
+      item_unit: item.units?.name || 'N/A'
+    })
     setItemSearch('')
   }
 
@@ -189,30 +209,48 @@ export function InvoiceForm({ invoiceId }: { invoiceId?: string }) {
   const grandTotal = form.watch('grandTotal') || 0
 
   const onSubmit = async (values: z.infer<typeof invoiceSchema>) => {
+    if (!isPartyLocked && !values.party_id) {
+      form.setError('party_id', { message: 'Party is required.' })
+      return
+    }
+
     const { items, subTotal, grandTotal, ...invoiceData } = values
+    
+    const party = partiesData.find(p => p.id === values.party_id);
+    if (!party && !isPartyLocked) {
+        return toast.error("Could not find active party details to save.");
+    }
+    
+    const partyNameToSave = isPartyLocked ? snapshottedPartyName : party?.name;
+
+    if (!partyNameToSave) {
+        return toast.error("Could not determine party name to save.");
+    }
+
+    const snapshotData = {
+      party_name: partyNameToSave,
+    }
     
     let error = null
     
     if (invoiceId) {
-      // Update existing invoice
       const { error: updateError } = await supabase
         .from('invoices')
-        .update({ ...invoiceData, total_amount: grandTotal })
+        .update({ ...invoiceData, ...snapshotData, total_amount: grandTotal })
         .eq('id', invoiceId)
       
       if (!updateError) {
         await supabase.from('invoice_items').delete().eq('invoice_id', invoiceId)
-        const itemsToInsert = items.map(item => ({ ...item, invoice_id: invoiceId }))
+        const itemsToInsert = items.map(item => ({ ...item, invoice_id: parseInt(invoiceId, 10) }))
         const { error: itemsError } = await supabase.from('invoice_items').insert(itemsToInsert)
         error = itemsError
       } else {
         error = updateError
       }
     } else {
-      // Create new invoice
       const { data: newInvoice, error: invoiceError } = await supabase
         .from('invoices')
-        .insert({ ...invoiceData, total_amount: grandTotal })
+        .insert({ ...invoiceData, ...snapshotData, total_amount: grandTotal })
         .select('id')
         .single()
   
@@ -226,10 +264,10 @@ export function InvoiceForm({ invoiceId }: { invoiceId?: string }) {
     }
 
     if (error) {
-      toast.error(`Failed to ${invoiceId ? 'update' : 'create'} invoice: ` + error.message)
+      toast.error('Failed to save invoice: ' + error.message)
     } else {
       toast.success(`Invoice ${invoiceId ? 'updated' : 'created'} successfully!`)
-      if (!invoiceId) form.reset()
+      router.push('/invoices')
     }
   }
 
@@ -250,40 +288,42 @@ export function InvoiceForm({ invoiceId }: { invoiceId?: string }) {
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Party / Client</FormLabel>
-                      <Popover open={isPartyPopoverOpen} onOpenChange={setIsPartyPopoverOpen}>
-                        <PopoverTrigger asChild>
-                          <Button
-                            variant="outline"
-                            role="combobox"
-                            aria-expanded={isPartyPopoverOpen}
-                            className="w-full justify-between"
-                          >
-                            {field.value
-                              ? partiesData.find((p) => p.id === field.value)?.name
-                              : "Select party"}
-                            <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                          </Button>
-                        </PopoverTrigger>
-                        <PopoverContent className="p-0" style={{ width: 'var(--radix-popover-trigger-width)' }}>
-                          <Command>
-                            <CommandInput placeholder="Search party..." />
-                            <CommandList>
-                              <CommandEmpty>No party found.</CommandEmpty>
-                              <CommandGroup>
-                                {partiesData.map((p) => (
-                                  <CommandItem value={p.name} key={p.id} onSelect={() => {
-                                    form.setValue('party_id', p.id)
-                                    setIsPartyPopoverOpen(false)
-                                  }}>
-                                    <Check className={cn('mr-2 h-4 w-4', p.id === field.value ? 'opacity-100' : 'opacity-0')} />
-                                    {p.name}
-                                  </CommandItem>
-                                ))}
-                              </CommandGroup>
-                            </CommandList>
-                          </Command>
-                        </PopoverContent>
-                      </Popover>
+                      {isPartyLocked && snapshottedPartyName ? (
+                        <div className="flex items-center justify-between p-2 border rounded-md h-9">
+                          <span className="font-semibold text-sm">{snapshottedPartyName}</span>
+                          <Button variant="ghost" size="sm" onClick={() => setIsPartyLocked(false)}>Change</Button>
+                        </div>
+                      ) : (
+                        <Popover open={isPartyPopoverOpen} onOpenChange={setIsPartyPopoverOpen}>
+                          <PopoverTrigger asChild>
+                              <Button variant="outline" role="combobox" aria-expanded={isPartyPopoverOpen} className="w-full justify-between">
+                                {field.value
+                                  ? (partiesData.find((p) => p.id === field.value)?.name || snapshottedPartyName)
+                                  : "Select party"}
+                                <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                              </Button>
+                          </PopoverTrigger>
+                          <PopoverContent className="p-0" style={{ width: 'var(--radix-popover-trigger-width)' }}>
+                            <Command>
+                              <CommandInput placeholder="Search party..." />
+                              <CommandList>
+                                <CommandEmpty>No party found.</CommandEmpty>
+                                <CommandGroup>
+                                  {partiesData.map((p) => (
+                                    <CommandItem value={p.name} key={p.id} onSelect={() => {
+                                      form.setValue('party_id', p.id)
+                                      setIsPartyPopoverOpen(false)
+                                    }}>
+                                      <Check className={cn('mr-2 h-4 w-4', p.id === field.value ? 'opacity-100' : 'opacity-0')} />
+                                      {p.name}
+                                    </CommandItem>
+                                  ))}
+                                </CommandGroup>
+                              </CommandList>
+                            </Command>
+                          </PopoverContent>
+                        </Popover>
+                      )}
                       <FormMessage />
                     </FormItem>
                   )}
@@ -337,36 +377,36 @@ export function InvoiceForm({ invoiceId }: { invoiceId?: string }) {
                   <TableBody>
                     {fields.length > 0 ? (
                       fields.map((field, index) => {
-                        const item = itemsData.find(i => i.id === field.item_id)
                         return (
                           <TableRow key={field.id}>
                             <TableCell>{index + 1}</TableCell>
-                            <TableCell className="max-w-[200px] truncate">
-                              <Tooltip>
-                                <TooltipTrigger asChild>
-                                  <span>{item?.name || 'Unknown Item'}</span>
-                                </TooltipTrigger>
-                                <TooltipContent>
-                                  <p>{item?.name || 'Unknown Item'}</p>
-                                </TooltipContent>
-                              </Tooltip>
-                            </TableCell>
-                            <TableCell className="text-right">
-                               <FormField
+                            <TableCell className="font-medium">
+                              <FormField
                                 control={form.control}
-                                name={`items.${index}.quantity`}
-                                render={({ field }) => (
-                                  <Input type="number" {...field} className="text-right" onChange={e => field.onChange(parseInt(e.target.value, 10) || 0)} />
+                                name={`items.${index}.item_name`}
+                                render={({ field: itemNameField }) => (
+                                  <Input {...itemNameField} className="h-9 font-medium"/>
                                 )}
                               />
                             </TableCell>
-                            <TableCell className="text-right">{item?.units?.abbreviation || ''}</TableCell>
-                             <TableCell className="text-right">
-                               <FormField
+                            <TableCell className="text-right">
+                              <FormField
+                                control={form.control}
+                                name={`items.${index}.quantity`}
+                                render={({ field: quantityField }) => (
+                                  <Input type="number" {...quantityField} className="text-right" onChange={e => quantityField.onChange(parseInt(e.target.value, 10) || 0)} />
+                                )}
+                              />
+                            </TableCell>
+                            <TableCell className="text-right">
+                              {field.item_unit}
+                            </TableCell>
+                            <TableCell className="text-right">
+                              <FormField
                                 control={form.control}
                                 name={`items.${index}.rate`}
-                                render={({ field }) => (
-                                  <Input type="number" step="0.01" {...field} className="text-right" onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />
+                                render={({ field: rateField }) => (
+                                  <Input type="number" step="0.01" {...rateField} className="text-right" onChange={e => rateField.onChange(parseFloat(e.target.value) || 0)} />
                                 )}
                               />
                             </TableCell>
@@ -401,8 +441,8 @@ export function InvoiceForm({ invoiceId }: { invoiceId?: string }) {
             <div className="sticky top-20 space-y-8">
               {/* Summary Section */}
               <div className="space-y-4">
-                 <h3 className="text-lg font-medium">Summary</h3>
-                 <div className="space-y-2 rounded-md border p-4">
+                <h3 className="text-lg font-medium">Summary</h3>
+                <div className="space-y-2 rounded-md border p-4">
                   <div className="flex justify-between">
                     <span>Sub-Total</span>
                     <span>{formatCurrency(subTotal)}</span>
@@ -411,7 +451,7 @@ export function InvoiceForm({ invoiceId }: { invoiceId?: string }) {
                   <div className="space-y-2">
                     <div className="flex justify-between items-center">
                       <FormLabel>Bundle Qty</FormLabel>
-                       <FormField
+                      <FormField
                         control={form.control}
                         name="bundle_quantity"
                         render={({ field }) => (
@@ -430,21 +470,21 @@ export function InvoiceForm({ invoiceId }: { invoiceId?: string }) {
                         name="bundle_rate"
                         render={({ field }) => (
                           <FormItem>
-                             <FormControl>
+                            <FormControl>
                               <Input {...field} type="number" className="w-24 text-right" placeholder="Rate" />
                             </FormControl>
                           </FormItem>
                         )}
                       />
                     </div>
-                     <div className="flex justify-between items-center">
+                    <div className="flex items-center justify-between">
                       <FormLabel>Total Bundle Charge</FormLabel>
                       <FormField
                         control={form.control}
                         name="bundle_charge"
                         render={({ field }) => (
                           <FormItem>
-                             <FormControl>
+                            <FormControl>
                               <Input {...field} type="number" className="w-24 text-right font-semibold" placeholder="Total" />
                             </FormControl>
                           </FormItem>
@@ -457,7 +497,7 @@ export function InvoiceForm({ invoiceId }: { invoiceId?: string }) {
                     <span>Grand Total</span>
                     <span>{formatCurrency(grandTotal)}</span>
                   </div>
-                 </div>
+                </div>
               </div>
               <Button type="submit" className="w-full">Save Invoice</Button>
             </div>
@@ -473,7 +513,6 @@ export function InvoiceForm({ invoiceId }: { invoiceId?: string }) {
         itemSearch={itemSearch}
         setItemSearch={setItemSearch}
         fields={fields}
-        selectedPartyId={selectedPartyId}
       />
     </Form>
   )
@@ -487,41 +526,70 @@ type AddItemDialogProps = {
   getItemPrice: (itemId: number) => number;
   itemSearch: string;
   setItemSearch: (value: string) => void;
-  fields: { item_id: number }[];
-  selectedPartyId?: number;
+  fields: { item_id: number | null }[];
 }
 
-const AddItemDialog = ({ isOpen, onOpenChange, itemsData, quickAddItem, getItemPrice, itemSearch, setItemSearch, fields, selectedPartyId }: AddItemDialogProps) => (
-  <Dialog open={isOpen} onOpenChange={onOpenChange}>
-    <DialogContent className="max-w-4xl">
-      <DialogHeader>
+const AddItemDialog = ({ isOpen, onOpenChange, itemsData, quickAddItem, getItemPrice, itemSearch, setItemSearch, fields }: AddItemDialogProps) => {
+  const addedItemIds = fields.map(f => f.item_id)
+  const availableItems = itemsData.filter(i => !addedItemIds.includes(i.id))
+  
+  const filteredItems = availableItems.filter(item =>
+    item.name.toLowerCase().includes(itemSearch.toLowerCase())
+  )
+  
+  const handleKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
+    if (event.key === 'Enter' && filteredItems.length > 0) {
+      event.preventDefault();
+      quickAddItem(filteredItems[0].id);
+    }
+  };
+
+  return (
+    <Dialog open={isOpen} onOpenChange={onOpenChange}>
+      <DialogContent className="max-w-3xl">
+        <DialogHeader>
         <DialogTitle>Add Items to Invoice</DialogTitle>
-      </DialogHeader>
-      <Command>
-        <CommandInput 
-          placeholder="Search for an item to add..."
-          value={itemSearch}
-          onValueChange={setItemSearch}
-        />
-        <CommandList>
-          <CommandEmpty>No items found.</CommandEmpty>
-          <CommandGroup>
-            {itemsData.filter(item => !fields.some(f => f.item_id === item.id)).map(item => (
-              <CommandItem
-                key={item.id}
-                onSelect={() => quickAddItem(item.id)}
-                className="flex justify-between"
-              >
-                <span>{item.name} ({item.units?.name})</span>
-                <span>{formatCurrency(getItemPrice(item.id))}</span>
-              </CommandItem>
-            ))}
-          </CommandGroup>
-        </CommandList>
-      </Command>
-      <DialogFooter>
-        <Button variant="outline" onClick={() => onOpenChange(false)}>Done</Button>
-      </DialogFooter>
-    </DialogContent>
-  </Dialog>
-) 
+        </DialogHeader>
+        <div className="flex flex-col gap-4 py-4">
+          <Input 
+            placeholder="Search items and press Enter to add..." 
+            value={itemSearch}
+            onChange={e => setItemSearch(e.target.value)}
+            onKeyDown={handleKeyDown}
+          />
+          <div className="max-h-[400px] overflow-y-auto">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Item</TableHead>
+                  <TableHead className="text-right">Price</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {filteredItems.length > 0 ? (
+                  filteredItems.map(item => (
+                    <TableRow 
+                      key={item.id} 
+                      onClick={() => quickAddItem(item.id)}
+                      className="cursor-pointer hover:bg-muted/50"
+                    >
+                      <TableCell>{item.name}</TableCell>
+                      <TableCell className="text-right">{formatCurrency(getItemPrice(item.id))}</TableCell>
+                    </TableRow>
+                  ))
+                ) : (
+                  <TableRow>
+                    <TableCell colSpan={2} className="text-center">No items found.</TableCell>
+                  </TableRow>
+                )}
+              </TableBody>
+            </Table>
+          </div>
+        </div>
+        <DialogFooter>
+          <Button variant="outline" onClick={() => onOpenChange(false)}>Close</Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  )
+}

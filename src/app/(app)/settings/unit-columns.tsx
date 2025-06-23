@@ -9,7 +9,6 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip
 export type Unit = {
   id: number
   name: string
-  abbreviation: string
   created_at: string
 }
 
@@ -52,16 +51,17 @@ export const columns = (
     ),
   },
   {
-    accessorKey: "abbreviation",
+    accessorKey: "created_at",
     header: ({ column }) => (
       <div
         className="flex items-center cursor-pointer"
         onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
       >
-        Abbreviation
+        Created At
         <ArrowUpDown className="ml-2 h-4 w-4" />
       </div>
     ),
+    cell: ({ row }) => new Date(row.original.created_at).toLocaleDateString(),
   },
   {
     id: "actions",

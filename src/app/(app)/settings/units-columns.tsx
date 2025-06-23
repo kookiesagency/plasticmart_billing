@@ -8,7 +8,6 @@ import { Checkbox } from '@/components/ui/checkbox'
 export type Unit = {
   id: number
   name: string
-  abbreviation: string
 }
 
 export const columns = (
@@ -50,10 +49,6 @@ export const columns = (
         </Button>
       )
     },
-  },
-  {
-    accessorKey: 'abbreviation',
-    header: 'Abbreviation',
   },
   {
     id: 'actions',

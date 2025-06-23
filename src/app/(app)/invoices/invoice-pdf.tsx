@@ -1,20 +1,26 @@
-import { type Invoice } from './columns';
-import { formatCurrency, formatDate } from '@/lib/utils';
+import { formatCurrency, formatDate } from '@/lib/utils'
 
 type InvoicePDFProps = {
-  invoice: Invoice & {
-    party: { name: string; address?: string; phone?: string; };
-    invoice_items: { quantity: number; rate: number; item: { name: string; units: { name: string; abbreviation: string; } } }[];
-    sub_total: number;
-    bundle_quantity: number;
-    bundle_charge: number;
-  };
-  settings: { company_name?: string; company_address?: string; company_phone?: string; };
-};
+  invoice: {
+    invoice_date: string
+    party_name: string
+    invoice_items: {
+      quantity: number
+      rate: number
+      item_name: string
+      item_unit: string
+    }[]
+    sub_total: number
+    bundle_quantity: number
+    bundle_charge: number
+    total_amount: number
+  }
+  settings: { company_name?: string; company_address?: string; company_phone?: string }
+}
 
 export const InvoicePDF = ({ invoice, settings }: InvoicePDFProps) => {
   return (
-    <div className="bg-white text-black p-8 font-sans text-sm printable">
+    <div className="bg-white text-black p-8 font-sans text-sm">
       <header className="text-center mb-8">
         <h2 className="text-xl font-bold mt-4 underline underline-offset-4">CASH MEMO</h2>
       </header>
@@ -24,7 +30,7 @@ export const InvoicePDF = ({ invoice, settings }: InvoicePDFProps) => {
         <tbody>
           <tr>
             <td className="w-1/2">
-              <span className="font-bold">Bill To:</span> {invoice.party.name}
+              <span className="font-bold">Bill To:</span> <span className="font-bold">{invoice.party_name}</span>
             </td>
             <td className="w-1/2 text-right">
               <span className="font-bold">Date:</span> {formatDate(invoice.invoice_date)}
@@ -50,9 +56,9 @@ export const InvoicePDF = ({ invoice, settings }: InvoicePDFProps) => {
             {invoice.invoice_items.map((item, index) => (
               <tr key={index} className="border-b">
                 <td className="p-2 text-center">{index + 1}</td>
-                <td className="p-2">{item.item.name}</td>
+                <td className="p-2">{item.item_name}</td>
                 <td className="p-2 text-left">{item.quantity}</td>
-                <td className="p-2 text-left">{item.item.units?.abbreviation || 'N/A'}</td>
+                <td className="p-2 text-left">{item.item_unit || 'N/A'}</td>
                 <td className="p-2 text-left">{formatCurrency(item.rate)}</td>
                 <td className="p-2 text-left">{formatCurrency(item.quantity * item.rate)}</td>
               </tr>
@@ -81,11 +87,11 @@ export const InvoicePDF = ({ invoice, settings }: InvoicePDFProps) => {
           </tr>
         </tbody>
       </table>
-      
+
       <footer className="mt-12 pt-4 border-t text-center text-xs text-gray-500">
         <p>This is a computer-generated cash memo.</p>
         <p>Thank you for your business!</p>
       </footer>
     </div>
-  );
-}; 
+  )
+} 

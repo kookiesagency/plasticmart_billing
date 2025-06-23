@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useDebouncedCallback } from 'use-debounce'
 import { toast } from 'sonner'
+import { Trash } from 'lucide-react'
 
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
@@ -15,7 +16,7 @@ import { Badge } from '@/components/ui/badge'
 export type ItemToImport = {
   name: string
   default_rate: number
-  unit_abbreviation: string
+  unit_name: string
   unit_id?: number | string
   is_new_unit: boolean
   is_duplicate: boolean
@@ -23,7 +24,7 @@ export type ItemToImport = {
   error_message?: string
 }
 
-type Unit = { id: number; name: string; abbreviation: string }
+type Unit = { id: number; name: string; }
 
 interface ItemPreviewDialogProps {
   isOpen: boolean
@@ -76,6 +77,12 @@ export function ItemPreviewDialog({ isOpen, onOpenChange, onSuccess, units, init
     setParsedData(updatedData)
   }
 
+  const handleRemoveRow = (index: number) => {
+    const updatedData = [...parsedData];
+    updatedData.splice(index, 1);
+    setParsedData(updatedData);
+  };
+
   const handleImportConfirm = async () => {
     if (parsedData.some(item => !item.unit_id)) {
       return toast.error('Please map all items to a unit.')
@@ -100,19 +107,19 @@ export function ItemPreviewDialog({ isOpen, onOpenChange, onSuccess, units, init
       return toast.info('No valid items to import.')
     }
 
-    const newUnitAbbrs = Array.from(new Set(itemsToProcess.filter(item => item.is_new_unit).map(item => item.unit_abbreviation)))
+    const newUnitNames = Array.from(new Set(itemsToProcess.filter(item => item.is_new_unit).map(item => item.unit_name)))
     let newUnits: Unit[] = []
-    if (newUnitAbbrs.length > 0) {
-        const { data, error } = await supabase.from('units').insert(newUnitAbbrs.map(abbr => ({ name: abbr, abbreviation: abbr }))).select()
+    if (newUnitNames.length > 0) {
+        const { data, error } = await supabase.from('units').insert(newUnitNames.map(name => ({ name: name }))).select()
         if (error) return toast.error('Failed to create new units: ' + error.message)
         newUnits = data as Unit[]
     }
 
-    const unitMap = new Map(units.concat(newUnits).map(u => [u.abbreviation.toLowerCase(), u.id]))
+    const unitMap = new Map(units.concat(newUnits).map(u => [u.name.toLowerCase(), u.id]))
     const itemsToInsert = itemsToProcess.map(item => ({
         name: item.name,
         default_rate: item.default_rate,
-        unit_id: typeof item.unit_id === 'number' ? item.unit_id : unitMap.get(item.unit_abbreviation.toLowerCase()),
+        unit_id: typeof item.unit_id === 'number' ? item.unit_id : unitMap.get(item.unit_name.toLowerCase()),
     }))
 
     if (itemsToInsert.some(item => !item.unit_id)) {
@@ -149,9 +156,10 @@ export function ItemPreviewDialog({ isOpen, onOpenChange, onSuccess, units, init
                 <TableRow>
                   <TableHead className="min-w-[250px]">Name</TableHead>
                   <TableHead className="w-[15%]">Default Rate</TableHead>
-                  <TableHead className="w-[15%]">Unit Abbr. from CSV</TableHead>
+                  <TableHead className="w-[15%]">Unit Name from CSV</TableHead>
                   <TableHead className="w-[20%]">Map to Unit</TableHead>
                   <TableHead className="w-[15%]">Status</TableHead>
+                  <TableHead className="w-[5%] text-right">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -163,13 +171,13 @@ export function ItemPreviewDialog({ isOpen, onOpenChange, onSuccess, units, init
                     <TableCell>
                       <Input value={item.default_rate ? String(item.default_rate) : ''} onChange={(e) => handleRowChange(index, 'default_rate', e.target.value)} className={item.is_invalid ? 'border-red-500' : 'border-transparent focus:border-primary bg-transparent'} placeholder="Enter rate" />
                     </TableCell>
-                    <TableCell>{item.unit_abbreviation}</TableCell>
+                    <TableCell>{item.unit_name}</TableCell>
                     <TableCell>
                       <Select onValueChange={(value) => handleUnitChange(index, value.startsWith('new::') ? value : parseInt(value, 10))} defaultValue={String(item.unit_id)} disabled={item.is_duplicate || item.is_invalid}>
                         <SelectTrigger><SelectValue placeholder="Select Unit" /></SelectTrigger>
                         <SelectContent>
-                          {item.is_new_unit && <SelectItem value={String(item.unit_id)}>Create new unit: "{item.unit_abbreviation}"</SelectItem>}
-                          {units.map(unit => <SelectItem key={unit.id} value={String(unit.id)}>{unit.name} ({unit.abbreviation})</SelectItem>)}
+                          {item.is_new_unit && <SelectItem value={String(item.unit_id)}>Create new unit: "{item.unit_name}"</SelectItem>}
+                          {units.map(unit => <SelectItem key={unit.id} value={String(unit.id)}>{unit.name}</SelectItem>)}
                         </SelectContent>
                       </Select>
                     </TableCell>
@@ -181,13 +189,18 @@ export function ItemPreviewDialog({ isOpen, onOpenChange, onSuccess, units, init
                         {!item.is_duplicate && !item.is_invalid && !item.is_new_unit && <Badge variant="success" className="text-xs">Ready</Badge>}
                       </div>
                     </TableCell>
+                    <TableCell className="text-right">
+                        <Button variant="ghost" size="icon" onClick={() => handleRemoveRow(index)}>
+                            <Trash className="h-4 w-4 text-red-500" />
+                        </Button>
+                    </TableCell>
                   </TableRow>
                 ))}
               </TableBody>
             </Table>
           </div>
           <DialogFooter className="mt-4 flex-shrink-0 p-0 pt-6">
-            <Button variant="outline" onClick={() => onOpenChange(false)}>Back</Button>
+            <Button variant="outline" onClick={() => onOpenChange(false)}>Close</Button>
             <Button onClick={handleImportConfirm}>Confirm and Import</Button>
           </DialogFooter>
         </div>

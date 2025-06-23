@@ -11,7 +11,7 @@ import { Input } from '@/components/ui/input'
 import { FileUp } from 'lucide-react'
 import { ItemToImport } from './item-preview-dialog.tsx'
 
-type Unit = { id: number; name: string; abbreviation: string }
+type Unit = { id: number; name: string; }
 
 interface ItemImportDialogProps {
   isOpen: boolean
@@ -50,7 +50,7 @@ export function ItemImportDialog({ isOpen, onOpenChange, onPreview, units }: Ite
       header: true,
       skipEmptyLines: true,
       complete: async (results) => {
-        const requiredFields = ['name', 'default_rate', 'unit_abbreviation']
+        const requiredFields = ['name', 'default_rate', 'unit_name']
         const headers = results.meta.fields || []
         if (!requiredFields.every(field => headers.includes(field))) {
           return toast.error(`CSV must contain the following headers: ${requiredFields.join(', ')}`)
@@ -66,21 +66,31 @@ export function ItemImportDialog({ isOpen, onOpenChange, onPreview, units }: Ite
           return toast.error('Could not check for existing items: ' + dbError.message)
         }
         
-        const existingNames = new Set(existingItems.map(item => item.name))
+        const namesInDb = new Set(existingItems.map(item => item.name))
+        const namesInCsv = new Set<string>()
 
         const data = results.data.map(row => {
-          const matchingUnit = units.find(u => u.abbreviation.toLowerCase() === row.unit_abbreviation?.toLowerCase())
+          const matchingUnit = units.find(u => u.name.toLowerCase() === row.unit_name?.toLowerCase())
           const itemName = row.name?.trim()
+          
+          let isDuplicate = false;
+          if (itemName && (namesInDb.has(itemName) || namesInCsv.has(itemName))) {
+            isDuplicate = true;
+          }
+          if (itemName) {
+            namesInCsv.add(itemName);
+          }
+
           const rate = parseFloat(row.default_rate)
           const isInvalid = isNaN(rate)
 
           return {
             name: itemName,
             default_rate: isInvalid ? 0 : rate,
-            unit_abbreviation: row.unit_abbreviation,
-            unit_id: matchingUnit ? matchingUnit.id : `new::${row.unit_abbreviation}`,
+            unit_name: row.unit_name,
+            unit_id: matchingUnit ? matchingUnit.id : `new::${row.unit_name}`,
             is_new_unit: !matchingUnit,
-            is_duplicate: existingNames.has(itemName),
+            is_duplicate: isDuplicate,
             is_invalid: isInvalid,
             error_message: isInvalid ? 'Invalid rate value. Rate must be a number.' : undefined,
           }
@@ -104,7 +114,7 @@ export function ItemImportDialog({ isOpen, onOpenChange, onPreview, units }: Ite
           <DialogTitle>Import Items from CSV</DialogTitle>
         </DialogHeader>
         <div>
-          <p className="mb-2">Select a CSV file to import. The file must contain 'name', 'default_rate', and 'unit_abbreviation' columns.</p>
+          <p className="mb-2">Select a CSV file to import. The file must contain 'name', 'default_rate', and 'unit_name' columns.</p>
           <a href="/sample-items.csv" download className="text-sm text-blue-500 hover:underline mb-4 block">
             Download sample CSV template
           </a>
