@@ -202,7 +202,7 @@ export const columns = (
 
       const handleShareOnWhatsApp = () => {
         const publicUrl = `${window.location.origin}/invoices/view/${invoice.public_id}`;
-        const message = `Hello ${invoice.party_name},\n\nHere is your invoice from ${formatDate(invoice.invoice_date)}.\n\nYou can view it here: ${publicUrl}\n\nThank you.`;
+        const message = `*Hello ${invoice.party_name}*,\n\nHere is your invoice from *${formatDate(invoice.invoice_date)}*.\n\nYou can view it here: ${publicUrl}\n\nThank you for your business!`;
         const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(message)}`;
         window.open(whatsappUrl, '_blank');
       };

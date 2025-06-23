@@ -54,7 +54,7 @@ export function InvoiceActions({
 
   const handleShareOnWhatsApp = () => {
     const publicUrl = `${window.location.origin}${pathname}`;
-    const message = `Hello ${party_name},\n\nHere is your cash memo from ${formatDate(invoice_date)}.\n\nYou can view it here: ${publicUrl}\n\nThank you.`;
+    const message = `*Hello ${party_name}*,\n\nHere is your invoice from *${formatDate(invoice_date)}*.\n\nYou can view it here: ${publicUrl}\n\nThank you for your business!`;
     const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(message)}`;
     window.open(whatsappUrl, '_blank');
   };
