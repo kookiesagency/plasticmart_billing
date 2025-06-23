@@ -15,6 +15,7 @@ import { DateRange } from 'react-day-picker'
 import { subDays, startOfWeek, startOfMonth, startOfYear, endOfToday } from 'date-fns'
 import { Button } from '@/components/ui/button'
 import { SetHeader } from '@/components/layout/header-context'
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 
 type PartyDetails = {
   name: string
@@ -29,6 +30,7 @@ export default function PartyReportPage() {
   const [loading, setLoading] = useState(true)
   const [invoicesToDelete, setInvoicesToDelete] = useState<Invoice[] | null>(null)
   const [dateRange, setDateRange] = useState<DateRange | undefined>(undefined)
+  const [datePreset, setDatePresetState] = useState<'week' | 'month' | 'year'>('year')
 
   const fetchPartyData = async (range?: DateRange) => {
     if (!params.id) return
@@ -125,9 +127,9 @@ export default function PartyReportPage() {
   };
 
   const setDatePreset = (preset: 'week' | 'month' | 'year') => {
+    setDatePresetState(preset)
     const today = endOfToday();
     let fromDate: Date;
-
     if (preset === 'week') {
       fromDate = startOfWeek(today);
     } else if (preset === 'month') {
@@ -149,9 +151,13 @@ export default function PartyReportPage() {
         title={`Report for ${party.name}`}
         actions={
           <div className="flex items-center gap-2 flex-wrap">
-            <Button variant="outline" onClick={() => setDatePreset('week')}>This Week</Button>
-            <Button variant="outline" onClick={() => setDatePreset('month')}>This Month</Button>
-            <Button variant="outline" onClick={() => setDatePreset('year')}>This Year</Button>
+            <Tabs value={datePreset} onValueChange={v => setDatePreset(v as 'week' | 'month' | 'year')}>
+              <TabsList>
+                <TabsTrigger value="week">This Week</TabsTrigger>
+                <TabsTrigger value="month">This Month</TabsTrigger>
+                <TabsTrigger value="year">This Year</TabsTrigger>
+              </TabsList>
+            </Tabs>
             <DateRangePicker date={dateRange} onDateChange={setDateRange} />
           </div>
         }
