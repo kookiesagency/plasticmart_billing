@@ -33,8 +33,8 @@ export default function LoginPage() {
     <div className="flex min-h-screen items-center justify-center bg-muted">
       <Card className="w-full max-w-md shadow-lg">
         <CardHeader className="flex flex-col items-center gap-2 pb-2">
-          <Image src="/logo.png" alt="PlasticMart Logo" width={56} height={56} className="rounded-md mb-2" />
-          <span className="text-2xl font-bold tracking-tight text-primary">PlasticMart</span>
+          <Image src="/logo.png" alt="PlasticMart Logo" width={48} height={48} className="rounded-md mb-2" />
+          <span className="font-butler text-[32px] leading-none">PlasticMart</span>
           <CardTitle className="text-lg font-semibold text-muted-foreground mt-2">Sign in to your account</CardTitle>
         </CardHeader>
         <CardContent>

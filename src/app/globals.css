@@ -161,3 +161,17 @@
     display: none !important;
   }
 }
+
+@font-face {
+  font-family: 'Butler';
+  src: url('/fonts/Butler-Regular.otf') format('opentype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+.font-butler {
+  font-family: 'Butler', serif !important;
+  font-weight: normal;
+  letter-spacing: 0.01em;
+}

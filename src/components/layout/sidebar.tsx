@@ -43,7 +43,7 @@ export function Sidebar() {
         <div className="flex h-16 items-center border-b px-6">
           <Link href="/" className="flex items-center gap-2 font-semibold">
             <Image src="/logo.png" alt="PlasticMart" width={32} height={32} className="rounded-md" />
-            <span>PlasticMart</span>
+            <span className="font-butler text-[24px] leading-none">PlasticMart</span>
           </Link>
         </div>
         <nav className="flex flex-col items-start gap-2 px-4 py-4">

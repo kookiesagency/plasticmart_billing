@@ -11,7 +11,7 @@ const geist = Geist({
 });
 
 export const metadata: Metadata = {
-  title: "Smart Billing",
+  title: "PlasticMart Billing",
   description: "A smart billing system.",
   icons: {
     icon: '/logo.png',
