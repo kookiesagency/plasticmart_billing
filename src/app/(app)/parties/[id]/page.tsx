@@ -56,13 +56,10 @@ export default function PartyReportPage() {
       .is('deleted_at', null)
 
     if (range?.from) {
-      invoicesQuery = invoicesQuery.gte('invoice_date', range.from.toISOString())
+      invoicesQuery = invoicesQuery.gte('invoice_date', range.from.toISOString().slice(0, 10))
     }
     if (range?.to) {
-      // Set to end of day to include all invoices on the selected end date
-      const toDate = new Date(range.to)
-      toDate.setHours(23, 59, 59, 999)
-      invoicesQuery = invoicesQuery.lte('invoice_date', toDate.toISOString())
+      invoicesQuery = invoicesQuery.lte('invoice_date', range.to.toISOString().slice(0, 10))
     }
     
     const { data: invoicesData, error: invoicesError } = await invoicesQuery;

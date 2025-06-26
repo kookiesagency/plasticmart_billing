@@ -10,6 +10,7 @@ export type Item = {
   id: number
   name: string
   default_rate: number
+  purchase_rate?: number | null
   created_at: string
   units: {
     id: number
@@ -86,6 +87,27 @@ export const columns = (
         currency: "INR",
       }).format(amount)
  
+      return <div className="font-medium">{formatted}</div>
+    },
+  },
+  {
+    accessorKey: 'purchase_rate',
+    header: ({ column }) => (
+      <div
+        className="flex items-center cursor-pointer"
+        onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
+      >
+        Purchase Rate
+        <ArrowUpDown className="ml-2 h-4 w-4" />
+      </div>
+    ),
+    cell: ({ row }) => {
+      const amount = row.getValue("purchase_rate")
+      if (amount == null || amount === '') return <span className="text-muted-foreground">-</span>;
+      const formatted = new Intl.NumberFormat("en-IN", {
+        style: "currency",
+        currency: "INR",
+      }).format(Number(amount))
       return <div className="font-medium">{formatted}</div>
     },
   },

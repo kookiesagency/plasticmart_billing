@@ -50,7 +50,7 @@ export function ItemImportDialog({ isOpen, onOpenChange, onPreview, units }: Ite
       header: true,
       skipEmptyLines: true,
       complete: async (results) => {
-        const requiredFields = ['name', 'default_rate', 'unit_name']
+        const requiredFields = ['name', 'rate', 'unit']
         const headers = results.meta.fields || []
         if (!requiredFields.every(field => headers.includes(field))) {
           return toast.error(`CSV must contain the following headers: ${requiredFields.join(', ')}`)
@@ -70,7 +70,7 @@ export function ItemImportDialog({ isOpen, onOpenChange, onPreview, units }: Ite
         const namesInCsv = new Set<string>()
 
         const data = results.data.map(row => {
-          const matchingUnit = units.find(u => u.name.toLowerCase() === row.unit_name?.toLowerCase())
+          const matchingUnit = units.find(u => u.name.toLowerCase() === row.unit?.toLowerCase())
           const itemName = row.name?.trim()
           
           let isDuplicate = false;
@@ -81,14 +81,22 @@ export function ItemImportDialog({ isOpen, onOpenChange, onPreview, units }: Ite
             namesInCsv.add(itemName);
           }
 
-          const rate = parseFloat(row.default_rate)
+          const rate = parseFloat(row.rate)
           const isInvalid = isNaN(rate)
+
+          // Parse purchase_rate if present
+          let purchaseRate: number | undefined = undefined;
+          if (row.purchase_rate !== undefined && row.purchase_rate !== null && row.purchase_rate !== '') {
+            const pr = parseFloat(row.purchase_rate)
+            if (!isNaN(pr)) purchaseRate = pr
+          }
 
           return {
             name: itemName,
             default_rate: isInvalid ? 0 : rate,
-            unit_name: row.unit_name,
-            unit_id: matchingUnit ? matchingUnit.id : `new::${row.unit_name}`,
+            purchase_rate: purchaseRate,
+            unit_name: row.unit,
+            unit_id: matchingUnit ? matchingUnit.id : `new::${row.unit}`,
             is_new_unit: !matchingUnit,
             is_duplicate: isDuplicate,
             is_invalid: isInvalid,
@@ -114,7 +122,7 @@ export function ItemImportDialog({ isOpen, onOpenChange, onPreview, units }: Ite
           <DialogTitle>Import Items from CSV</DialogTitle>
         </DialogHeader>
         <div>
-          <p className="mb-2">Select a CSV file to import. The file must contain 'name', 'default_rate', and 'unit_name' columns.</p>
+          <p className="mb-2">Select a CSV file to import. The file must contain <b>'name'</b>, <b>'rate'</b>, <b>'purchase_rate'</b> (optional), and <b>'unit'</b> columns.</p>
           <a href="/sample-items.csv" download className="text-sm text-blue-500 hover:underline mb-4 block">
             Download sample CSV template
           </a>

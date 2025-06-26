@@ -35,6 +35,7 @@ const partyPriceSchema = z.object({
 const itemSchema = z.object({
   name: z.string().min(1, 'Name is required'),
   default_rate: z.coerce.number().positive('Rate must be a positive number'),
+  purchase_rate: z.coerce.number().optional(),
   unit_id: z.coerce.number({
     required_error: "Unit is required.",
     invalid_type_error: "Unit is required.",
@@ -78,6 +79,7 @@ export default function ItemManager() {
     defaultValues: {
       name: '',
       default_rate: 0,
+      purchase_rate: undefined,
       party_prices: [],
     },
   })
@@ -98,7 +100,7 @@ export default function ItemManager() {
   const fetchData = async () => {
     setLoading(true)
     const [itemsRes, deletedItemsRes, unitsRes, partiesRes] = await Promise.all([
-      supabase.from('items').select('*, units(id, name)').is('deleted_at', null).order('name'),
+      supabase.from('items').select('*, units(id, name)').is('deleted_at', null).order('created_at', { ascending: false }),
       supabase.from('items').select('*, units(id, name)').not('deleted_at', 'is', null).order('deleted_at', { ascending: false }),
       supabase.from('units').select('id, name').is('deleted_at', null),
       supabase.from('parties').select('id, name').is('deleted_at', null),
@@ -134,11 +136,12 @@ export default function ItemManager() {
       form.reset({
         name: item.name,
         default_rate: item.default_rate,
+        purchase_rate: item.purchase_rate ?? undefined,
         unit_id: item.units?.id,
         party_prices: partyPricesData || [],
       })
     } else {
-      form.reset({ name: '', default_rate: 0, unit_id: undefined, party_prices: [] })
+      form.reset({ name: '', default_rate: 0, purchase_rate: undefined, unit_id: undefined, party_prices: [] })
     }
     setIsDialogOpen(true)
   }
@@ -395,6 +398,24 @@ export default function ItemManager() {
         </div>
       ),
     },
+    {
+      accessorKey: 'purchase_rate',
+      header: ({ column }) => (
+        <div className="flex items-center cursor-pointer" onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}>
+          Purchase Rate
+          <ArrowUpDown className="ml-2 h-4 w-4" />
+        </div>
+      ),
+      cell: ({ row }) => {
+        const amount = row.getValue("purchase_rate")
+        if (amount == null || amount === '') return <span className="text-muted-foreground">-</span>;
+        const formatted = new Intl.NumberFormat("en-IN", {
+          style: "currency",
+          currency: "INR",
+        }).format(Number(amount))
+        return <div className="font-medium">{formatted}</div>
+      },
+    },
     { 
       accessorKey: 'deleted_at', 
       header: ({ column }) => (
@@ -537,6 +558,19 @@ export default function ItemManager() {
                           }}
                           value={field.value ?? ''}
                         />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="purchase_rate"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Purchase Rate <span className="text-muted-foreground font-normal">(optional)</span></FormLabel>
+                      <FormControl>
+                        <Input type="number" step="0.01" min={0} placeholder="e.g. 100" value={field.value ?? ''} onChange={field.onChange} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>

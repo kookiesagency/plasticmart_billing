@@ -14,7 +14,7 @@ export default function useParties() {
     setLoading(true)
     
     const [activeRes, deletedRes] = await Promise.all([
-      supabase.from('parties').select('*').is('deleted_at', null).order('name', { ascending: true }),
+      supabase.from('parties').select('*').is('deleted_at', null).order('created_at', { ascending: false }),
       supabase.from('parties').select('*').not('deleted_at', 'is', null).order('deleted_at', { ascending: false })
     ])
 

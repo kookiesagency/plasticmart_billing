@@ -153,7 +153,12 @@ export function DataTable<TData, TValue>({
       const rowData: { [key: string]: any } = {};
       visibleColumns.forEach(col => {
         const header = getHeader(col);
-        rowData[header] = row.getValue(col.id);
+        let value = row.getValue(col.id);
+        // Special handling for purchase_rate: show '-' if null/undefined/empty string
+        if (col.id === 'purchase_rate' && (value == null || value === '')) {
+          value = '-';
+        }
+        rowData[header] = value;
       });
       return rowData;
     });

@@ -27,15 +27,14 @@ import { useEffect, useState } from 'react'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { Calendar } from '@/components/ui/calendar'
 import { CalendarIcon } from 'lucide-react'
-import { cn } from '@/lib/utils'
+import { cn, parseLocalDate, formatLocalDate } from '@/lib/utils'
 import { format } from 'date-fns'
 import { type Payment } from './page'
 
 const paymentSchema = z.object({
   amount: z.coerce.number().positive('Amount must be positive'),
-  payment_date: z.date({
-    required_error: "A payment date is required.",
-  }),
+  payment_date: z.string(),
+  remark: z.string().max(500, 'Remark must be 500 characters or less').optional(),
 })
 
 interface PaymentFormProps {
@@ -64,7 +63,8 @@ export function PaymentForm({
     resolver: zodResolver(paymentSchema),
     defaultValues: {
       amount: 0,
-      payment_date: new Date(),
+      payment_date: formatLocalDate(new Date()),
+      remark: '',
     },
   })
 
@@ -72,12 +72,14 @@ export function PaymentForm({
     if (isEditMode) {
       form.reset({
         amount: paymentToEdit.amount,
-        payment_date: new Date(paymentToEdit.payment_date),
+        payment_date: paymentToEdit.payment_date,
+        remark: paymentToEdit.remark || '',
       })
     } else {
       form.reset({
         amount: balanceDue > 0 ? Number(balanceDue.toFixed(2)) : 0,
-        payment_date: new Date(),
+        payment_date: formatLocalDate(new Date()),
+        remark: '',
       })
     }
   }, [isEditMode, paymentToEdit, balanceDue, form, open])
@@ -162,7 +164,7 @@ export function PaymentForm({
                           )}
                         >
                           {field.value ? (
-                            format(field.value, "PPP")
+                            format(parseLocalDate(field.value), "PPP")
                           ) : (
                             <span>Pick a date</span>
                           )}
@@ -173,12 +175,30 @@ export function PaymentForm({
                     <PopoverContent className="w-auto p-0" align="start">
                       <Calendar
                         mode="single"
-                        selected={field.value}
-                        onSelect={field.onChange}
+                        selected={field.value ? parseLocalDate(field.value) : undefined}
+                        onSelect={date => field.onChange(date ? formatLocalDate(date) : '')}
                         initialFocus
                       />
                     </PopoverContent>
                   </Popover>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="remark"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Remark/Note</FormLabel>
+                  <FormControl>
+                    <textarea
+                      {...field}
+                      rows={3}
+                      className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                      placeholder="Add any remark or note (optional)"
+                    />
+                  </FormControl>
                   <FormMessage />
                 </FormItem>
               )}

@@ -5,7 +5,7 @@ import { useParams } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
 import { format } from 'date-fns'
-import { formatCurrency } from '@/lib/utils'
+import { formatCurrency, parseLocalDate } from '@/lib/utils'
 import { ArrowLeft, Edit, Trash } from 'lucide-react'
 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
@@ -23,6 +23,7 @@ export type Payment = {
   id: number
   amount: number
   payment_date: string
+  remark?: string
 }
 
 type Invoice = {
@@ -51,6 +52,7 @@ export default function InvoiceDetailsPage() {
   const [loading, setLoading] = useState(true)
   const [paymentToDelete, setPaymentToDelete] = useState<Payment | null>(null)
   const [paymentToEdit, setPaymentToEdit] = useState<Payment | null>(null)
+  const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false)
 
   const fetchInvoice = async () => {
     if (!params.id) return
@@ -66,7 +68,7 @@ export default function InvoiceDetailsPage() {
           bundle_charge,
           bundle_quantity,
           invoice_items(quantity, rate, item_name, item_unit),
-          payments(id, amount, payment_date)
+          payments(id, amount, payment_date, remark)
         `
       )
       .eq('id', params.id)
@@ -95,6 +97,7 @@ export default function InvoiceDetailsPage() {
 
   const handlePaymentUpdate = () => {
     setPaymentToEdit(null);
+    setIsPaymentModalOpen(false);
     fetchInvoice();
   }
 
@@ -142,13 +145,19 @@ export default function InvoiceDetailsPage() {
               {invoice.status}
             </Badge>
             {invoice.status !== 'Paid' && (
-              <PaymentForm 
-                invoiceId={parseInt(invoice.id)} 
-                balanceDue={invoice.amount_pending}
-                onPaymentAdded={fetchInvoice}
-              >
-                <Button>Add Payment</Button>
-              </PaymentForm>
+              <>
+                <Button onClick={() => setIsPaymentModalOpen(true)}>Add Payment</Button>
+                <PaymentForm
+                  invoiceId={parseInt(invoice.id)}
+                  balanceDue={invoice.amount_pending}
+                  onPaymentAdded={() => {
+                    setIsPaymentModalOpen(false);
+                    fetchInvoice();
+                  }}
+                  open={isPaymentModalOpen}
+                  onOpenChange={setIsPaymentModalOpen}
+                />
+              </>
             )}
             <Button variant="outline" asChild>
               <Link href={`/invoices/edit/${invoice.id}`}>
@@ -160,20 +169,18 @@ export default function InvoiceDetailsPage() {
         }
       />
 
-      {paymentToEdit && (
-        <PaymentForm
-          invoiceId={parseInt(invoice.id)}
-          balanceDue={invoice.amount_pending}
-          onPaymentAdded={handlePaymentUpdate}
-          paymentToEdit={paymentToEdit}
-          open={!!paymentToEdit}
-          onOpenChange={(isOpen) => {
-            if (!isOpen) {
-              setPaymentToEdit(null)
-            }
-          }}
-        />
-      )}
+      <PaymentForm
+        invoiceId={parseInt(invoice?.id || '0')}
+        balanceDue={invoice?.amount_pending || 0}
+        onPaymentAdded={handlePaymentUpdate}
+        paymentToEdit={paymentToEdit}
+        open={!!paymentToEdit}
+        onOpenChange={(isOpen) => {
+          if (!isOpen) {
+            setPaymentToEdit(null)
+          }
+        }}
+      />
       <ConfirmationDialog
         isOpen={!!paymentToDelete}
         onClose={() => setPaymentToDelete(null)}
@@ -220,32 +227,36 @@ export default function InvoiceDetailsPage() {
                 <Table>
                   <TableHeader>
                     <TableRow className="bg-muted">
-                      <TableHead>Payment Date</TableHead>
-                      <TableHead className="text-right">Amount Paid</TableHead>
+                      <TableHead className="text-left">Payment Date</TableHead>
+                      <TableHead className="text-left">Amount Paid</TableHead>
+                      <TableHead className="text-left">Remark</TableHead>
                       <TableHead className="text-right w-[100px]">Actions</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {invoice.payments.map((payment) => (
-                      <TableRow key={payment.id}>
-                        <TableCell>{format(new Date(payment.payment_date), 'dd MMMM, yyyy')}</TableCell>
-                        <TableCell className="text-right">{formatCurrency(payment.amount)}</TableCell>
-                        <TableCell className="text-right space-x-2">
-                          <Tooltip>
-                            <TooltipTrigger asChild>
-                              <Button variant="ghost" size="icon" onClick={() => setPaymentToEdit(payment)}><Edit className="h-4 w-4" /></Button>
-                            </TooltipTrigger>
-                            <TooltipContent><p>Edit Payment</p></TooltipContent>
-                          </Tooltip>
-                          <Tooltip>
-                            <TooltipTrigger asChild>
-                              <Button variant="ghost" size="icon" onClick={() => setPaymentToDelete(payment)}><Trash className="h-4 w-4 text-red-500" /></Button>
-                            </TooltipTrigger>
-                            <TooltipContent><p>Delete Payment</p></TooltipContent>
-                          </Tooltip>
-                        </TableCell>
-                      </TableRow>
-                    ))}
+                    {[...invoice.payments]
+                      .sort((a, b) => b.payment_date.localeCompare(a.payment_date))
+                      .map((payment) => (
+                        <TableRow key={payment.id}>
+                          <TableCell className="text-left">{format(parseLocalDate(payment.payment_date), 'dd MMMM, yyyy')}</TableCell>
+                          <TableCell className="text-left">{formatCurrency(payment.amount)}</TableCell>
+                          <TableCell className="max-w-xs whitespace-pre-line text-sm text-muted-foreground text-left">{payment.remark || '-'}</TableCell>
+                          <TableCell className="text-right space-x-2">
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Button variant="ghost" size="icon" onClick={() => setPaymentToEdit(payment)}><Edit className="h-4 w-4" /></Button>
+                              </TooltipTrigger>
+                              <TooltipContent><p>Edit Payment</p></TooltipContent>
+                            </Tooltip>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Button variant="ghost" size="icon" onClick={() => setPaymentToDelete(payment)}><Trash className="h-4 w-4 text-red-500" /></Button>
+                              </TooltipTrigger>
+                              <TooltipContent><p>Delete Payment</p></TooltipContent>
+                            </Tooltip>
+                          </TableCell>
+                        </TableRow>
+                      ))}
                   </TableBody>
                 </Table>
               )}

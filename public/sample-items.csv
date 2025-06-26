@@ -1,3 +1,4 @@
-name,default_rate,unit_name
-Plastic Sheet,150.50,Kilogram
-Plastic Granules,20.00,Ton 
+name,rate,purchase_rate,unit
+Plastic Bag,12.5,10.0,Piece
+Bottle,25,,Piece
+Box,50,45,Carton 

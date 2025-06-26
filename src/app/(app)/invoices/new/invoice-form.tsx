@@ -10,7 +10,7 @@ import { format } from 'date-fns'
 import { useRouter } from 'next/navigation'
 
 import { createClient } from '@/lib/supabase/client'
-import { cn, formatCurrency } from '@/lib/utils'
+import { cn, formatCurrency, parseLocalDate, formatLocalDate } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import { Calendar } from '@/components/ui/calendar'
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command'
@@ -31,7 +31,7 @@ const invoiceItemSchema = z.object({
 
 const invoiceSchema = z.object({
   party_id: z.coerce.number().nullable(),
-  invoice_date: z.date(),
+  invoice_date: z.string(),
   bundle_rate: z.coerce.number().min(0),
   bundle_quantity: z.coerce.number().min(0),
   bundle_charge: z.coerce.number().min(0),
@@ -64,7 +64,7 @@ export function InvoiceForm({ invoiceId }: { invoiceId?: string }) {
   const form = useForm<z.infer<typeof invoiceSchema>>({
     resolver: zodResolver(invoiceSchema),
     defaultValues: {
-      invoice_date: new Date(),
+      invoice_date: formatLocalDate(new Date()),
       bundle_rate: 0,
       bundle_quantity: 1,
       bundle_charge: 0,
@@ -148,7 +148,7 @@ export function InvoiceForm({ invoiceId }: { invoiceId?: string }) {
 
           form.reset({
             party_id: invoiceData.party_id,
-            invoice_date: new Date(invoiceData.invoice_date),
+            invoice_date: invoiceData.invoice_date,
             bundle_rate: invoiceData.bundle_rate,
             bundle_quantity: invoiceData.bundle_quantity,
             bundle_charge: invoiceData.bundle_charge,
@@ -215,6 +215,8 @@ export function InvoiceForm({ invoiceId }: { invoiceId?: string }) {
     }
 
     const { items, subTotal, grandTotal, ...invoiceData } = values
+    // invoice_date is already a string in YYYY-MM-DD format
+    const invoiceDateString = invoiceData.invoice_date;
     
     const party = partiesData.find(p => p.id === values.party_id);
     if (!party && !isPartyLocked) {
@@ -236,7 +238,7 @@ export function InvoiceForm({ invoiceId }: { invoiceId?: string }) {
     if (invoiceId) {
       const { error: updateError } = await supabase
         .from('invoices')
-        .update({ ...invoiceData, ...snapshotData, total_amount: grandTotal })
+        .update({ ...invoiceData, invoice_date: invoiceDateString, ...snapshotData, total_amount: grandTotal })
         .eq('id', invoiceId)
       
       if (!updateError) {
@@ -250,7 +252,7 @@ export function InvoiceForm({ invoiceId }: { invoiceId?: string }) {
     } else {
       const { data: newInvoice, error: invoiceError } = await supabase
         .from('invoices')
-        .insert({ ...invoiceData, ...snapshotData, total_amount: grandTotal })
+        .insert({ ...invoiceData, invoice_date: invoiceDateString, ...snapshotData, total_amount: grandTotal })
         .select('id')
         .single()
   
@@ -337,12 +339,18 @@ export function InvoiceForm({ invoiceId }: { invoiceId?: string }) {
                       <Popover>
                         <PopoverTrigger asChild>
                           <Button variant={'outline'} className={cn('w-full pl-3 text-left font-normal', !field.value && 'text-muted-foreground')}>
-                            {field.value ? format(field.value, 'dd/MM/yyyy') : <span>Pick a date</span>}
+                            {field.value ? format(parseLocalDate(field.value), 'dd/MM/yyyy') : <span>Pick a date</span>}
                             <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
                           </Button>
                         </PopoverTrigger>
                         <PopoverContent className="w-auto p-0" align="start">
-                          <Calendar mode="single" selected={field.value} onSelect={field.onChange} disabled={(date) => date < new Date('1900-01-01')} initialFocus />
+                          <Calendar
+                            mode="single"
+                            selected={field.value ? parseLocalDate(field.value) : undefined}
+                            onSelect={date => field.onChange(date ? formatLocalDate(date) : '')}
+                            disabled={date => date < new Date('1900-01-01')}
+                            initialFocus
+                          />
                         </PopoverContent>
                       </Popover>
                       <FormMessage />

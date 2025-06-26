@@ -16,6 +16,7 @@ import { Badge } from '@/components/ui/badge'
 export type ItemToImport = {
   name: string
   default_rate: number
+  purchase_rate?: number | null
   unit_name: string
   unit_id?: number | string
   is_new_unit: boolean
@@ -116,11 +117,17 @@ export function ItemPreviewDialog({ isOpen, onOpenChange, onSuccess, units, init
     }
 
     const unitMap = new Map(units.concat(newUnits).map(u => [u.name.toLowerCase(), u.id]))
-    const itemsToInsert = itemsToProcess.map(item => ({
+    const itemsToInsert = itemsToProcess.map(item => {
+      const base = {
         name: item.name,
         default_rate: item.default_rate,
         unit_id: typeof item.unit_id === 'number' ? item.unit_id : unitMap.get(item.unit_name.toLowerCase()),
-    }))
+      };
+      if (item.purchase_rate !== undefined) {
+        return { ...base, purchase_rate: item.purchase_rate };
+      }
+      return base;
+    })
 
     if (itemsToInsert.some(item => !item.unit_id)) {
         return toast.error("Some units couldn't be mapped. Please review your selections.");
@@ -156,6 +163,7 @@ export function ItemPreviewDialog({ isOpen, onOpenChange, onSuccess, units, init
                 <TableRow>
                   <TableHead className="min-w-[250px]">Name</TableHead>
                   <TableHead className="w-[15%]">Default Rate</TableHead>
+                  <TableHead className="w-[15%]">Purchase Rate</TableHead>
                   <TableHead className="w-[15%]">Unit Name from CSV</TableHead>
                   <TableHead className="w-[20%]">Map to Unit</TableHead>
                   <TableHead className="w-[15%]">Status</TableHead>
@@ -170,6 +178,22 @@ export function ItemPreviewDialog({ isOpen, onOpenChange, onSuccess, units, init
                     </TableCell>
                     <TableCell>
                       <Input value={item.default_rate ? String(item.default_rate) : ''} onChange={(e) => handleRowChange(index, 'default_rate', e.target.value)} className={item.is_invalid ? 'border-red-500' : 'border-transparent focus:border-primary bg-transparent'} placeholder="Enter rate" />
+                    </TableCell>
+                    <TableCell>
+                      <Input
+                        value={item.purchase_rate != null ? String(item.purchase_rate) : ''}
+                        onChange={e => {
+                          const updatedData = [...parsedData];
+                          const val = e.target.value;
+                          updatedData[index].purchase_rate = val === '' ? undefined : parseFloat(val);
+                          setParsedData(updatedData);
+                        }}
+                        className="border-transparent focus:border-primary bg-transparent"
+                        placeholder="Enter purchase rate"
+                        type="number"
+                        step="0.01"
+                        min={0}
+                      />
                     </TableCell>
                     <TableCell>{item.unit_name}</TableCell>
                     <TableCell>

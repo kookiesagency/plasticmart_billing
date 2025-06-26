@@ -66,7 +66,7 @@ export default function UnitManager() {
   const fetchData = async () => {
     setLoading(true)
     const [activeRes, deletedRes] = await Promise.all([
-      supabase.from('units').select('*').is('deleted_at', null).order('name', { ascending: true }),
+      supabase.from('units').select('*').is('deleted_at', null).order('created_at', { ascending: false }),
       supabase.from('units').select('*').not('deleted_at', 'is', null).order('deleted_at', { ascending: false })
     ])
     
