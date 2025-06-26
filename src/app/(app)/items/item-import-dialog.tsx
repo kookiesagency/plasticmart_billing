@@ -59,14 +59,15 @@ export function ItemImportDialog({ isOpen, onOpenChange, onPreview, units }: Ite
         const parsedNames = results.data.map(row => row.name?.trim()).filter(Boolean)
         const { data: existingItems, error: dbError } = await supabase
           .from('items')
-          .select('name')
+          .select('name, deleted_at')
           .in('name', parsedNames)
 
         if (dbError) {
           return toast.error('Could not check for existing items: ' + dbError.message)
         }
         
-        const namesInDb = new Set(existingItems.map(item => item.name))
+        const activeNames = new Set(existingItems.filter(item => !item.deleted_at).map(item => item.name))
+        const deletedNames = new Set(existingItems.filter(item => !!item.deleted_at).map(item => item.name))
         const namesInCsv = new Set<string>()
 
         const data = results.data.map(row => {
@@ -74,8 +75,12 @@ export function ItemImportDialog({ isOpen, onOpenChange, onPreview, units }: Ite
           const itemName = row.name?.trim()
           
           let isDuplicate = false;
-          if (itemName && (namesInDb.has(itemName) || namesInCsv.has(itemName))) {
+          let isDeletedDuplicate = false;
+          if (itemName && (activeNames.has(itemName) || namesInCsv.has(itemName))) {
             isDuplicate = true;
+          } else if (itemName && deletedNames.has(itemName)) {
+            isDuplicate = true;
+            isDeletedDuplicate = true;
           }
           if (itemName) {
             namesInCsv.add(itemName);
@@ -99,6 +104,7 @@ export function ItemImportDialog({ isOpen, onOpenChange, onPreview, units }: Ite
             unit_id: matchingUnit ? matchingUnit.id : `new::${row.unit}`,
             is_new_unit: !matchingUnit,
             is_duplicate: isDuplicate,
+            is_deleted_duplicate: isDeletedDuplicate,
             is_invalid: isInvalid,
             error_message: isInvalid ? 'Invalid rate value. Rate must be a number.' : undefined,
           }

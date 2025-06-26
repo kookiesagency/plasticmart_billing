@@ -4,7 +4,8 @@ import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useDebouncedCallback } from 'use-debounce'
 import { toast } from 'sonner'
-import { Trash } from 'lucide-react'
+import { Trash, Undo } from 'lucide-react'
+import { Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip'
 
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
@@ -23,6 +24,7 @@ export type ItemToImport = {
   is_duplicate: boolean
   is_invalid: boolean
   error_message?: string
+  is_deleted_duplicate: boolean
 }
 
 type Unit = { id: number; name: string; }
@@ -38,6 +40,7 @@ interface ItemPreviewDialogProps {
 export function ItemPreviewDialog({ isOpen, onOpenChange, onSuccess, units, initialData }: ItemPreviewDialogProps) {
   const supabase = createClient()
   const [parsedData, setParsedData] = useState<ItemToImport[]>(initialData)
+  const [restoringIndex, setRestoringIndex] = useState<number | null>(null)
 
   useEffect(() => {
     setParsedData(initialData)
@@ -83,6 +86,28 @@ export function ItemPreviewDialog({ isOpen, onOpenChange, onSuccess, units, init
     updatedData.splice(index, 1);
     setParsedData(updatedData);
   };
+
+  // Restore item by name (for deleted duplicates)
+  const handleRestore = async (itemName: string, index: number) => {
+    setRestoringIndex(index)
+    const { data, error } = await supabase
+      .from('items')
+      .update({ deleted_at: null })
+      .eq('name', itemName)
+      .not('deleted_at', 'is', null)
+      .select('id')
+    if (error) {
+      toast.error('Failed to restore item: ' + error.message)
+    } else {
+      toast.success('Item restored!')
+      // Update preview row: no longer a duplicate
+      const updated = [...parsedData]
+      updated[index].is_duplicate = false
+      updated[index].is_deleted_duplicate = false
+      setParsedData(updated)
+    }
+    setRestoringIndex(null)
+  }
 
   const handleImportConfirm = async () => {
     if (parsedData.some(item => !item.unit_id)) {
@@ -133,8 +158,45 @@ export function ItemPreviewDialog({ isOpen, onOpenChange, onSuccess, units, init
         return toast.error("Some units couldn't be mapped. Please review your selections.");
     }
 
-    const { error: insertError } = await supabase.from('items').insert(itemsToInsert)
+    const { error: insertError, data: insertedItems } = await supabase.from('items').insert(itemsToInsert).select('id, name');
     if (insertError) return toast.error('Failed to import items: ' + insertError.message)
+
+    // Patch activity_logs for each imported item to add imported_via: 'import'
+    if (insertedItems && Array.isArray(insertedItems)) {
+      for (const item of insertedItems) {
+        // Find the log for this item (created in the last 2 minutes)
+        const { data: logs, error: findLogError } = await supabase
+          .from('activity_logs')
+          .select('id, details, created_at')
+          .eq('target_table', 'items')
+          .eq('action', 'INSERT')
+          .eq('target_id', String(item.id))
+          .order('created_at', { ascending: false })
+          .limit(1);
+        if (findLogError) {
+          toast.error(`Error finding log for item ${item.name}: ${findLogError.message}`);
+          continue;
+        }
+        if (logs && logs.length > 0) {
+          const log = logs[0];
+          // Deep clone details to avoid mutation issues
+          const details = JSON.parse(JSON.stringify(log.details || {}));
+          if (details.new_data) {
+            details.new_data.imported_via = 'import';
+            const { error: updateError } = await supabase.from('activity_logs').update({ details }).eq('id', log.id);
+            if (updateError) {
+              toast.error(`Error updating log for item ${item.name}: ${updateError.message}`);
+            } else {
+              toast.success(`Patched log for imported item: ${item.name}`);
+            }
+          } else {
+            toast.error(`Log for item ${item.name} has no new_data field.`);
+          }
+        } else {
+          toast.error(`No log found for imported item: ${item.name}`);
+        }
+      }
+    }
     
     const finalDuplicates = finalParsedData.filter(item => item.is_duplicate).length
     const finalErrors = finalParsedData.filter(item => item.is_invalid).length
@@ -207,7 +269,30 @@ export function ItemPreviewDialog({ isOpen, onOpenChange, onSuccess, units, init
                     </TableCell>
                     <TableCell>
                       <div className="flex flex-wrap items-center gap-2">
-                        {item.is_duplicate && <Badge variant="destructive" className="text-xs">Duplicate</Badge>}
+                        {item.is_duplicate && !item.is_deleted_duplicate && <Badge variant="destructive" className="text-xs">Duplicate</Badge>}
+                        {item.is_deleted_duplicate && (
+                          <span className="flex items-center gap-2">
+                            <span className="text-xs px-2 py-0.5 rounded-full font-medium border border-yellow-300 bg-yellow-100 text-yellow-800">Duplicate (in Deleted Tab)</span>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Button
+                                  size="icon"
+                                  variant="ghost"
+                                  className="ml-1"
+                                  disabled={restoringIndex === index}
+                                  onClick={() => handleRestore(item.name, index)}
+                                >
+                                  {restoringIndex === index ? (
+                                    <span className="animate-spin"><Undo className="h-4 w-4 text-yellow-700" /></span>
+                                  ) : (
+                                    <Undo className="h-4 w-4 text-yellow-700" />
+                                  )}
+                                </Button>
+                              </TooltipTrigger>
+                              <TooltipContent>Restore Item</TooltipContent>
+                            </Tooltip>
+                          </span>
+                        )}
                         {item.is_invalid && <Badge variant="destructive" className="text-xs">{item.error_message}</Badge>}
                         {item.is_new_unit && !item.is_duplicate && !item.is_invalid && <Badge variant="secondary" className="text-xs">New Unit</Badge>}
                         {!item.is_duplicate && !item.is_invalid && !item.is_new_unit && <Badge variant="success" className="text-xs">Ready</Badge>}

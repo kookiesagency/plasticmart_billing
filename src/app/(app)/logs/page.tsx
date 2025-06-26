@@ -56,11 +56,17 @@ function formatLogMessage(log: ActivityLog) {
   }
   const getTargetIdentifier = () => {
     const data = details.new_data || details.old_data;
-    return data?.name || data?.title || `#${target_id}`;
+    return data?.name || data?.title || data?.imported_names || `#${target_id}`;
   };
+  const isImported = details?.new_data?.imported_via === 'import';
   switch (action) {
-    case 'INSERT':
-      return `Created a new ${targetName}: <a href="${targetLink}" class="text-blue-500 hover:underline">${getTargetIdentifier()}</a>`;
+    case 'INSERT': {
+      let msg = `Created a new ${targetName}: <a href="${targetLink}" class="text-blue-500 hover:underline">${getTargetIdentifier()}</a>`;
+      if (isImported) {
+        msg += ' <span class="ml-2 inline-block px-2 py-0.5 rounded bg-blue-100 text-blue-800 text-xs">imported</span>';
+      }
+      return msg;
+    }
     case 'DELETE':
       return `Deleted ${targetName}: ${getTargetIdentifier()}`;
     case 'UPDATE':
