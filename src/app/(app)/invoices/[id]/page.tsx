@@ -6,7 +6,7 @@ import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
 import { format } from 'date-fns'
 import { formatCurrency, parseLocalDate } from '@/lib/utils'
-import { ArrowLeft, Edit, Trash } from 'lucide-react'
+import { ArrowLeft, Pencil, Trash } from 'lucide-react'
 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow, TableFooter } from '@/components/ui/table'
@@ -161,7 +161,7 @@ export default function InvoiceDetailsPage() {
             )}
             <Button variant="outline" asChild>
               <Link href={`/invoices/edit/${invoice.id}`}>
-                <Edit className="h-4 w-4 mr-2" />
+                <Pencil className="h-4 w-4" />
                 Edit Invoice
               </Link>
             </Button>
@@ -244,7 +244,7 @@ export default function InvoiceDetailsPage() {
                           <TableCell className="text-right space-x-2">
                             <Tooltip>
                               <TooltipTrigger asChild>
-                                <Button variant="ghost" size="icon" onClick={() => setPaymentToEdit(payment)}><Edit className="h-4 w-4" /></Button>
+                                <Button variant="ghost" size="icon" onClick={() => setPaymentToEdit(payment)}><Pencil className="h-4 w-4" /></Button>
                               </TooltipTrigger>
                               <TooltipContent><p>Edit Payment</p></TooltipContent>
                             </Tooltip>

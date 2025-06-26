@@ -62,6 +62,8 @@ export function ItemPreviewDialog({ isOpen, onOpenChange, onSuccess, units, init
 
     if (field === 'name') {
       item.name = value
+      item.is_duplicate = false
+      item.is_deleted_duplicate = false
       debouncedNameCheck(index, value)
     } else if (field === 'default_rate') {
       const rate = parseFloat(value)
@@ -186,28 +188,21 @@ export function ItemPreviewDialog({ isOpen, onOpenChange, onSuccess, units, init
             const { error: updateError } = await supabase.from('activity_logs').update({ details }).eq('id', log.id);
             if (updateError) {
               toast.error(`Error updating log for item ${item.name}: ${updateError.message}`);
-            } else {
-              toast.success(`Patched log for imported item: ${item.name}`);
             }
-          } else {
-            toast.error(`Log for item ${item.name} has no new_data field.`);
           }
-        } else {
-          toast.error(`No log found for imported item: ${item.name}`);
         }
       }
     }
-    
+
+    // Restore the dialog UI
     const finalDuplicates = finalParsedData.filter(item => item.is_duplicate).length
     const finalErrors = finalParsedData.filter(item => item.is_invalid).length
-    
     toast.success(`${itemsToInsert.length} items imported successfully!`)
     if (finalDuplicates > 0) toast.info(`${finalDuplicates} duplicate items were skipped.`)
     if (finalErrors > 0) toast.warning(`${finalErrors} items with errors were skipped.`)
-    
     onSuccess()
   }
-  
+
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[90vw] h-[90vh] flex flex-col">
@@ -218,7 +213,6 @@ export function ItemPreviewDialog({ isOpen, onOpenChange, onSuccess, units, init
               Preview and map units for the items you're importing.
             </DialogDescription>
           </DialogHeader>
-
           <div className="flex-grow overflow-auto">
             <Table>
               <TableHeader>
@@ -316,4 +310,4 @@ export function ItemPreviewDialog({ isOpen, onOpenChange, onSuccess, units, init
       </DialogContent>
     </Dialog>
   )
-} 
+}
