@@ -317,19 +317,19 @@ export default function LogsPage() {
           {/* Tabs and Bulk Action Bar in a flex row */}
           <div className="flex items-center justify-between mb-4">
             <Tabs value={tab} onValueChange={v => { setTab(v as 'active' | 'deleted'); clearSelection(); }}>
-              <TabsList>
-                <TabsTrigger value="active">Active</TabsTrigger>
-                <TabsTrigger value="deleted">Deleted</TabsTrigger>
-              </TabsList>
-            </Tabs>
-            {selected.length > 0 && (
+            <TabsList>
+              <TabsTrigger value="active">Active</TabsTrigger>
+              <TabsTrigger value="deleted">Deleted</TabsTrigger>
+            </TabsList>
+          </Tabs>
+          {selected.length > 0 && (
               <div className="flex items-center gap-4">
-                {tab === 'active' ? (
+              {tab === 'active' ? (
                   <Button variant="destructive" size="sm" onClick={handleBulkDelete}>
                     <Trash2 className="mr-2 h-4 w-4" />
                     Delete ({selected.length})
                   </Button>
-                ) : (
+              ) : (
                   <>
                     <Button variant="outline" size="sm" onClick={handleBulkRestore}>
                       <Undo className="mr-2 h-4 w-4" />
@@ -340,9 +340,9 @@ export default function LogsPage() {
                       Delete Permanently ({selected.length})
                     </Button>
                   </>
-                )}
-                <Button variant="ghost" size="sm" onClick={clearSelection}>Clear</Button>
-              </div>
+              )}
+              <Button variant="ghost" size="sm" onClick={clearSelection}>Clear</Button>
+            </div>
             )}
           </div>
           {/* Confirmation Dialogs */}
