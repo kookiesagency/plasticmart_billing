@@ -8,6 +8,7 @@ import { toast } from 'sonner'
 import { CalendarIcon, Check, ChevronsUpDown, Trash2, PlusCircle } from 'lucide-react'
 import { format } from 'date-fns'
 import { useRouter } from 'next/navigation'
+import React from 'react'
 
 import { createClient } from '@/lib/supabase/client'
 import { cn, formatCurrency, parseLocalDate, formatLocalDate } from '@/lib/utils'
@@ -620,17 +621,40 @@ type AddItemDialogProps = {
 }
 
 const AddItemDialog = ({ isOpen, onOpenChange, itemsData, quickAddItem, getItemPrice, itemSearch, setItemSearch, fields }: AddItemDialogProps) => {
+  const [highlightedIndex, setHighlightedIndex] = useState<number | null>(null);
   const addedItemIds = fields.map(f => f.item_id)
-  const availableItems = itemsData.filter(i => !addedItemIds.includes(i.id))
-  
+  // Sort alphabetically
+  const availableItems = [...itemsData]
+    .filter(i => !addedItemIds.includes(i.id))
+    .sort((a, b) => a.name.localeCompare(b.name));
+
   const filteredItems = availableItems.filter(item =>
     item.name.toLowerCase().includes(itemSearch.toLowerCase())
-  )
-  
+  );
+
+  // Reset highlight when search changes
+  React.useEffect(() => {
+    setHighlightedIndex(filteredItems.length > 0 ? 0 : null);
+  }, [itemSearch, filteredItems.length]);
+
   const handleKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
-    if (event.key === 'Enter' && filteredItems.length > 0) {
+    if (filteredItems.length === 0) return;
+    if (event.key === 'ArrowDown') {
       event.preventDefault();
-      quickAddItem(filteredItems[0].id);
+      setHighlightedIndex(idx => {
+        if (idx === null) return 0;
+        return Math.min(idx + 1, filteredItems.length - 1);
+      });
+    } else if (event.key === 'ArrowUp') {
+      event.preventDefault();
+      setHighlightedIndex(idx => {
+        if (idx === null) return filteredItems.length - 1;
+        return Math.max(idx - 1, 0);
+      });
+    } else if (event.key === 'Enter') {
+      event.preventDefault();
+      const idx = highlightedIndex ?? 0;
+      if (filteredItems[idx]) quickAddItem(filteredItems[idx].id);
     }
   };
 
@@ -657,11 +681,11 @@ const AddItemDialog = ({ isOpen, onOpenChange, itemsData, quickAddItem, getItemP
               </TableHeader>
               <TableBody>
                 {filteredItems.length > 0 ? (
-                  filteredItems.map(item => (
+                  filteredItems.map((item, idx) => (
                     <TableRow 
                       key={item.id} 
                       onClick={() => quickAddItem(item.id)}
-                      className="cursor-pointer hover:bg-muted/50"
+                      className={`cursor-pointer hover:bg-muted/50 ${highlightedIndex === idx ? 'bg-primary/10' : ''}`}
                     >
                       <TableCell>{item.name}</TableCell>
                       <TableCell className="text-right">{formatCurrency(getItemPrice(item.id))}</TableCell>

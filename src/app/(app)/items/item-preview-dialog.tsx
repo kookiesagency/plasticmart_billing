@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useDebouncedCallback } from 'use-debounce'
 import { toast } from 'sonner'
@@ -227,78 +227,138 @@ export function ItemPreviewDialog({ isOpen, onOpenChange, onSuccess, units, init
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {parsedData.map((item, index) => (
-                  <TableRow key={index} className={item.is_invalid ? 'bg-orange-100' : item.is_duplicate ? 'bg-red-100' : item.is_new_unit ? 'bg-yellow-100' : ''}>
-                    <TableCell>
-                      <Input value={item.name} onChange={(e) => handleRowChange(index, 'name', e.target.value)} className="border-transparent focus:border-primary bg-transparent" />
-                    </TableCell>
-                    <TableCell>
-                      <Input value={item.default_rate ? String(item.default_rate) : ''} onChange={(e) => handleRowChange(index, 'default_rate', e.target.value)} className={item.is_invalid ? 'border-red-500' : 'border-transparent focus:border-primary bg-transparent'} placeholder="Enter rate" />
-                    </TableCell>
-                    <TableCell>
-                      <Input
-                        value={item.purchase_rate != null ? String(item.purchase_rate) : ''}
-                        onChange={e => {
-                          const updatedData = [...parsedData];
-                          const val = e.target.value;
-                          updatedData[index].purchase_rate = val === '' ? undefined : parseFloat(val);
-                          setParsedData(updatedData);
-                        }}
-                        className="border-transparent focus:border-primary bg-transparent"
-                        placeholder="Enter purchase rate"
-                        type="number"
-                        step="0.01"
-                        min={0}
-                      />
-                    </TableCell>
-                    <TableCell>{item.unit_name}</TableCell>
-                    <TableCell>
-                      <Select onValueChange={(value) => handleUnitChange(index, value.startsWith('new::') ? value : parseInt(value, 10))} defaultValue={String(item.unit_id)} disabled={item.is_duplicate || item.is_invalid}>
-                        <SelectTrigger><SelectValue placeholder="Select Unit" /></SelectTrigger>
-                        <SelectContent>
-                          {item.is_new_unit && <SelectItem value={String(item.unit_id)}>Create new unit: "{item.unit_name}"</SelectItem>}
-                          {units.map(unit => <SelectItem key={unit.id} value={String(unit.id)}>{unit.name}</SelectItem>)}
-                        </SelectContent>
-                      </Select>
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex flex-wrap items-center gap-2">
-                        {item.is_duplicate && !item.is_deleted_duplicate && <Badge variant="destructive" className="text-xs">Duplicate</Badge>}
-                        {item.is_deleted_duplicate && (
-                          <span className="flex items-center gap-2">
-                            <span className="text-xs px-2 py-0.5 rounded-full font-medium border border-yellow-300 bg-yellow-100 text-yellow-800">Duplicate (in Deleted Tab)</span>
-                            <Tooltip>
-                              <TooltipTrigger asChild>
-                                <Button
-                                  size="icon"
-                                  variant="ghost"
-                                  className="ml-1"
-                                  disabled={restoringIndex === index}
-                                  onClick={() => handleRestore(item.name, index)}
-                                >
-                                  {restoringIndex === index ? (
-                                    <span className="animate-spin"><Undo className="h-4 w-4 text-yellow-700" /></span>
-                                  ) : (
-                                    <Undo className="h-4 w-4 text-yellow-700" />
-                                  )}
-                                </Button>
-                              </TooltipTrigger>
-                              <TooltipContent>Restore Item</TooltipContent>
-                            </Tooltip>
-                          </span>
-                        )}
-                        {item.is_invalid && <Badge variant="destructive" className="text-xs">{item.error_message}</Badge>}
-                        {item.is_new_unit && !item.is_duplicate && !item.is_invalid && <Badge variant="secondary" className="text-xs">New Unit</Badge>}
-                        {!item.is_duplicate && !item.is_invalid && !item.is_new_unit && <Badge variant="success" className="text-xs">Ready</Badge>}
-                      </div>
-                    </TableCell>
-                    <TableCell className="text-right">
-                        <Button variant="ghost" size="icon" onClick={() => handleRemoveRow(index)}>
-                            <Trash className="h-4 w-4 text-red-500" />
-                        </Button>
-                    </TableCell>
-                  </TableRow>
-                ))}
+                {parsedData.map((item, index) => {
+                  // Refs for each input
+                  const nameRef = useRef<HTMLInputElement>(null!)
+                  const rateRef = useRef<HTMLInputElement>(null!)
+                  const purchaseRateRef = useRef<HTMLInputElement>(null!)
+
+                  // Auto-select effect for each input
+                  useEffect(() => {
+                    const handleFocus = (ref: React.RefObject<HTMLInputElement>) => {
+                      if (ref.current) {
+                        const input = ref.current
+                        const onFocus = () => input.select()
+                        input.addEventListener('focus', onFocus)
+                        return () => input.removeEventListener('focus', onFocus)
+                      }
+                    }
+                    const cleanups = [
+                      handleFocus(nameRef),
+                      handleFocus(rateRef),
+                      handleFocus(purchaseRateRef)
+                    ]
+                    return () => { cleanups.forEach(fn => fn && fn()) }
+                  }, [])
+
+                  return (
+                    <TableRow key={index} className={item.is_invalid ? 'bg-orange-100' : item.is_duplicate ? 'bg-red-100' : item.is_new_unit ? 'bg-yellow-100' : ''}>
+                      <TableCell>
+                        <Input
+                          ref={nameRef}
+                          value={item.name}
+                          onChange={(e) => handleRowChange(index, 'name', e.target.value)}
+                          className="border-transparent focus:border-primary bg-transparent"
+                          onFocus={e => setTimeout(() => e.target.select(), 0)}
+                          onMouseDown={e => {
+                            if (document.activeElement !== e.currentTarget) {
+                              e.preventDefault();
+                              e.currentTarget.focus();
+                              e.currentTarget.select();
+                            }
+                          }}
+                        />
+                      </TableCell>
+                      <TableCell>
+                        <Input
+                          ref={rateRef}
+                          value={item.default_rate ? String(item.default_rate) : ''}
+                          onChange={(e) => handleRowChange(index, 'default_rate', e.target.value.replace(/[^\d.]/g, ''))}
+                          className={item.is_invalid ? 'border-red-500' : 'border-transparent focus:border-primary bg-transparent'}
+                          placeholder="Enter rate"
+                          type="text"
+                          onFocus={e => setTimeout(() => e.target.select(), 0)}
+                          onMouseDown={e => {
+                            if (document.activeElement !== e.currentTarget) {
+                              e.preventDefault();
+                              e.currentTarget.focus();
+                              e.currentTarget.select();
+                            }
+                          }}
+                        />
+                      </TableCell>
+                      <TableCell>
+                        <Input
+                          ref={purchaseRateRef}
+                          value={item.purchase_rate != null ? String(item.purchase_rate) : ''}
+                          onChange={e => {
+                            const updatedData = [...parsedData];
+                            const val = e.target.value.replace(/[^\d.]/g, '');
+                            updatedData[index].purchase_rate = val === '' ? undefined : parseFloat(val);
+                            setParsedData(updatedData);
+                          }}
+                          className="border-transparent focus:border-primary bg-transparent"
+                          placeholder="Enter purchase rate"
+                          type="text"
+                          onFocus={e => setTimeout(() => e.target.select(), 0)}
+                          onMouseDown={e => {
+                            if (document.activeElement !== e.currentTarget) {
+                              e.preventDefault();
+                              e.currentTarget.focus();
+                              e.currentTarget.select();
+                            }
+                          }}
+                        />
+                      </TableCell>
+                      <TableCell>{item.unit_name}</TableCell>
+                      <TableCell>
+                        <Select onValueChange={(value) => handleUnitChange(index, value.startsWith('new::') ? value : parseInt(value, 10))} defaultValue={String(item.unit_id)} disabled={item.is_duplicate || item.is_invalid}>
+                          <SelectTrigger><SelectValue placeholder="Select Unit" /></SelectTrigger>
+                          <SelectContent>
+                            {item.is_new_unit && <SelectItem value={String(item.unit_id)}>Create new unit: "{item.unit_name}"</SelectItem>}
+                            {units.map(unit => <SelectItem key={unit.id} value={String(unit.id)}>{unit.name}</SelectItem>)}
+                          </SelectContent>
+                        </Select>
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex flex-wrap items-center gap-2">
+                          {item.is_duplicate && !item.is_deleted_duplicate && <Badge variant="destructive" className="text-xs">Duplicate</Badge>}
+                          {item.is_deleted_duplicate && (
+                            <span className="flex items-center gap-2">
+                              <span className="text-xs px-2 py-0.5 rounded-full font-medium border border-yellow-300 bg-yellow-100 text-yellow-800">Duplicate (in Deleted Tab)</span>
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <Button
+                                    size="icon"
+                                    variant="ghost"
+                                    className="ml-1"
+                                    disabled={restoringIndex === index}
+                                    onClick={() => handleRestore(item.name, index)}
+                                  >
+                                    {restoringIndex === index ? (
+                                      <span className="animate-spin"><Undo className="h-4 w-4 text-yellow-700" /></span>
+                                    ) : (
+                                      <Undo className="h-4 w-4 text-yellow-700" />
+                                    )}
+                                  </Button>
+                                </TooltipTrigger>
+                                <TooltipContent>Restore Item</TooltipContent>
+                              </Tooltip>
+                            </span>
+                          )}
+                          {item.is_invalid && <Badge variant="destructive" className="text-xs">{item.error_message}</Badge>}
+                          {item.is_new_unit && !item.is_duplicate && !item.is_invalid && <Badge variant="secondary" className="text-xs">New Unit</Badge>}
+                          {!item.is_duplicate && !item.is_invalid && !item.is_new_unit && <Badge variant="success" className="text-xs">Ready</Badge>}
+                        </div>
+                      </TableCell>
+                      <TableCell className="text-right">
+                          <Button variant="ghost" size="icon" onClick={() => handleRemoveRow(index)}>
+                              <Trash className="h-4 w-4 text-red-500" />
+                          </Button>
+                      </TableCell>
+                    </TableRow>
+                  )
+                })}
               </TableBody>
             </Table>
           </div>
