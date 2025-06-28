@@ -20,6 +20,13 @@ import { Input } from '@/components/ui/input'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { Separator } from '@/components/ui/separator'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
+import {
+  Select,
+  SelectTrigger,
+  SelectContent,
+  SelectItem,
+  SelectValue
+} from '@/components/ui/select'
 
 const invoiceItemSchema = z.object({
   item_id: z.coerce.number().nullable(),
@@ -59,6 +66,7 @@ export function InvoiceForm({ invoiceId }: { invoiceId?: string }) {
   const [itemSearch, setItemSearch] = useState('')
   const [isPartyLocked, setIsPartyLocked] = useState(!!invoiceId)
   const [snapshottedPartyName, setSnapshottedPartyName] = useState<string | null>(null)
+  const [unitsData, setUnitsData] = useState<{ id: number; name: string }[]>([])
 
 
   const form = useForm<z.infer<typeof invoiceSchema>>({
@@ -118,10 +126,11 @@ export function InvoiceForm({ invoiceId }: { invoiceId?: string }) {
 
   useEffect(() => {
     const fetchInitialData = async () => {
-      const [partiesRes, itemsRes, settingsRes] = await Promise.all([
+      const [partiesRes, itemsRes, settingsRes, unitsRes] = await Promise.all([
         supabase.from('parties').select('*').is('deleted_at', null),
         supabase.from('items').select('*, units(name), item_party_prices(party_id, price)').is('deleted_at', null),
         supabase.from('app_settings').select('*'),
+        supabase.from('units').select('id, name').is('deleted_at', null),
       ])
       
       if (partiesRes.data) setPartiesData(partiesRes.data)
@@ -134,6 +143,7 @@ export function InvoiceForm({ invoiceId }: { invoiceId?: string }) {
           form.setValue('bundle_rate', parseFloat(defaultBundleRate))
         }
       }
+      if (unitsRes.data) setUnitsData(unitsRes.data)
       
       if (invoiceId) {
         const { data: invoiceData, error } = await supabase
@@ -393,7 +403,23 @@ export function InvoiceForm({ invoiceId }: { invoiceId?: string }) {
                                 control={form.control}
                                 name={`items.${index}.item_name`}
                                 render={({ field: itemNameField }) => (
-                                  <Input {...itemNameField} className="h-9 font-medium"/>
+                                  <Input
+                                    {...itemNameField}
+                                    className="h-9 font-medium"
+                                    name={`items.${index}.item_name`}
+                                    onKeyDown={e => {
+                                      if (e.key === 'Enter') {
+                                        e.preventDefault();
+                                        const qtyInput = document.querySelector(
+                                          `input[name='items.${index}.quantity']`
+                                        ) as HTMLInputElement | null;
+                                        if (qtyInput) {
+                                          qtyInput.focus();
+                                          qtyInput.select();
+                                        }
+                                      }
+                                    }}
+                                  />
                                 )}
                               />
                             </TableCell>
@@ -402,19 +428,75 @@ export function InvoiceForm({ invoiceId }: { invoiceId?: string }) {
                                 control={form.control}
                                 name={`items.${index}.quantity`}
                                 render={({ field: quantityField }) => (
-                                  <Input type="number" {...quantityField} className="text-right" onChange={e => quantityField.onChange(parseInt(e.target.value, 10) || 0)} />
+                                  <Input
+                                    type="number"
+                                    {...quantityField}
+                                    className="text-right"
+                                    name={`items.${index}.quantity`}
+                                    onChange={e => quantityField.onChange(parseInt(e.target.value, 10) || 0)}
+                                    onKeyDown={e => {
+                                      if (e.key === 'Enter') {
+                                        e.preventDefault();
+                                        const rateInput = document.querySelector(
+                                          `input[name='items.${index}.rate']`
+                                        ) as HTMLInputElement | null;
+                                        if (rateInput) {
+                                          rateInput.focus();
+                                          rateInput.select();
+                                        }
+                                      }
+                                    }}
+                                  />
                                 )}
                               />
                             </TableCell>
                             <TableCell className="text-right">
-                              {field.item_unit}
+                              <FormField
+                                control={form.control}
+                                name={`items.${index}.item_unit`}
+                                render={({ field: unitField }) => (
+                                  <Select
+                                    value={unitField.value}
+                                    onValueChange={unitField.onChange}
+                                  >
+                                    <SelectTrigger className="w-full h-9 text-right">
+                                      <SelectValue placeholder="Select unit" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                      {unitsData.map(unit => (
+                                        <SelectItem key={unit.id} value={unit.name}>{unit.name}</SelectItem>
+                                      ))}
+                                    </SelectContent>
+                                  </Select>
+                                )}
+                              />
                             </TableCell>
                             <TableCell className="text-right">
                               <FormField
                                 control={form.control}
                                 name={`items.${index}.rate`}
                                 render={({ field: rateField }) => (
-                                  <Input type="number" step="0.01" {...rateField} className="text-right" onChange={e => rateField.onChange(parseFloat(e.target.value) || 0)} />
+                                  <Input
+                                    type="number"
+                                    step="0.01"
+                                    {...rateField}
+                                    className="text-right"
+                                    name={`items.${index}.rate`}
+                                    onChange={e => rateField.onChange(parseFloat(e.target.value) || 0)}
+                                    onKeyDown={e => {
+                                      if (e.key === 'Enter') {
+                                        e.preventDefault();
+                                        const nextIndex = index + 1;
+                                        const nextQtyInput = document.querySelector(
+                                          `input[name='items.${nextIndex}.quantity']`
+                                        ) as HTMLInputElement | null;
+                                        if (nextQtyInput) {
+                                          nextQtyInput.focus();
+                                          nextQtyInput.select();
+                                        }
+                                      }
+                                    }}
+                                  />
                                 )}
                               />
                             </TableCell>
