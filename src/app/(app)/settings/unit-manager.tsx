@@ -91,33 +91,30 @@ export default function UnitManager() {
 
   const onSubmit = async (values: z.infer<typeof unitSchema>) => {
     try {
-      // 1. Check for name collision
-      let query = supabase
+      // Helper to normalize names (remove spaces, lowercase)
+      function normalizeName(name: string) {
+        return name.replace(/\s+/g, '').toLowerCase();
+      }
+      // 1. Check for name collision (normalized)
+      const { data: allUnits, error: checkError } = await supabase
         .from('units')
         .select('id, name, deleted_at')
-        .ilike('name', values.name)
-
-      if (editingUnit?.id) {
-        query = query.not('id', 'eq', editingUnit.id)
-      }
-      
-      const { data: existing, error: checkError } = await query.maybeSingle()
 
       if (checkError) {
         return toast.error('Validation check failed: ' + checkError.message)
       }
 
-      if (existing) {
-        if (existing.deleted_at) {
+      const normalizedNew = normalizeName(values.name)
+      const duplicate = allUnits.find(unit => normalizeName(unit.name) === normalizedNew && unit.id !== editingUnit?.id)
+      if (duplicate) {
+        if (duplicate.deleted_at) {
           return toast.error('A unit with this name is currently deleted. Please restore it from the deleted tab.')
         } else {
           return toast.error('A unit with this name already exists.')
         }
       }
-      
       // 2. Proceed with update or insert
       let error
-
       if (editingUnit) {
         const { error: updateError } = await supabase.from('units').update(values).eq('id', editingUnit.id)
         error = updateError
@@ -125,7 +122,6 @@ export default function UnitManager() {
         const { error: insertError } = await supabase.from('units').insert(values)
         error = insertError
       }
-
       if (error) {
         toast.error('Failed to save unit: ' + error.message)
       } else {
