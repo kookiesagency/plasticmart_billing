@@ -121,6 +121,11 @@ export default function ItemManager() {
     setLoading(false)
   }
 
+  // Helper to normalize names (remove spaces, lowercase)
+  function normalizeName(name: string) {
+    return name.replace(/\s+/g, '').toLowerCase();
+  }
+
   const openDialog = async (item: Item | null = null) => {
     setEditingItem(item)
     if (item) {
@@ -152,20 +157,20 @@ export default function ItemManager() {
       return toast.error('Item name cannot be empty.')
     }
 
-    // Check for duplicate name before inserting or updating
-    const { data: existingItem, error: checkError } = await supabase
+    // Fetch all items and check for normalized duplicate
+    const { data: allItems, error: checkError } = await supabase
       .from('items')
       .select('id, name, deleted_at')
-      .ilike('name', trimmedName)
-      .single()
 
-    if (checkError && checkError.code !== 'PGRST116') { // Ignore 'PGRST116' (No rows found)
+    if (checkError) {
       return toast.error('Error checking for duplicate item: ' + checkError.message)
     }
 
-    // If an item with the same name exists AND it's not the item we are currently editing
-    if (existingItem && existingItem.id !== editingItem?.id) {
-      if (existingItem.deleted_at) {
+    // If an item with the same normalized name exists AND it's not the item we are currently editing
+    const normalizedNew = normalizeName(trimmedName)
+    const duplicate = allItems.find(item => normalizeName(item.name) === normalizedNew && item.id !== editingItem?.id)
+    if (duplicate) {
+      if (duplicate.deleted_at) {
         return toast.error('An item with this name exists in the "Deleted" tab. Please restore it or use a different name.')
       }
       return toast.error('An item with this name already exists.')

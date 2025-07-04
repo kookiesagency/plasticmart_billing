@@ -47,6 +47,11 @@ export function ItemPreviewDialog({ isOpen, onOpenChange, onSuccess, units, init
     setParsedData(initialData)
   }, [initialData])
 
+  // Helper to normalize names (remove spaces, lowercase)
+  function normalizeName(name: string) {
+    return name.replace(/\s+/g, '').toLowerCase();
+  }
+
   const debouncedNameCheck = useDebouncedCallback(async (index: number, name: string) => {
     const { data } = await supabase.from('items').select('id').eq('name', name).maybeSingle()
     const updatedData = [...parsedData]
@@ -120,19 +125,22 @@ export function ItemPreviewDialog({ isOpen, onOpenChange, onSuccess, units, init
         return
       }
       
-      const finalItemNames = parsedData.map(item => item.name);
+      // Use normalized names for duplicate check
+      const finalItemNames = parsedData.map(item => item.name)
+      const normalizedFinalNames = finalItemNames.map(normalizeName)
       const { data: existingItems, error: dbError } = await supabase
         .from('items')
         .select('name')
-        .in('name', finalItemNames);
+        .in('name', finalItemNames)
 
       if (dbError) {
-        toast.error('Could not verify item names before import: ' + dbError.message);
+        toast.error('Could not verify item names before import: ' + dbError.message)
         return
       }
-      const existingNames = new Set(existingItems.map(item => item.name));
+      // Build normalized set of existing names
+      const existingNames = new Set(existingItems.map(item => normalizeName(item.name)))
       
-      const finalParsedData = parsedData.map(item => ({ ...item, is_duplicate: existingNames.has(item.name) }))
+      const finalParsedData = parsedData.map(item => ({ ...item, is_duplicate: existingNames.has(normalizeName(item.name)) }))
       setParsedData(finalParsedData)
 
       const itemsToProcess = finalParsedData.filter(item => !item.is_duplicate && !item.is_invalid)

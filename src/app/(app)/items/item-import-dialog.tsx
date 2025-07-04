@@ -26,6 +26,11 @@ export function ItemImportDialog({ isOpen, onOpenChange, onPreview, units }: Ite
   const [isDragOver, setIsDragOver] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
 
+  // Helper to normalize names (remove spaces, lowercase)
+  function normalizeName(name: string) {
+    return name.replace(/\s+/g, '').toLowerCase();
+  }
+
   const handleFileDrop = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault()
     setIsDragOver(false)
@@ -60,7 +65,9 @@ export function ItemImportDialog({ isOpen, onOpenChange, onPreview, units }: Ite
             return
           }
 
+          // Normalize all parsed names for duplicate check
           const parsedNames = results.data.map(row => row.name?.trim()).filter(Boolean)
+          const normalizedParsedNames = parsedNames.map(normalizeName)
           const { data: existingItems, error: dbError } = await supabase
             .from('items')
             .select('name, deleted_at')
@@ -71,25 +78,27 @@ export function ItemImportDialog({ isOpen, onOpenChange, onPreview, units }: Ite
             setIsLoading(false)
             return
           }
-          
-          const activeNames = new Set(existingItems.filter(item => !item.deleted_at).map(item => item.name))
-          const deletedNames = new Set(existingItems.filter(item => !!item.deleted_at).map(item => item.name))
+
+          // Build normalized sets for active and deleted names
+          const activeNames = new Set(existingItems.filter(item => !item.deleted_at).map(item => normalizeName(item.name)))
+          const deletedNames = new Set(existingItems.filter(item => !!item.deleted_at).map(item => normalizeName(item.name)))
           const namesInCsv = new Set<string>()
 
           const data = results.data.map(row => {
             const matchingUnit = units.find(u => u.name.toLowerCase() === row.unit?.toLowerCase())
             const itemName = row.name?.trim()
-            
+            const normalized = itemName ? normalizeName(itemName) : ''
+
             let isDuplicate = false;
             let isDeletedDuplicate = false;
-            if (itemName && (activeNames.has(itemName) || namesInCsv.has(itemName))) {
+            if (itemName && (activeNames.has(normalized) || namesInCsv.has(normalized))) {
               isDuplicate = true;
-            } else if (itemName && deletedNames.has(itemName)) {
+            } else if (itemName && deletedNames.has(normalized)) {
               isDuplicate = true;
               isDeletedDuplicate = true;
             }
             if (itemName) {
-              namesInCsv.add(itemName);
+              namesInCsv.add(normalized);
             }
 
             const rate = parseFloat(row.rate)
