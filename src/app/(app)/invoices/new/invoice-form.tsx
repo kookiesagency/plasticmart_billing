@@ -627,7 +627,7 @@ const AddItemDialog = ({ isOpen, onOpenChange, itemsData, quickAddItem, getItemP
   const availableItems = [...itemsData]
     .filter(i => !addedItemIds.includes(i.id))
     .sort((a, b) => a.name.localeCompare(b.name));
-
+  
   const filteredItems = availableItems.filter(item =>
     item.name.toLowerCase().includes(itemSearch.toLowerCase())
   );
@@ -636,7 +636,7 @@ const AddItemDialog = ({ isOpen, onOpenChange, itemsData, quickAddItem, getItemP
   React.useEffect(() => {
     setHighlightedIndex(filteredItems.length > 0 ? 0 : null);
   }, [itemSearch, filteredItems.length]);
-
+  
   const handleKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
     if (filteredItems.length === 0) return;
     if (event.key === 'ArrowDown') {

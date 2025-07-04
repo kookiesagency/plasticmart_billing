@@ -188,6 +188,9 @@ function CalendarDayButton({
       variant="ghost"
       size="icon"
       data-day={day.date.toLocaleDateString()}
+      onClick={e => {
+       console.log("Clicked",e);
+      }}
       data-selected-single={
         modifiers.selected &&
         !modifiers.range_start &&
