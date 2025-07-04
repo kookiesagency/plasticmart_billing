@@ -24,6 +24,7 @@ export function ItemImportDialog({ isOpen, onOpenChange, onPreview, units }: Ite
   const supabase = createClient()
   const [file, setFile] = useState<File | null>(null)
   const [isDragOver, setIsDragOver] = useState(false)
+  const [isLoading, setIsLoading] = useState(false)
 
   const handleFileDrop = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault()
@@ -45,73 +46,84 @@ export function ItemImportDialog({ isOpen, onOpenChange, onPreview, units }: Ite
 
   const handleFileParse = () => {
     if (!file) return toast.error('Please select a file to parse.')
-
+    setIsLoading(true)
     Papa.parse<any>(file, {
       header: true,
       skipEmptyLines: true,
       complete: async (results) => {
-        const requiredFields = ['name', 'rate', 'unit']
-        const headers = results.meta.fields || []
-        if (!requiredFields.every(field => headers.includes(field))) {
-          return toast.error(`CSV must contain the following headers: ${requiredFields.join(', ')}`)
-        }
+        try {
+          const requiredFields = ['name', 'rate', 'unit']
+          const headers = results.meta.fields || []
+          if (!requiredFields.every(field => headers.includes(field))) {
+            toast.error(`CSV must contain the following headers: ${requiredFields.join(', ')}`)
+            setIsLoading(false)
+            return
+          }
 
-        const parsedNames = results.data.map(row => row.name?.trim()).filter(Boolean)
-        const { data: existingItems, error: dbError } = await supabase
-          .from('items')
-          .select('name, deleted_at')
-          .in('name', parsedNames)
+          const parsedNames = results.data.map(row => row.name?.trim()).filter(Boolean)
+          const { data: existingItems, error: dbError } = await supabase
+            .from('items')
+            .select('name, deleted_at')
+            .in('name', parsedNames)
 
-        if (dbError) {
-          return toast.error('Could not check for existing items: ' + dbError.message)
-        }
-        
-        const activeNames = new Set(existingItems.filter(item => !item.deleted_at).map(item => item.name))
-        const deletedNames = new Set(existingItems.filter(item => !!item.deleted_at).map(item => item.name))
-        const namesInCsv = new Set<string>()
-
-        const data = results.data.map(row => {
-          const matchingUnit = units.find(u => u.name.toLowerCase() === row.unit?.toLowerCase())
-          const itemName = row.name?.trim()
+          if (dbError) {
+            toast.error('Could not check for existing items: ' + dbError.message)
+            setIsLoading(false)
+            return
+          }
           
-          let isDuplicate = false;
-          let isDeletedDuplicate = false;
-          if (itemName && (activeNames.has(itemName) || namesInCsv.has(itemName))) {
-            isDuplicate = true;
-          } else if (itemName && deletedNames.has(itemName)) {
-            isDuplicate = true;
-            isDeletedDuplicate = true;
-          }
-          if (itemName) {
-            namesInCsv.add(itemName);
-          }
+          const activeNames = new Set(existingItems.filter(item => !item.deleted_at).map(item => item.name))
+          const deletedNames = new Set(existingItems.filter(item => !!item.deleted_at).map(item => item.name))
+          const namesInCsv = new Set<string>()
 
-          const rate = parseFloat(row.rate)
-          const isInvalid = isNaN(rate)
+          const data = results.data.map(row => {
+            const matchingUnit = units.find(u => u.name.toLowerCase() === row.unit?.toLowerCase())
+            const itemName = row.name?.trim()
+            
+            let isDuplicate = false;
+            let isDeletedDuplicate = false;
+            if (itemName && (activeNames.has(itemName) || namesInCsv.has(itemName))) {
+              isDuplicate = true;
+            } else if (itemName && deletedNames.has(itemName)) {
+              isDuplicate = true;
+              isDeletedDuplicate = true;
+            }
+            if (itemName) {
+              namesInCsv.add(itemName);
+            }
 
-          // Parse purchase_rate if present
-          let purchaseRate: number | undefined = undefined;
-          if (row.purchase_rate !== undefined && row.purchase_rate !== null && row.purchase_rate !== '') {
-            const pr = parseFloat(row.purchase_rate)
-            if (!isNaN(pr)) purchaseRate = pr
-          }
+            const rate = parseFloat(row.rate)
+            const isInvalid = isNaN(rate)
 
-          return {
-            name: itemName,
-            default_rate: isInvalid ? 0 : rate,
-            purchase_rate: purchaseRate,
-            unit_name: row.unit,
-            unit_id: matchingUnit ? matchingUnit.id : `new::${row.unit}`,
-            is_new_unit: !matchingUnit,
-            is_duplicate: isDuplicate,
-            is_deleted_duplicate: isDeletedDuplicate,
-            is_invalid: isInvalid,
-            error_message: isInvalid ? 'Invalid rate value. Rate must be a number.' : undefined,
-          }
-        })
-        onPreview(data)
+            // Parse purchase_rate if present
+            let purchaseRate: number | undefined = undefined;
+            if (row.purchase_rate !== undefined && row.purchase_rate !== null && row.purchase_rate !== '') {
+              const pr = parseFloat(row.purchase_rate)
+              if (!isNaN(pr)) purchaseRate = pr
+            }
+
+            return {
+              name: itemName,
+              default_rate: isInvalid ? 0 : rate,
+              purchase_rate: purchaseRate,
+              unit_name: row.unit,
+              unit_id: matchingUnit ? matchingUnit.id : `new::${row.unit}`,
+              is_new_unit: !matchingUnit,
+              is_duplicate: isDuplicate,
+              is_deleted_duplicate: isDeletedDuplicate,
+              is_invalid: isInvalid,
+              error_message: isInvalid ? 'Invalid rate value. Rate must be a number.' : undefined,
+            }
+          })
+          onPreview(data)
+        } finally {
+          setIsLoading(false)
+        }
       },
-      error: (error) => toast.error('Error parsing CSV: ' + error.message),
+      error: (error) => {
+        toast.error('Error parsing CSV: ' + error.message)
+        setIsLoading(false)
+      },
     })
   }
 
@@ -127,7 +139,15 @@ export function ItemImportDialog({ isOpen, onOpenChange, onPreview, units }: Ite
         <DialogHeader>
           <DialogTitle>Import Items from CSV</DialogTitle>
         </DialogHeader>
-        <div>
+        <div className="relative">
+          {isLoading && (
+            <div className="absolute inset-0 z-10 flex items-center justify-center bg-background/80">
+              <svg className="animate-spin h-8 w-8 text-primary" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
+              </svg>
+            </div>
+          )}
           <p className="mb-2">Select a CSV file to import. The file must contain <b>'name'</b>, <b>'rate'</b>, <b>'purchase_rate'</b> (optional), and <b>'unit'</b> columns.</p>
           <a href="/sample-items.csv" download className="text-sm text-blue-500 hover:underline mb-4 block">
             Download sample CSV template
@@ -138,9 +158,10 @@ export function ItemImportDialog({ isOpen, onOpenChange, onPreview, units }: Ite
             onDragOver={(e) => { e.preventDefault(); setIsDragOver(true); }}
             onDragLeave={() => setIsDragOver(false)}
             onDrop={handleFileDrop}
-            onClick={() => document.getElementById('file-upload-input')?.click()}
+            onClick={() => !isLoading && document.getElementById('file-upload-input')?.click()}
+            style={isLoading ? { pointerEvents: 'none', opacity: 0.6 } : {}}
           >
-            <Input id="file-upload-input" type="file" accept=".csv" className="hidden" onChange={handleFileSelect} />
+            <Input id="file-upload-input" type="file" accept=".csv" className="hidden" onChange={handleFileSelect} disabled={isLoading} />
             <FileUp className="mx-auto h-10 w-10 text-muted-foreground mb-2" />
             {file ? 
               <p className="text-muted-foreground"><span className="font-semibold text-primary">{file.name}</span> selected.</p> :
@@ -148,7 +169,9 @@ export function ItemImportDialog({ isOpen, onOpenChange, onPreview, units }: Ite
             }
           </div>
           <DialogFooter className="mt-4">
-            <Button onClick={handleFileParse} disabled={!file}>Parse File and Preview</Button>
+            <Button onClick={handleFileParse} disabled={!file || isLoading}>
+              {isLoading ? 'Parsing...' : 'Parse File and Preview'}
+            </Button>
           </DialogFooter>
         </div>
       </DialogContent>
