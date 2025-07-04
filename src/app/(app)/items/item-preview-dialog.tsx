@@ -52,6 +52,26 @@ export function ItemPreviewDialog({ isOpen, onOpenChange, onSuccess, units, init
     return name.replace(/\s+/g, '').toLowerCase();
   }
 
+  // Helper to update duplicate status for all rows
+  function updateDuplicateStatus(data: ItemToImport[], dbNames: Set<string> = new Set()) {
+    // Count normalized names in the preview list
+    const nameCounts: Record<string, number> = {};
+    data.forEach(item => {
+      const norm = normalizeName(item.name || '')
+      nameCounts[norm] = (nameCounts[norm] || 0) + 1
+    })
+    return data.map(item => {
+      const norm = normalizeName(item.name || '')
+      const isDbDuplicate = dbNames.has(norm)
+      const isPreviewDuplicate = nameCounts[norm] > 1
+      return {
+        ...item,
+        is_duplicate: isDbDuplicate || isPreviewDuplicate,
+        is_deleted_duplicate: item.is_deleted_duplicate // keep as is for now
+      }
+    })
+  }
+
   const debouncedNameCheck = useDebouncedCallback(async (index: number, name: string) => {
     const { data } = await supabase.from('items').select('id').eq('name', name).maybeSingle()
     const updatedData = [...parsedData]
@@ -70,6 +90,8 @@ export function ItemPreviewDialog({ isOpen, onOpenChange, onSuccess, units, init
       item.name = value
       item.is_duplicate = false
       item.is_deleted_duplicate = false
+      // After changing the name, update duplicate status for all rows
+      setParsedData(updateDuplicateStatus(updatedData))
       debouncedNameCheck(index, value)
     } else if (field === 'default_rate') {
       const rate = parseFloat(value)
@@ -77,9 +99,8 @@ export function ItemPreviewDialog({ isOpen, onOpenChange, onSuccess, units, init
       item.is_invalid = isInvalid
       item.error_message = isInvalid ? 'Invalid rate value. Rate must be a number.' : undefined
       item.default_rate = isInvalid ? 0 : rate
+      setParsedData(updatedData)
     }
-
-    setParsedData(updatedData)
   }
 
   const handleUnitChange = (index: number, unitId: number | string) => {
@@ -124,7 +145,6 @@ export function ItemPreviewDialog({ isOpen, onOpenChange, onSuccess, units, init
         toast.error('Please map all items to a unit.')
         return
       }
-      
       // Use normalized names for duplicate check
       const finalItemNames = parsedData.map(item => item.name)
       const normalizedFinalNames = finalItemNames.map(normalizeName)
@@ -139,8 +159,8 @@ export function ItemPreviewDialog({ isOpen, onOpenChange, onSuccess, units, init
       }
       // Build normalized set of existing names
       const existingNames = new Set(existingItems.map(item => normalizeName(item.name)))
-      
-      const finalParsedData = parsedData.map(item => ({ ...item, is_duplicate: existingNames.has(normalizeName(item.name)) }))
+      // Update duplicate status for all rows (preview + db)
+      const finalParsedData = updateDuplicateStatus(parsedData, existingNames)
       setParsedData(finalParsedData)
 
       const itemsToProcess = finalParsedData.filter(item => !item.is_duplicate && !item.is_invalid)
@@ -221,10 +241,40 @@ export function ItemPreviewDialog({ isOpen, onOpenChange, onSuccess, units, init
     }
   }
 
+  // Refs for each input field per row
+  const nameRefs = useRef<(HTMLInputElement | null)[]>([])
+  const rateRefs = useRef<(HTMLInputElement | null)[]>([])
+  const purchaseRateRefs = useRef<(HTMLInputElement | null)[]>([])
+
+  // Auto-select effect for each input (runs on every render)
+  useEffect(() => {
+    parsedData.forEach((_, index) => {
+      const nameInput = nameRefs.current[index]
+      const rateInput = rateRefs.current[index]
+      const purchaseRateInput = purchaseRateRefs.current[index]
+      if (nameInput) {
+        const onFocus = () => nameInput.select()
+        nameInput.addEventListener('focus', onFocus)
+        return () => nameInput.removeEventListener('focus', onFocus)
+      }
+      if (rateInput) {
+        const onFocus = () => rateInput.select()
+        rateInput.addEventListener('focus', onFocus)
+        return () => rateInput.removeEventListener('focus', onFocus)
+      }
+      if (purchaseRateInput) {
+        const onFocus = () => purchaseRateInput.select()
+        purchaseRateInput.addEventListener('focus', onFocus)
+        return () => purchaseRateInput.removeEventListener('focus', onFocus)
+      }
+    })
+    // No cleanup needed since listeners are re-attached on every render
+  }, [parsedData])
+
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[90vw] h-[90vh] flex flex-col">
-        <div className="flex flex-col h-full p-3 relative">
+        <div className="flex flex-col h-full relative">
           {isLoading && (
             <div className="absolute inset-0 z-20 flex items-center justify-center bg-background/80">
               <svg className="animate-spin h-10 w-10 text-primary" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
@@ -233,8 +283,8 @@ export function ItemPreviewDialog({ isOpen, onOpenChange, onSuccess, units, init
               </svg>
             </div>
           )}
-          <div className="flex flex-col h-full">
-            <DialogHeader className="p-0">
+          <div className="flex flex-col h-full p-6">
+            <DialogHeader className="p-0 pb-6">
               <DialogTitle>Preview and Map Units</DialogTitle>
               <DialogDescription>
                 Preview and map units for the items you're importing.
@@ -254,138 +304,113 @@ export function ItemPreviewDialog({ isOpen, onOpenChange, onSuccess, units, init
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {parsedData.map((item, index) => {
-                    // Refs for each input
-                    const nameRef = useRef<HTMLInputElement>(null!)
-                    const rateRef = useRef<HTMLInputElement>(null!)
-                    const purchaseRateRef = useRef<HTMLInputElement>(null!)
-
-                    // Auto-select effect for each input
-                    useEffect(() => {
-                      const handleFocus = (ref: React.RefObject<HTMLInputElement>) => {
-                        if (ref.current) {
-                          const input = ref.current
-                          const onFocus = () => input.select()
-                          input.addEventListener('focus', onFocus)
-                          return () => input.removeEventListener('focus', onFocus)
-                        }
-                      }
-                      const cleanups = [
-                        handleFocus(nameRef),
-                        handleFocus(rateRef),
-                        handleFocus(purchaseRateRef)
-                      ]
-                      return () => { cleanups.forEach(fn => fn && fn()) }
-                    }, [])
-
-                    return (
-                      <TableRow key={index} className={item.is_invalid ? 'bg-orange-100' : item.is_duplicate ? 'bg-red-100' : item.is_new_unit ? 'bg-yellow-100' : ''}>
-                        <TableCell>
-                          <Input
-                            ref={nameRef}
-                            value={item.name}
-                            onChange={(e) => handleRowChange(index, 'name', e.target.value)}
-                            className="border-transparent focus:border-primary bg-transparent"
-                            onFocus={e => setTimeout(() => e.target.select(), 0)}
-                            onMouseDown={e => {
-                              if (document.activeElement !== e.currentTarget) {
-                                e.preventDefault();
-                                e.currentTarget.focus();
-                                e.currentTarget.select();
-                              }
-                            }}
-                          />
-                        </TableCell>
-                        <TableCell>
-                          <Input
-                            ref={rateRef}
-                            value={item.default_rate ? String(item.default_rate) : ''}
-                            onChange={(e) => handleRowChange(index, 'default_rate', e.target.value.replace(/[^\d.]/g, ''))}
-                            className={item.is_invalid ? 'border-red-500' : 'border-transparent focus:border-primary bg-transparent'}
-                            placeholder="Enter rate"
-                            type="text"
-                            onFocus={e => setTimeout(() => e.target.select(), 0)}
-                            onMouseDown={e => {
-                              if (document.activeElement !== e.currentTarget) {
-                                e.preventDefault();
-                                e.currentTarget.focus();
-                                e.currentTarget.select();
-                              }
-                            }}
-                          />
-                        </TableCell>
-                        <TableCell>
-                          <Input
-                            ref={purchaseRateRef}
-                            value={item.purchase_rate != null ? String(item.purchase_rate) : ''}
-                            onChange={e => {
-                              const updatedData = [...parsedData];
-                              const val = e.target.value.replace(/[^\d.]/g, '');
-                              updatedData[index].purchase_rate = val === '' ? undefined : parseFloat(val);
-                              setParsedData(updatedData);
-                            }}
-                            className="border-transparent focus:border-primary bg-transparent"
-                            placeholder="Enter purchase rate"
-                            type="text"
-                            onFocus={e => setTimeout(() => e.target.select(), 0)}
-                            onMouseDown={e => {
-                              if (document.activeElement !== e.currentTarget) {
-                                e.preventDefault();
-                                e.currentTarget.focus();
-                                e.currentTarget.select();
-                              }
-                            }}
-                          />
-                        </TableCell>
-                        <TableCell>{item.unit_name}</TableCell>
-                        <TableCell>
-                          <Select onValueChange={(value) => handleUnitChange(index, value.startsWith('new::') ? value : parseInt(value, 10))} defaultValue={String(item.unit_id)} disabled={item.is_duplicate || item.is_invalid}>
-                            <SelectTrigger><SelectValue placeholder="Select Unit" /></SelectTrigger>
-                            <SelectContent>
-                              {item.is_new_unit && <SelectItem value={String(item.unit_id)}>Create new unit: "{item.unit_name}"</SelectItem>}
-                              {units.map(unit => <SelectItem key={unit.id} value={String(unit.id)}>{unit.name}</SelectItem>)}
-                            </SelectContent>
-                          </Select>
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex flex-wrap items-center gap-2">
-                            {item.is_duplicate && !item.is_deleted_duplicate && <Badge variant="destructive" className="text-xs">Duplicate</Badge>}
-                            {item.is_deleted_duplicate && (
-                              <span className="flex items-center gap-2">
-                                <span className="text-xs px-2 py-0.5 rounded-full font-medium border border-yellow-300 bg-yellow-100 text-yellow-800">Duplicate (in Deleted Tab)</span>
-                                <Tooltip>
-                                  <TooltipTrigger asChild>
-                                    <Button
-                                      size="icon"
-                                      variant="ghost"
-                                      className="ml-1"
-                                      disabled={restoringIndex === index}
-                                      onClick={() => handleRestore(item.name, index)}
-                                    >
-                                      {restoringIndex === index ? (
-                                        <span className="animate-spin"><Undo className="h-4 w-4 text-yellow-700" /></span>
-                                      ) : (
-                                        <Undo className="h-4 w-4 text-yellow-700" />
-                                      )}
-                                    </Button>
-                                  </TooltipTrigger>
-                                  <TooltipContent>Restore Item</TooltipContent>
-                                </Tooltip>
-                              </span>
-                            )}
-                            {item.is_invalid && <Badge variant="destructive" className="text-xs">{item.error_message}</Badge>}
-                            {item.is_new_unit && !item.is_duplicate && !item.is_invalid && <Badge variant="secondary" className="text-xs">New Unit</Badge>}
-                            {!item.is_duplicate && !item.is_invalid && !item.is_new_unit && <Badge variant="success" className="text-xs">Ready</Badge>}
-                          </div>
-                        </TableCell>
-                        <TableCell className="text-right">
-                            <Button variant="ghost" size="icon" onClick={() => handleRemoveRow(index)}>
-                                <Trash className="h-4 w-4 text-red-500" />
-                            </Button>
-                        </TableCell>
-                      </TableRow>
-                    )
-                  })}
+                  {parsedData.map((item, index) => (
+                    <TableRow key={index} className={item.is_invalid ? 'bg-orange-100' : item.is_duplicate ? 'bg-red-100' : item.is_new_unit ? 'bg-yellow-100' : ''}>
+                      <TableCell>
+                        <Input
+                          ref={el => { nameRefs.current[index] = el; }}
+                          value={item.name}
+                          onChange={(e) => handleRowChange(index, 'name', e.target.value)}
+                          className="border-transparent focus:border-primary bg-transparent"
+                          onFocus={e => setTimeout(() => e.target.select(), 0)}
+                          onMouseDown={e => {
+                            if (document.activeElement !== e.currentTarget) {
+                              e.preventDefault();
+                              e.currentTarget.focus();
+                              e.currentTarget.select();
+                            }
+                          }}
+                        />
+                      </TableCell>
+                      <TableCell>
+                        <Input
+                          ref={el => { rateRefs.current[index] = el; }}
+                          value={item.default_rate ? String(item.default_rate) : ''}
+                          onChange={(e) => handleRowChange(index, 'default_rate', e.target.value.replace(/[^\d.]/g, ''))}
+                          className={item.is_invalid ? 'border-red-500' : 'border-transparent focus:border-primary bg-transparent'}
+                          placeholder="Enter rate"
+                          type="text"
+                          onFocus={e => setTimeout(() => e.target.select(), 0)}
+                          onMouseDown={e => {
+                            if (document.activeElement !== e.currentTarget) {
+                              e.preventDefault();
+                              e.currentTarget.focus();
+                              e.currentTarget.select();
+                            }
+                          }}
+                        />
+                      </TableCell>
+                      <TableCell>
+                        <Input
+                          ref={el => { purchaseRateRefs.current[index] = el; }}
+                          value={item.purchase_rate != null ? String(item.purchase_rate) : ''}
+                          onChange={e => {
+                            const updatedData = [...parsedData];
+                            const val = e.target.value.replace(/[^\d.]/g, '');
+                            updatedData[index].purchase_rate = val === '' ? undefined : parseFloat(val);
+                            setParsedData(updatedData);
+                          }}
+                          className="border-transparent focus:border-primary bg-transparent"
+                          placeholder="Enter purchase rate"
+                          type="text"
+                          onFocus={e => setTimeout(() => e.target.select(), 0)}
+                          onMouseDown={e => {
+                            if (document.activeElement !== e.currentTarget) {
+                              e.preventDefault();
+                              e.currentTarget.focus();
+                              e.currentTarget.select();
+                            }
+                          }}
+                        />
+                      </TableCell>
+                      <TableCell>{item.unit_name}</TableCell>
+                      <TableCell>
+                        <Select onValueChange={(value) => handleUnitChange(index, value.startsWith('new::') ? value : parseInt(value, 10))} defaultValue={String(item.unit_id)} disabled={item.is_duplicate || item.is_invalid}>
+                          <SelectTrigger><SelectValue placeholder="Select Unit" /></SelectTrigger>
+                          <SelectContent>
+                            {item.is_new_unit && <SelectItem value={String(item.unit_id)}>Create new unit: "{item.unit_name}"</SelectItem>}
+                            {units.map(unit => <SelectItem key={unit.id} value={String(unit.id)}>{unit.name}</SelectItem>)}
+                          </SelectContent>
+                        </Select>
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex flex-wrap items-center gap-2">
+                          {item.is_duplicate && !item.is_deleted_duplicate && <Badge variant="destructive" className="text-xs">Duplicate</Badge>}
+                          {item.is_deleted_duplicate && (
+                            <span className="flex items-center gap-2">
+                              <span className="text-xs px-2 py-0.5 rounded-full font-medium border border-yellow-300 bg-yellow-100 text-yellow-800">Duplicate (in Deleted Tab)</span>
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <Button
+                                    size="icon"
+                                    variant="ghost"
+                                    className="ml-1"
+                                    disabled={restoringIndex === index}
+                                    onClick={() => handleRestore(item.name, index)}
+                                  >
+                                    {restoringIndex === index ? (
+                                      <span className="animate-spin"><Undo className="h-4 w-4 text-yellow-700" /></span>
+                                    ) : (
+                                      <Undo className="h-4 w-4 text-yellow-700" />
+                                    )}
+                                  </Button>
+                                </TooltipTrigger>
+                                <TooltipContent>Restore Item</TooltipContent>
+                              </Tooltip>
+                            </span>
+                          )}
+                          {item.is_invalid && <Badge variant="destructive" className="text-xs">{item.error_message}</Badge>}
+                          {item.is_new_unit && !item.is_duplicate && !item.is_invalid && <Badge variant="secondary" className="text-xs">New Unit</Badge>}
+                          {!item.is_duplicate && !item.is_invalid && !item.is_new_unit && <Badge variant="success" className="text-xs">Ready</Badge>}
+                        </div>
+                      </TableCell>
+                      <TableCell className="text-right">
+                          <Button variant="ghost" size="icon" onClick={() => handleRemoveRow(index)}>
+                              <Trash className="h-4 w-4 text-red-500" />
+                          </Button>
+                      </TableCell>
+                    </TableRow>
+                  ))}
                 </TableBody>
               </Table>
             </div>
