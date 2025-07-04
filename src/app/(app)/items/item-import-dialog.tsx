@@ -85,7 +85,8 @@ export function ItemImportDialog({ isOpen, onOpenChange, onPreview, units }: Ite
           const namesInCsv = new Set<string>()
 
           const data = results.data.map(row => {
-            const matchingUnit = units.find(u => u.name.toLowerCase() === row.unit?.toLowerCase())
+            // Use normalized matching for units
+            const matchingUnit = units.find(u => normalizeName(u.name) === normalizeName(row.unit))
             const itemName = row.name?.trim()
             const normalized = itemName ? normalizeName(itemName) : ''
 

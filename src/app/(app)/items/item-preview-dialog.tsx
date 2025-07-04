@@ -138,6 +138,13 @@ export function ItemPreviewDialog({ isOpen, onOpenChange, onSuccess, units, init
     setRestoringIndex(null)
   }
 
+  // Helper to get normalized unit map
+  function getNormalizedUnitMap(units: Unit[]) {
+    const map = new Map<string, Unit>()
+    units.forEach(u => map.set(normalizeName(u.name), u))
+    return map
+  }
+
   const handleImportConfirm = async () => {
     setIsLoading(true)
     try {
@@ -163,26 +170,33 @@ export function ItemPreviewDialog({ isOpen, onOpenChange, onSuccess, units, init
       const finalParsedData = updateDuplicateStatus(parsedData, existingNames)
       setParsedData(finalParsedData)
 
-      const itemsToProcess = finalParsedData.filter(item => !item.is_duplicate && !item.is_invalid)
-      if (itemsToProcess.length === 0) {
-        toast.info('No valid items to import.')
-        return
-      }
-
-      const newUnitNames = Array.from(new Set(itemsToProcess.filter(item => item.is_new_unit).map(item => item.unit_name)))
+      // Build normalized unit map from existing units
+      const normalizedUnitMap = getNormalizedUnitMap(units)
+      // Collect new unit names (normalized, deduped)
+      const newUnitNames = Array.from(
+        new Set(
+          finalParsedData
+            .filter(item => {
+              const norm = normalizeName(item.unit_name)
+              return !normalizedUnitMap.has(norm)
+            })
+            .map(item => item.unit_name)
+        )
+      )
       let newUnits: Unit[] = []
       if (newUnitNames.length > 0) {
-          const { data, error } = await supabase.from('units').insert(newUnitNames.map(name => ({ name: name }))).select()
-          if (error) { toast.error('Failed to create new units: ' + error.message); return }
-          newUnits = data as Unit[]
+        const { data, error } = await supabase.from('units').insert(newUnitNames.map(name => ({ name: name }))).select()
+        if (error) { toast.error('Failed to create new units: ' + error.message); return }
+        newUnits = data as Unit[]
       }
-
-      const unitMap = new Map(units.concat(newUnits).map(u => [u.name.toLowerCase(), u.id]))
-      const itemsToInsert = itemsToProcess.map(item => {
+      // Merge all units (existing + new) into normalized map
+      const allUnits = units.concat(newUnits)
+      const allUnitMap = getNormalizedUnitMap(allUnits)
+      const itemsToInsert = finalParsedData.filter(item => !item.is_duplicate && !item.is_invalid).map(item => {
         const base = {
           name: item.name,
           default_rate: item.default_rate,
-          unit_id: typeof item.unit_id === 'number' ? item.unit_id : unitMap.get(item.unit_name.toLowerCase()),
+          unit_id: typeof item.unit_id === 'number' ? item.unit_id : allUnitMap.get(normalizeName(item.unit_name))?.id,
         };
         if (item.purchase_rate !== undefined) {
           return { ...base, purchase_rate: item.purchase_rate };
@@ -368,7 +382,10 @@ export function ItemPreviewDialog({ isOpen, onOpenChange, onSuccess, units, init
                         <Select onValueChange={(value) => handleUnitChange(index, value.startsWith('new::') ? value : parseInt(value, 10))} defaultValue={String(item.unit_id)} disabled={item.is_duplicate || item.is_invalid}>
                           <SelectTrigger><SelectValue placeholder="Select Unit" /></SelectTrigger>
                           <SelectContent>
-                            {item.is_new_unit && <SelectItem value={String(item.unit_id)}>Create new unit: "{item.unit_name}"</SelectItem>}
+                            {/* Only show 'Create new unit' if not present in normalized units */}
+                            {!units.some(u => normalizeName(u.name) === normalizeName(item.unit_name)) && (
+                              <SelectItem value={String(item.unit_id)}>Create new unit: "{item.unit_name}"</SelectItem>
+                            )}
                             {units.map(unit => <SelectItem key={unit.id} value={String(unit.id)}>{unit.name}</SelectItem>)}
                           </SelectContent>
                         </Select>
