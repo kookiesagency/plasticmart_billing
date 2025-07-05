@@ -5,10 +5,24 @@ import { useForm, useFieldArray } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { toast } from 'sonner'
-import { CalendarIcon, Check, ChevronsUpDown, Trash2, PlusCircle } from 'lucide-react'
+import { CalendarIcon, Check, ChevronsUpDown, Trash, PlusCircle, Move } from 'lucide-react'
 import { format } from 'date-fns'
 import { useRouter } from 'next/navigation'
 import React from 'react'
+import {
+  DndContext,
+  closestCenter,
+  PointerSensor,
+  useSensor,
+  useSensors
+} from '@dnd-kit/core'
+import {
+  arrayMove,
+  SortableContext,
+  useSortable,
+  verticalListSortingStrategy
+} from '@dnd-kit/sortable'
+import { CSS } from '@dnd-kit/utilities'
 
 import { createClient } from '@/lib/supabase/client'
 import { cn, formatCurrency, parseLocalDate, formatLocalDate } from '@/lib/utils'
@@ -56,6 +70,29 @@ type Party = {
 type Item = { id: number; name: string; default_rate: number; units: { name: string; } | null; item_party_prices: { party_id: number; price: number }[] }
 type AppSettings = { key: string; value: string }
 
+function SortableRow({ id, index, children }: { id: string, index: number, children: React.ReactNode }) {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id });
+  return (
+    <tr
+      ref={setNodeRef}
+      style={{
+        transform: CSS.Transform.toString(transform),
+        transition,
+        opacity: isDragging ? 0.5 : 1,
+      }}
+      {...attributes}
+    >
+      <TableCell style={{ width: 32, cursor: 'grab' }}>
+        <span {...listeners}>
+          <Move size={16} className='text-muted-foreground' />
+        </span>
+      </TableCell>
+      <TableCell className="font-medium" style={{ width: 40, paddingLeft: 8, paddingRight: 8 }}>{index + 1}</TableCell>
+      {children}
+    </tr>
+  );
+}
+
 export function InvoiceForm({ invoiceId }: { invoiceId?: string }) {
   const router = useRouter()
   const supabase = createClient()
@@ -68,7 +105,6 @@ export function InvoiceForm({ invoiceId }: { invoiceId?: string }) {
   const [isPartyLocked, setIsPartyLocked] = useState(!!invoiceId)
   const [snapshottedPartyName, setSnapshottedPartyName] = useState<string | null>(null)
   const [unitsData, setUnitsData] = useState<{ id: number; name: string }[]>([])
-
 
   const form = useForm<z.infer<typeof invoiceSchema>>({
     resolver: zodResolver(invoiceSchema),
@@ -83,7 +119,7 @@ export function InvoiceForm({ invoiceId }: { invoiceId?: string }) {
     },
   })
   
-  const { fields, append, remove, update } = useFieldArray({
+  const { fields, append, remove, update, move } = useFieldArray({
     control: form.control,
     name: "items"
   });
@@ -218,6 +254,11 @@ export function InvoiceForm({ invoiceId }: { invoiceId?: string }) {
 
   const subTotal = form.watch('subTotal') || 0
   const grandTotal = form.watch('grandTotal') || 0
+
+  // DnD-kit setup
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 5 } })
+  )
 
   const onSubmit = async (values: z.infer<typeof invoiceSchema>) => {
     if (!isPartyLocked && !values.party_id) {
@@ -381,148 +422,147 @@ export function InvoiceForm({ invoiceId }: { invoiceId?: string }) {
                 </Button>
               </div>
               <div className="border rounded-md">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>No</TableHead>
-                      <TableHead>Item</TableHead>
-                      <TableHead className="w-[80px] text-right">Qty</TableHead>
-                      <TableHead className="w-[60px] text-right">Unit</TableHead>
-                      <TableHead className="w-[100px] text-right">Rate</TableHead>
-                      <TableHead className="text-right">Amount</TableHead>
-                      <TableHead className="w-[50px]"></TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {fields.length > 0 ? (
-                      fields.map((field, index) => {
-                        return (
-                          <TableRow key={field.id}>
-                            <TableCell>{index + 1}</TableCell>
-                            <TableCell className="font-medium">
-                              <FormField
-                                control={form.control}
-                                name={`items.${index}.item_name`}
-                                render={({ field: itemNameField }) => (
-                                  <Input
-                                    {...itemNameField}
-                                    className="h-9 font-medium"
-                                    name={`items.${index}.item_name`}
-                                    onKeyDown={e => {
-                                      if (e.key === 'Enter') {
-                                        e.preventDefault();
-                                        const qtyInput = document.querySelector(
-                                          `input[name='items.${index}.quantity']`
-                                        ) as HTMLInputElement | null;
-                                        if (qtyInput) {
-                                          qtyInput.focus();
-                                          qtyInput.select();
+                <DndContext
+                  sensors={sensors}
+                  collisionDetection={closestCenter}
+                  onDragEnd={event => {
+                    const { active, over } = event
+                    if (active.id !== over?.id) {
+                      const oldIndex = fields.findIndex(f => f.id === active.id)
+                      const newIndex = fields.findIndex(f => f.id === over?.id)
+                      move(oldIndex, newIndex)
+                    }
+                  }}
+                >
+                  <SortableContext items={fields.map(f => f.id)} strategy={verticalListSortingStrategy}>
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead></TableHead>
+                          <TableHead style={{ width: 40, paddingLeft: 8, paddingRight: 8 }}>No</TableHead>
+                          <TableHead>Item</TableHead>
+                          <TableHead className="w-[80px] text-left">Qty</TableHead>
+                          <TableHead className="w-[60px] text-left">Unit</TableHead>
+                          <TableHead className="w-[100px] text-left">Rate</TableHead>
+                          <TableHead className="text-right">Amount</TableHead>
+                          <TableHead className="w-[50px]"></TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {fields.length > 0 ? (
+                          fields.map((field, index) => (
+                            <SortableRow key={field.id} id={field.id} index={index}>
+                              <TableCell>
+                                <FormField
+                                  control={form.control}
+                                  name={`items.${index}.item_name`}
+                                  render={({ field: itemField }) => (
+                                    <FormControl>
+                                      <Input {...itemField} />
+                                    </FormControl>
+                                  )}
+                                />
+                              </TableCell>
+                              <TableCell className="text-left">
+                                <FormField
+                                  control={form.control}
+                                  name={`items.${index}.quantity`}
+                                  render={({ field: quantityField }) => (
+                                    <Input
+                                      type="number"
+                                      {...quantityField}
+                                      className="text-left"
+                                      name={`items.${index}.quantity`}
+                                      onChange={e => quantityField.onChange(parseInt(e.target.value, 10) || 0)}
+                                      onKeyDown={e => {
+                                        if (e.key === 'Enter') {
+                                          e.preventDefault();
+                                          const rateInput = document.querySelector(
+                                            `input[name='items.${index}.rate']`
+                                          ) as HTMLInputElement | null;
+                                          if (rateInput) {
+                                            rateInput.focus();
+                                            rateInput.select();
+                                          }
                                         }
-                                      }
-                                    }}
-                                  />
-                                )}
-                              />
-                            </TableCell>
-                            <TableCell className="text-right">
-                              <FormField
-                                control={form.control}
-                                name={`items.${index}.quantity`}
-                                render={({ field: quantityField }) => (
-                                  <Input
-                                    type="number"
-                                    {...quantityField}
-                                    className="text-right"
-                                    name={`items.${index}.quantity`}
-                                    onChange={e => quantityField.onChange(parseInt(e.target.value, 10) || 0)}
-                                    onKeyDown={e => {
-                                      if (e.key === 'Enter') {
-                                        e.preventDefault();
-                                        const rateInput = document.querySelector(
-                                          `input[name='items.${index}.rate']`
-                                        ) as HTMLInputElement | null;
-                                        if (rateInput) {
-                                          rateInput.focus();
-                                          rateInput.select();
+                                      }}
+                                    />
+                                  )}
+                                />
+                              </TableCell>
+                              <TableCell className="text-left">
+                                <FormField
+                                  control={form.control}
+                                  name={`items.${index}.item_unit`}
+                                  render={({ field: unitField }) => (
+                                    <Select
+                                      value={unitField.value}
+                                      onValueChange={unitField.onChange}
+                                    >
+                                      <SelectTrigger className="w-full h-9 text-left">
+                                        <SelectValue placeholder="Select unit" />
+                                      </SelectTrigger>
+                                      <SelectContent>
+                                        {unitsData.map(unit => (
+                                          <SelectItem key={unit.id} value={unit.name}>{unit.name}</SelectItem>
+                                        ))}
+                                      </SelectContent>
+                                    </Select>
+                                  )}
+                                />
+                              </TableCell>
+                              <TableCell className="text-left">
+                                <FormField
+                                  control={form.control}
+                                  name={`items.${index}.rate`}
+                                  render={({ field: rateField }) => (
+                                    <Input
+                                      type="number"
+                                      step="0.01"
+                                      {...rateField}
+                                      className="text-left"
+                                      name={`items.${index}.rate`}
+                                      onChange={e => rateField.onChange(parseFloat(e.target.value) || 0)}
+                                      onKeyDown={e => {
+                                        if (e.key === 'Enter') {
+                                          e.preventDefault();
+                                          const nextIndex = index + 1;
+                                          const nextQtyInput = document.querySelector(
+                                            `input[name='items.${nextIndex}.quantity']`
+                                          ) as HTMLInputElement | null;
+                                          if (nextQtyInput) {
+                                            nextQtyInput.focus();
+                                            nextQtyInput.select();
+                                          }
                                         }
-                                      }
-                                    }}
-                                  />
-                                )}
-                              />
-                            </TableCell>
-                            <TableCell className="text-right">
-                              <FormField
-                                control={form.control}
-                                name={`items.${index}.item_unit`}
-                                render={({ field: unitField }) => (
-                                  <Select
-                                    value={unitField.value}
-                                    onValueChange={unitField.onChange}
-                                  >
-                                    <SelectTrigger className="w-full h-9 text-right">
-                                      <SelectValue placeholder="Select unit" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                      {unitsData.map(unit => (
-                                        <SelectItem key={unit.id} value={unit.name}>{unit.name}</SelectItem>
-                                      ))}
-                                    </SelectContent>
-                                  </Select>
-                                )}
-                              />
-                            </TableCell>
-                            <TableCell className="text-right">
-                              <FormField
-                                control={form.control}
-                                name={`items.${index}.rate`}
-                                render={({ field: rateField }) => (
-                                  <Input
-                                    type="number"
-                                    step="0.01"
-                                    {...rateField}
-                                    className="text-right"
-                                    name={`items.${index}.rate`}
-                                    onChange={e => rateField.onChange(parseFloat(e.target.value) || 0)}
-                                    onKeyDown={e => {
-                                      if (e.key === 'Enter') {
-                                        e.preventDefault();
-                                        const nextIndex = index + 1;
-                                        const nextQtyInput = document.querySelector(
-                                          `input[name='items.${nextIndex}.quantity']`
-                                        ) as HTMLInputElement | null;
-                                        if (nextQtyInput) {
-                                          nextQtyInput.focus();
-                                          nextQtyInput.select();
-                                        }
-                                      }
-                                    }}
-                                  />
-                                )}
-                              />
-                            </TableCell>
-                            <TableCell className="text-right">{formatCurrency((form.watch(`items.${index}.quantity`) || 0) * (form.watch(`items.${index}.rate`) || 0))}</TableCell>
-                            <TableCell>
-                              <Button variant="ghost" size="icon" onClick={() => remove(index)}>
-                                <Trash2 className="h-4 w-4" />
+                                      }}
+                                    />
+                                  )}
+                                />
+                              </TableCell>
+                              <TableCell className="text-right">{formatCurrency((form.watch(`items.${index}.quantity`) || 0) * (form.watch(`items.${index}.rate`) || 0))}</TableCell>
+                              <TableCell>
+                                <Button variant="ghost" size="icon" onClick={() => remove(index)}>
+                                  <Trash className="h-4 w-4 text-red-500" />
+                                </Button>
+                              </TableCell>
+                            </SortableRow>
+                          ))
+                        ) : (
+                          <TableRow>
+                            <TableCell colSpan={8} className="text-center h-48">
+                              <p className="mb-4">No items have been added yet.</p>
+                              <Button type="button" onClick={() => setIsAddItemDialogOpen(true)}>
+                                <PlusCircle className="mr-2 h-4 w-4" />
+                                Add First Item
                               </Button>
                             </TableCell>
                           </TableRow>
-                        )
-                      })
-                    ) : (
-                      <TableRow>
-                        <TableCell colSpan={7} className="text-center h-48">
-                          <p className="mb-4">No items have been added yet.</p>
-                          <Button type="button" onClick={() => setIsAddItemDialogOpen(true)}>
-                            <PlusCircle className="mr-2 h-4 w-4" />
-                            Add First Item
-                          </Button>
-                        </TableCell>
-                      </TableRow>
-                    )}
-                  </TableBody>
-                </Table>
+                        )}
+                      </TableBody>
+                    </Table>
+                  </SortableContext>
+                </DndContext>
               </div>
             </div>
           </div>
