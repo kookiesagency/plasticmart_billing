@@ -35,8 +35,13 @@ export function InvoiceActions({
     };
 
     const onReady = () => {
+      const originalTitle = document.title;
+      document.title = `${party_name} ${invoice_date}`;
       window.print();
-      setTimeout(cleanup, 100); 
+      setTimeout(() => {
+        document.title = originalTitle;
+        cleanup();
+      }, 100);
     };
 
     root.render(

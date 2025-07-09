@@ -221,9 +221,13 @@ export const columns = (
 
         // This function will be called by PrintableInvoice when it's ready
         const onReady = () => {
+          const originalTitle = document.title;
+          document.title = `${invoice.party_name} ${invoice.invoice_date}`;
           window.print();
-          // Cleanup needs to be slightly delayed to allow the print dialog to open
-          setTimeout(cleanup, 100); 
+          setTimeout(() => {
+            document.title = originalTitle;
+            cleanup();
+          }, 100);
         };
 
         // Render the invoice component. It will call onReady when data is fetched.
