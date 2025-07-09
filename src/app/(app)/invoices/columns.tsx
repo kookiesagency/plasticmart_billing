@@ -15,6 +15,7 @@ import Link from 'next/link'
 import { Badge } from '@/components/ui/badge'
 import { Checkbox } from '@/components/ui/checkbox'
 import { formatCurrency, formatDate } from '@/lib/utils'
+import { isSameDay, parseISO } from 'date-fns';
 import { toast } from "sonner"
 import { createClient } from "@/lib/supabase/client"
 import { createRoot } from 'react-dom/client'
@@ -89,6 +90,39 @@ export const columns = (
         <ArrowUpDown className="ml-2 h-4 w-4" />
       </Button>
     ),
+    cell: ({ row }) => {
+      const partyName = row.getValue('party_name') as string;
+      const invoiceDateRaw = row.original.invoice_date; // e.g., '2025-07-09'
+      const updatedAtRaw = row.original.updated_at;     // e.g., '2025-07-09T18:32:50.628496+00:00'
+
+      // Get today's date in local YYYY-MM-DD
+      const todayStr = new Date().toISOString().slice(0, 10);
+
+      // invoice_date is already YYYY-MM-DD
+      const isNew = invoiceDateRaw === todayStr;
+
+      // Convert updated_at to local date string YYYY-MM-DD
+      const updatedAtLocal = new Date(updatedAtRaw);
+      const updatedAtStr = new Date(
+        updatedAtLocal.getFullYear(),
+        updatedAtLocal.getMonth(),
+        updatedAtLocal.getDate()
+      ).toISOString().slice(0, 10);
+
+      const isUpdated = !isNew && updatedAtStr === todayStr;
+
+      return (
+        <span className="flex items-center gap-2">
+          {partyName}
+          {isNew && (
+            <span className="px-1.5 py-0 rounded text-green-700 bg-green-100 text-[10px] font-bold tracking-wide">NEW</span>
+          )}
+          {isUpdated && (
+            <span className="px-1.5 py-0 rounded text-blue-700 bg-blue-100 text-[10px] font-bold tracking-wide">UPDATED</span>
+          )}
+        </span>
+      );
+    },
   },
   {
     accessorKey: 'total_amount',

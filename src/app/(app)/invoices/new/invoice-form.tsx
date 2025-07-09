@@ -486,6 +486,7 @@ export function InvoiceForm({ invoiceId }: { invoiceId?: string }) {
                                           }
                                         }
                                       }}
+                                      onWheel={e => (e.target as HTMLInputElement).blur()}
                                     />
                                   )}
                                 />
@@ -536,6 +537,7 @@ export function InvoiceForm({ invoiceId }: { invoiceId?: string }) {
                                           }
                                         }
                                       }}
+                                      onWheel={e => (e.target as HTMLInputElement).blur()}
                                     />
                                   )}
                                 />
@@ -588,7 +590,7 @@ export function InvoiceForm({ invoiceId }: { invoiceId?: string }) {
                         render={({ field }) => (
                           <FormItem>
                             <FormControl>
-                              <Input {...field} type="number" className="w-24 text-right" placeholder="Qty" />
+                              <Input {...field} type="number" className="w-24 text-right" placeholder="Qty" onWheel={e => (e.target as HTMLInputElement).blur()} />
                             </FormControl>
                           </FormItem>
                         )}
@@ -602,7 +604,7 @@ export function InvoiceForm({ invoiceId }: { invoiceId?: string }) {
                         render={({ field }) => (
                           <FormItem>
                             <FormControl>
-                              <Input {...field} type="number" className="w-24 text-right" placeholder="Rate" />
+                              <Input {...field} type="number" className="w-24 text-right" placeholder="Rate" onWheel={e => (e.target as HTMLInputElement).blur()} />
                             </FormControl>
                           </FormItem>
                         )}
@@ -616,7 +618,7 @@ export function InvoiceForm({ invoiceId }: { invoiceId?: string }) {
                         render={({ field }) => (
                           <FormItem>
                             <FormControl>
-                              <Input {...field} type="number" className="w-24 text-right font-semibold" placeholder="Total" />
+                              <Input {...field} type="number" className="w-24 text-right font-semibold" placeholder="Total" onWheel={e => (e.target as HTMLInputElement).blur()} />
                             </FormControl>
                           </FormItem>
                         )}
