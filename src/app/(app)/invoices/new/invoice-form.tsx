@@ -49,6 +49,7 @@ const invoiceItemSchema = z.object({
   rate: z.coerce.number(),
   item_name: z.string(),
   item_unit: z.string(),
+  position: z.number().optional(),
 })
 
 const invoiceSchema = z.object({
@@ -199,7 +200,14 @@ export function InvoiceForm({ invoiceId }: { invoiceId?: string }) {
             bundle_rate: invoiceData.bundle_rate,
             bundle_quantity: invoiceData.bundle_quantity,
             bundle_charge: invoiceData.bundle_charge,
-            items: invoiceData.invoice_items,
+            items: (invoiceData.invoice_items || [])
+              .sort((a: any, b: any) => {
+                const ap = typeof a.position === 'number' ? a.position : Number.MAX_SAFE_INTEGER
+                const bp = typeof b.position === 'number' ? b.position : Number.MAX_SAFE_INTEGER
+                if (ap !== bp) return ap - bp
+                return a.id - b.id
+              })
+              .map((it: any, idx: number) => ({ ...it, position: typeof it.position === 'number' ? it.position : idx })),
           })
         } else if (error) {
           toast.error('Failed to fetch invoice data: ' + error.message)
@@ -295,7 +303,7 @@ export function InvoiceForm({ invoiceId }: { invoiceId?: string }) {
       
       if (!updateError) {
         await supabase.from('invoice_items').delete().eq('invoice_id', invoiceId)
-        const itemsToInsert = items.map(item => ({ ...item, invoice_id: parseInt(invoiceId, 10) }))
+        const itemsToInsert = items.map((item, idx) => ({ ...item, position: idx, invoice_id: parseInt(invoiceId, 10) }))
         const { error: itemsError } = await supabase.from('invoice_items').insert(itemsToInsert)
         error = itemsError
       } else {
@@ -309,7 +317,7 @@ export function InvoiceForm({ invoiceId }: { invoiceId?: string }) {
         .single()
   
       if (!invoiceError && newInvoice) {
-        const itemsToInsert = items.map(item => ({ ...item, invoice_id: newInvoice.id }))
+        const itemsToInsert = items.map((item, idx) => ({ ...item, position: idx, invoice_id: newInvoice.id }))
         const { error: itemsError } = await supabase.from('invoice_items').insert(itemsToInsert)
         error = itemsError
       } else {
