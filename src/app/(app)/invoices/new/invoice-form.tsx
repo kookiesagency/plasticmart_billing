@@ -257,7 +257,6 @@ export function InvoiceForm({ invoiceId }: { invoiceId?: string }) {
       item_name: item.name,
       item_unit: item.units?.name || 'N/A'
     })
-    setItemSearch('')
   }
 
   const subTotal = form.watch('subTotal') || 0
@@ -672,6 +671,7 @@ type AddItemDialogProps = {
 
 const AddItemDialog = ({ isOpen, onOpenChange, itemsData, quickAddItem, getItemPrice, itemSearch, setItemSearch, fields }: AddItemDialogProps) => {
   const [highlightedIndex, setHighlightedIndex] = useState<number | null>(null);
+  const listRef = React.useRef<HTMLDivElement | null>(null);
   const addedItemIds = fields.map(f => f.item_id)
   // Sort alphabetically
   const availableItems = [...itemsData]
@@ -686,6 +686,24 @@ const AddItemDialog = ({ isOpen, onOpenChange, itemsData, quickAddItem, getItemP
   React.useEffect(() => {
     setHighlightedIndex(filteredItems.length > 0 ? 0 : null);
   }, [itemSearch, filteredItems.length]);
+  
+  React.useEffect(() => {
+    // Keep the highlighted row in view when navigating
+    if (highlightedIndex === null) return;
+    const container = listRef.current;
+    if (!container) return;
+    const row = container.querySelectorAll('tr')[highlightedIndex] as HTMLElement | undefined;
+    if (!row) return;
+    const rowTop = row.offsetTop;
+    const rowBottom = rowTop + row.offsetHeight;
+    const viewTop = container.scrollTop;
+    const viewBottom = viewTop + container.clientHeight;
+    if (rowTop < viewTop) {
+      container.scrollTop = rowTop;
+    } else if (rowBottom > viewBottom) {
+      container.scrollTop = rowBottom - container.clientHeight;
+    }
+  }, [highlightedIndex]);
   
   const handleKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
     if (filteredItems.length === 0) return;
@@ -721,7 +739,7 @@ const AddItemDialog = ({ isOpen, onOpenChange, itemsData, quickAddItem, getItemP
             onChange={e => setItemSearch(e.target.value)}
             onKeyDown={handleKeyDown}
           />
-          <div className="max-h-[400px] overflow-y-auto">
+          <div ref={listRef} className="max-h-[400px] overflow-y-auto">
             <Table>
               <TableHeader>
                 <TableRow>
@@ -737,8 +755,8 @@ const AddItemDialog = ({ isOpen, onOpenChange, itemsData, quickAddItem, getItemP
                       onClick={() => quickAddItem(item.id)}
                       className={`cursor-pointer hover:bg-muted/50 ${highlightedIndex === idx ? 'bg-primary/10' : ''}`}
                     >
-                      <TableCell>{item.name}</TableCell>
-                      <TableCell className="text-right">{formatCurrency(getItemPrice(item.id))}</TableCell>
+                      <TableCell className="whitespace-normal">{item.name}</TableCell>
+                      <TableCell className="text-right whitespace-normal">{formatCurrency(getItemPrice(item.id))}</TableCell>
                     </TableRow>
                   ))
                 ) : (
