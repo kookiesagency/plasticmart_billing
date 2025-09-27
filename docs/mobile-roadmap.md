@@ -38,10 +38,20 @@ This document outlines the development plan for the PlasticMart Mobile applicati
 - [ ] Configure offline storage (MMKV/AsyncStorage)
 
 ### **1.2 Authentication & Settings**
-- [ ] **Simple Login:** Basic authentication flow
+- [ ] **Simple Login:** Basic authentication flow with Supabase
 - [ ] **App Settings:** Mode toggle (Basic/Advanced)
 - [ ] **User Preferences:** Theme, language, offline settings
 - [ ] **Data Sync Settings:** Auto-sync intervals, offline behavior
+- [ ] **Unit Management:** Add/edit/delete measurement units (KG, PCS, DZ, etc.)
+  - Simple list with add/edit forms
+  - Default unit selection
+  - Soft delete with restore
+- [ ] **Default Bundle Rate:** Configure global bundle rate setting
+- [ ] **App Configuration:**
+  - Company name and details
+  - Invoice number prefix/format
+  - Default currency settings
+- [ ] **Security Settings:** Auto-logout, PIN protection (optional)
 
 ### **1.3 Party Management (Basic Mode)**
 - [ ] **Add New Party:**
@@ -118,15 +128,50 @@ This document outlines the development plan for the PlasticMart Mobile applicati
 ### **1.7 Invoice Management (Basic Mode)**
 - [ ] **Invoice List:**
   - Card-based layout showing: Party, Date, Total, Status
-  - Search and filter by party/date
+  - Search and filter by party/date/amount
   - Status indicators (Paid/Pending/Partial)
   - Pull-to-refresh functionality
+  - Infinite scroll for large datasets
 - [ ] **Invoice Actions:**
-  - View invoice details
-  - Download PDF (same as web app)
+  - View detailed invoice screen
+  - Download PDF (mobile-optimized)
   - Share via WhatsApp/Email/SMS
-- [ ] **Invoice Status Updates:** Mark as paid/pending
+  - Print integration (if available)
+- [ ] **Invoice Status Updates:** Mark as paid/pending/partial
+- [ ] **Edit Invoice:** Modify existing invoices (Basic: limited fields)
 - [ ] **Delete Invoice:** Soft delete with restore option
+- [ ] **Duplicate Invoice:** Create copy of existing invoice
+
+### **1.8 Payment Management (Basic Mode)**
+- [ ] **Record Payments:**
+  - Simple payment entry form
+  - Payment method selection (Cash, Bank, UPI, etc.)
+  - Partial payment support
+  - Payment date selection
+- [ ] **Payment History:**
+  - List payments per invoice
+  - Payment method indicators
+  - Date and amount display
+- [ ] **Outstanding Balance:**
+  - Visual indicators for pending amounts
+  - Quick payment shortcuts
+  - Balance summary per party
+
+### **1.9 PDF & Sharing (Basic Mode)**
+- [ ] **PDF Generation:**
+  - Mobile-optimized invoice templates
+  - Company logo and details
+  - Professional formatting
+  - Local storage for offline access
+- [ ] **Sharing Options:**
+  - Direct WhatsApp sharing
+  - Email with PDF attachment
+  - SMS with link (for large files)
+  - Save to device storage
+- [ ] **Print Integration:**
+  - Bluetooth printer support
+  - Cloud printing (Google Cloud Print)
+  - Preview before printing
 
 ---
 
@@ -134,34 +179,140 @@ This document outlines the development plan for the PlasticMart Mobile applicati
 
 ### **2.1 Advanced Party Management**
 - [ ] **Detailed Party View:** Complete party profile with invoice history
-- [ ] **Bulk Operations:** Import/export parties
-- [ ] **Advanced Search:** Filter by balance, bundle rate, etc.
-- [ ] **Payment History:** View all payments from party
+- [ ] **Bulk Operations:** Import/export parties via CSV
+- [ ] **Advanced Search:** Filter by balance, bundle rate, creation date
+- [ ] **Payment History:** View all payments from party with detailed breakdown
+- [ ] **Party Reports:** Outstanding balances, payment trends
+- [ ] **Bulk Actions:** Mass update bundle rates, merge duplicate parties
+- [ ] **Contact Sync:** Two-way sync with phone contacts
+- [ ] **Party Categories:** Group parties by type/location
+- [ ] **Credit Limits:** Set and monitor credit limits per party
+- [ ] **Deleted Parties Tab:** View and restore deleted parties
+- [ ] **Permanent Delete:** Irreversible party deletion with confirmations
 
 ### **2.2 Advanced Item Management**
 - [ ] **Advanced Pricing Features:**
-  - Bulk pricing updates
-  - Pricing history tracking
-  - Price comparison tools
-  - Profit margin calculations
-- [ ] **Bulk Operations:** Import/export items
-- [ ] **Item Categories:** Organize items by categories
-- [ ] **Stock Management:** Basic inventory tracking
-- [ ] **Advanced Search:** Filter by rate, unit, category, pricing status
+  - Bulk pricing updates across multiple items
+  - Pricing history tracking and analytics
+  - Price comparison tools and suggestions
+  - Profit margin calculations and reporting
+  - Automated pricing rules based on purchase rate
+- [ ] **Bulk Operations:**
+  - Import/export items via CSV with preview
+  - Mass edit item properties
+  - Bulk delete and restore operations
+- [ ] **Item Categories:**
+  - Create and manage item categories
+  - Nested category support
+  - Category-based reporting
+- [ ] **Stock Management:**
+  - Basic inventory tracking
+  - Low stock alerts and notifications
+  - Stock adjustment logs
+- [ ] **Advanced Search:**
+  - Filter by rate, unit, category, pricing status
+  - Multi-criteria search with saved filters
+  - Global search across all item properties
+- [ ] **Item Analytics:**
+  - Best-selling items reports
+  - Price trend analysis
+  - Party preference insights
+- [ ] **Deleted Items Management:**
+  - Deleted items tab with restore functionality
+  - Permanent delete with cascading confirmations
+  - Bulk restore operations
+- [ ] **Item Images:**
+  - Photo gallery for each item
+  - Image compression and optimization
+  - Photo-based item search
 
 ### **2.3 Advanced Invoice Features**
-- [ ] **Invoice Templates:** Multiple invoice layouts
-- [ ] **Recurring Invoices:** Set up automatic invoice generation
-- [ ] **Multi-Currency:** Support for different currencies
-- [ ] **Tax Management:** Add tax calculations
-- [ ] **Bulk Invoice Operations:** Bulk status updates, exports
+- [ ] **Invoice Templates:**
+  - Multiple professional invoice layouts
+  - Custom logo and branding options
+  - Template preview and selection
+  - Company-specific formatting
+- [ ] **Recurring Invoices:**
+  - Set up automatic invoice generation
+  - Flexible scheduling (daily, weekly, monthly)
+  - Auto-send and notification options
+- [ ] **Multi-Currency:**
+  - Support for different currencies
+  - Real-time exchange rate updates
+  - Currency conversion history
+- [ ] **Tax Management:**
+  - Multiple tax rate support (GST, VAT, etc.)
+  - Tax-inclusive and exclusive pricing
+  - Tax reports and compliance
+- [ ] **Bulk Invoice Operations:**
+  - Bulk status updates (paid/pending)
+  - Mass export to PDF/CSV
+  - Bulk delete and restore
+  - Batch email/WhatsApp sending
+- [ ] **Advanced Invoice Management:**
+  - Invoice versioning and history
+  - Credit notes and refunds
+  - Invoice approval workflows
+  - Custom invoice numbering schemes
+- [ ] **Invoice Analytics:**
+  - Invoice performance metrics
+  - Payment pattern analysis
+  - Revenue forecasting
+- [ ] **Deleted Invoices Management:**
+  - Deleted invoices tab
+  - Restore functionality with dependencies
+  - Permanent delete with data integrity checks
 
 ### **2.4 Reports & Analytics**
-- [ ] **Sales Reports:** Daily, weekly, monthly sales
-- [ ] **Party Reports:** Outstanding balances, payment history
-- [ ] **Item Reports:** Best-selling items, stock levels
-- [ ] **Dashboard:** Key metrics and charts
-- [ ] **Export Options:** PDF, CSV, Excel exports
+- [ ] **Sales Reports:**
+  - Daily, weekly, monthly, yearly sales
+  - Custom date range reporting
+  - Sales trend analysis with charts
+  - Top-selling items and parties
+  - Revenue vs target tracking
+- [ ] **Party Reports:**
+  - Outstanding balances with aging analysis
+  - Payment history and patterns
+  - Party-wise profitability analysis
+  - Credit limit utilization
+- [ ] **Item Reports:**
+  - Best-selling items with quantities
+  - Stock levels and movement reports
+  - Price history and trend analysis
+  - Profit margin reports per item
+- [ ] **Dashboard:**
+  - Key metrics with visual indicators
+  - Interactive charts and graphs
+  - Real-time data updates
+  - Customizable widget layout
+  - Quick action shortcuts
+- [ ] **Export Options:**
+  - PDF reports with professional formatting
+  - CSV exports for Excel compatibility
+  - Email reports with scheduling
+  - Cloud storage integration (Google Drive, Dropbox)
+
+### **2.5 Advanced Data Management**
+- [ ] **Global Search:**
+  - Search across all data types (parties, items, invoices)
+  - Smart search suggestions
+  - Recent searches history
+  - Saved search queries
+- [ ] **Data Import/Export:**
+  - Comprehensive CSV import with mapping
+  - Data validation and error handling
+  - Import preview and confirmation
+  - Export with custom field selection
+- [ ] **Data Backup & Sync:**
+  - Manual and automatic backup options
+  - Cloud backup integration
+  - Data restoration from backups
+  - Sync conflict resolution
+- [ ] **Activity Logs (Advanced Mode):**
+  - Detailed audit trail of all changes
+  - User action tracking
+  - Data change history
+  - Export logs for compliance
 
 ---
 
@@ -209,20 +360,28 @@ This document outlines the development plan for the PlasticMart Mobile applicati
 ## **Technical Architecture**
 
 ### **Development Stack**
-- **Framework:** React Native with TypeScript
-- **Navigation:** React Navigation v6
-- **State Management:** Zustand (lightweight) or Redux Toolkit
-- **Database:** Supabase (shared with web)
-- **Storage:** MMKV for offline data
-- **UI Library:** React Native Paper or NativeBase
-- **Forms:** React Hook Form with Zod validation
-- **Charts:** Victory Native (for advanced mode)
+- **Framework:** React Native with TypeScript and Expo
+- **Navigation:** React Navigation v6 with stack and tab navigators
+- **State Management:** Zustand (lightweight) with persistence
+- **Database:** Supabase (shared with web) with React Native client
+- **Storage:** MMKV for offline data and app preferences
+- **UI Library:** React Native Elements or NativeBase
+- **Forms:** React Hook Form with Zod validation schemas
+- **Charts:** Victory Native (for advanced mode analytics)
+- **PDF Generation:** react-native-pdf-lib or react-native-html-to-pdf
+- **Image Handling:** react-native-image-picker and image compression
+- **Notifications:** Expo Notifications for push notifications
+- **File System:** Expo FileSystem for document management
+- **Printing:** react-native-print for invoice printing
+- **Sharing:** react-native-share for multi-platform sharing
 
 ### **Shared Code Strategy**
-- **Database Layer:** Shared Supabase utilities
-- **Business Logic:** Shared TypeScript utilities
-- **Types:** Shared TypeScript interfaces
-- **Validation:** Shared Zod schemas
+- **Database Layer:** Shared Supabase utilities and API functions
+- **Business Logic:** Shared TypeScript utilities for calculations
+- **Types:** Shared TypeScript interfaces for all data models
+- **Validation:** Shared Zod schemas for form validation
+- **Constants:** Shared app constants and configuration
+- **Utils:** Shared formatting, currency, and date utilities
 
 ### **Performance Considerations**
 - **Lazy Loading:** Load features based on mode
@@ -298,4 +457,113 @@ This document outlines the development plan for the PlasticMart Mobile applicati
 
 ---
 
-This roadmap ensures a progressive development approach, starting with essential features for laymen and gradually adding advanced capabilities for power users.
+## **Implementation Guidelines**
+
+### **Database Integration Strategy**
+- **Phase 1 Priority:** Connect mobile app to existing Supabase database
+- **Shared Tables:** Use same tables as web app (parties, items, invoices, etc.)
+- **Mobile-Specific Tables:** Add mobile preferences, offline cache
+- **Data Sync:** Implement real-time sync using Supabase subscriptions
+- **Conflict Resolution:** Handle offline/online data conflicts gracefully
+
+### **Navigation Architecture**
+```
+App Navigator (Stack)
+├── Auth Stack (when not logged in)
+│   └── LoginScreen
+├── Main Tab Navigator (when logged in)
+│   ├── Dashboard Tab (Advanced Mode only)
+│   ├── Invoices Tab
+│   │   ├── InvoiceListScreen
+│   │   ├── CreateInvoiceScreen
+│   │   └── InvoiceDetailScreen
+│   ├── Parties Tab
+│   │   ├── PartyListScreen
+│   │   ├── AddPartyScreen
+│   │   └── PartyDetailScreen
+│   ├── Items Tab
+│   │   ├── ItemListScreen
+│   │   ├── AddItemScreen
+│   │   └── ItemDetailScreen
+│   └── Settings Tab
+│       ├── SettingsScreen
+│       ├── UnitsScreen
+│       └── PreferencesScreen
+└── Modal Stack (overlays)
+    ├── PaymentModal
+    ├── PDFPreviewModal
+    └── ShareModal
+```
+
+### **State Management Architecture**
+```typescript
+// Global Zustand Store Structure
+interface AppStore {
+  // Auth state
+  user: User | null;
+  isAuthenticated: boolean;
+
+  // App settings
+  mode: 'basic' | 'advanced';
+  theme: 'light' | 'dark';
+
+  // Data caches (for offline support)
+  parties: Party[];
+  items: Item[];
+  invoices: Invoice[];
+
+  // UI state
+  isLoading: boolean;
+  activeTab: string;
+
+  // Actions
+  login: (user: User) => void;
+  logout: () => void;
+  setMode: (mode: 'basic' | 'advanced') => void;
+  syncData: () => Promise<void>;
+}
+```
+
+### **Offline Strategy**
+- **Local Storage:** Use MMKV for critical data caching
+- **Sync Queue:** Queue operations when offline, sync when online
+- **Conflict Resolution:** Last-write-wins with user confirmation for conflicts
+- **Cached Data:** Store frequently accessed data locally
+- **Progressive Sync:** Sync data in background incrementally
+
+### **Security Considerations**
+- **Authentication:** Supabase JWT tokens with auto-refresh
+- **Data Encryption:** Encrypt sensitive data in local storage
+- **API Security:** Use Supabase RLS (Row Level Security) policies
+- **Biometric Auth:** Optional biometric authentication for app access
+- **Session Management:** Auto-logout after inactivity
+
+### **Performance Optimization**
+- **Lazy Loading:** Load screens and data on-demand
+- **Image Optimization:** Compress and cache item images
+- **List Virtualization:** Use FlatList for large datasets
+- **Memoization:** Cache expensive calculations
+- **Bundle Splitting:** Separate Basic and Advanced mode features
+
+### **Error Handling & Logging**
+- **Global Error Boundary:** Catch and handle React Native errors
+- **Network Error Handling:** Graceful handling of connection issues
+- **User-Friendly Messages:** Clear error messages for users
+- **Crash Reporting:** Integrate Crashlytics or Sentry
+- **Debug Logging:** Comprehensive logging for development
+
+### **Testing Strategy**
+- **Unit Tests:** Jest for business logic and utilities
+- **Component Tests:** React Native Testing Library
+- **Integration Tests:** Detox for E2E testing
+- **Manual Testing:** Device testing matrix (iOS/Android, various screen sizes)
+
+### **Deployment & Distribution**
+- **Code Push:** Expo Updates for over-the-air updates
+- **App Store Deployment:** Automated CI/CD pipeline
+- **Beta Testing:** TestFlight (iOS) and Google Play Console (Android)
+- **Version Management:** Semantic versioning with changelog
+
+---
+
+This comprehensive roadmap ensures a progressive development approach, starting with essential features for laymen and gradually adding advanced capabilities for power users while maintaining high code quality and performance standards.
