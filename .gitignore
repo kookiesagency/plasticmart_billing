@@ -5,6 +5,9 @@
 **/node_modules
 /.pnp
 .pnp.*
+# Next.js build files
+**/*.node
+**/swc-*
 .yarn/*
 !.yarn/patches
 !.yarn/plugins
