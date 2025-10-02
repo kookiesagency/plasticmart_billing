@@ -94,6 +94,13 @@ plasticmart/
 ### **Current Status**: ✅ Flutter Mobile Foundation Complete
 **Web app functional, Flutter mobile app ready for feature development!**
 
+### **Development Workflow** 🔄
+**Phase-by-Phase Approach:**
+1. Build one feature at a time from mobile-roadmap.md
+2. Test the feature after completion
+3. Get approval before moving to next task
+4. This ensures quality and allows feedback at each step
+
 ### **Immediate Options for Next Session**:
 
 1. **📱 Implement Invoices Screen** (Recommended First)

@@ -2,6 +2,13 @@
 
 This document outlines the development plan for the PlasticMart Mobile application. The mobile app will share the same Supabase database with the web application and provide a simplified, layman-friendly interface for core business operations.
 
+## **Development Approach** 🚀
+**Phase-by-Phase Implementation:**
+1. I build one feature at a time following this roadmap
+2. You test the feature in your environment
+3. Once approved, we move to the next task
+4. This ensures quality and allows for feedback at each step
+
 ---
 
 ## **App Overview**
