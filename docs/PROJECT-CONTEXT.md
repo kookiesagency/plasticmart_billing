@@ -6,8 +6,10 @@
 
 ## 🎯 Project Overview
 - **Name**: PlasticMart - Smart Billing System
-- **Tech Stack**: Next.js 15, TypeScript, Supabase, Tailwind CSS, Shadcn/UI
-- **Current Status**: Web app functional, planning mobile app
+- **Tech Stack**:
+  - **Web**: Next.js 15, TypeScript, Supabase, Tailwind CSS, Shadcn/UI
+  - **Mobile**: Flutter 3.27.1, Dart 3.6.0, Supabase Flutter, Provider
+- **Current Status**: Web app functional, Flutter mobile app foundation ready
 - **Database**: Supabase PostgreSQL (shared between web & mobile)
 
 ---
@@ -21,13 +23,14 @@
 - ✅ Smart item filtering in invoice form
 - ✅ Create item directly from invoice workflow
 
-### **Mobile App Status**: ✅ Foundation Complete
-- ✅ Monorepo architecture implemented with shared package
-- ✅ React Native + Expo app created with TypeScript
-- ✅ Shared code working (types, utils, business logic)
-- ✅ Basic Mode invoice creation screen functional
-- ✅ Professional UI with real calculations using shared utilities
-- 📋 Ready for next phase: party/item management integration
+### **Mobile App Status**: ✅ Foundation Complete (Flutter)
+- ✅ Flutter SDK 3.27.1 installed globally at ~/development/flutter
+- ✅ Separate mobile/ folder with clean Flutter project structure
+- ✅ Basic/Advanced Mode toggle with persistent settings
+- ✅ Supabase integration with same credentials as web
+- ✅ Provider state management configured
+- ✅ Home screen with adaptive bottom navigation (3 tabs Basic, 4 tabs Advanced)
+- 📋 Ready for next phase: Full CRUD operations and UI implementation
 
 ---
 
@@ -54,64 +57,85 @@
 
 ## 🏗️ Architecture Decisions
 
-### **Current Structure** ✅ (Implemented Monorepo)
+### **Current Structure** ✅ (Independent Projects)
 ```
 plasticmart/
-├── packages/
-│   ├── shared/              # Shared business logic & types
-│   │   ├── src/types/      # TypeScript interfaces
-│   │   ├── src/schemas/    # Zod validation schemas
-│   │   ├── src/utils/      # Calculations, formatting
-│   │   └── src/database/   # Supabase client & API
-│   ├── web/                # Next.js app (existing)
-│   └── mobile/             # React Native + Expo app (new!)
-├── package.json            # Root workspace config
-└── MOBILE-SETUP.md        # Setup documentation
+├── web/                    # Next.js web application
+│   ├── src/
+│   │   ├── app/(app)/     # App routes
+│   │   ├── components/    # React components
+│   │   ├── lib/           # Utilities
+│   │   └── shared/        # Shared code (moved from packages)
+│   └── package.json
+├── mobile/                # Flutter mobile application
+│   ├── lib/
+│   │   ├── config/       # Supabase config
+│   │   ├── providers/    # State management (Provider)
+│   │   ├── screens/      # App screens
+│   │   ├── models/       # Data models
+│   │   ├── services/     # API services
+│   │   └── main.dart
+│   └── pubspec.yaml
+├── database/              # Database schemas
+├── docs/                  # Documentation
+└── package.json          # Root scripts
 ```
 
-### **Code Sharing Working** ✅
-- **95% business logic shared** between web and mobile
-- **Type safety** across all platforms
-- **Single source of truth** for calculations and validation
+### **Technology Choices** ✅
+- **Web**: Next.js for SEO, SSR, and performance
+- **Mobile**: Flutter for native performance and single codebase (iOS + Android)
+- **State**: Provider for Flutter, React Context for Next.js
+- **Database**: Supabase (shared instance for both platforms)
 
 ---
 
 ## 📋 Next Steps Priority
 
-### **Current Status**: ✅ Mobile Foundation Complete
-**Both web and mobile apps are running and functional!**
+### **Current Status**: ✅ Flutter Mobile Foundation Complete
+**Web app functional, Flutter mobile app ready for feature development!**
 
 ### **Immediate Options for Next Session**:
 
-1. **🎯 Integrate Mobile with Database** (Recommended)
-   - Connect mobile app to real Supabase data
-   - Add party/item selection from actual database
-   - Test end-to-end invoice creation and saving
+1. **📱 Implement Invoices Screen** (Recommended First)
+   - Create invoice list UI
+   - Fetch invoices from Supabase
+   - Implement invoice detail view
+   - Add create invoice navigation
 
-2. **📱 Complete Basic Mode Features**
-   - Party management (add/select customers)
-   - Item management (add/select items with party-specific pricing)
-   - Enhanced invoice creation with real data
+2. **👥 Implement Parties Screen**
+   - Party list with search
+   - Add/Edit party forms
+   - Party detail view
+   - Supabase CRUD operations
 
-3. **🔄 Database Integration**
-   - Initialize Supabase client in mobile app
-   - Test shared API functions across platforms
-   - Ensure data consistency between web and mobile
+3. **📦 Implement Items Screen (Advanced Mode)**
+   - Item list with search
+   - Add/Edit item forms
+   - Party-specific pricing UI
+   - Supabase CRUD operations
 
-4. **🚀 Advanced Mobile Features**
-   - Offline mode and sync
-   - Push notifications
-   - Camera integration for item photos
+4. **📄 Enhanced Invoice Creation**
+   - Full invoice creation form
+   - Party and item selection
+   - Calculations (bundle charge, totals)
+   - Save to Supabase
+
+5. **🔐 Authentication**
+   - Login screen
+   - Supabase auth integration
+   - Protected routes
 
 ### **Web App Status**: ✅ Complete
-- All core features working (party management, invoice creation, PDF generation, etc.)
-- Ready to share database with mobile app
+- All core features working
+- Database schema established
+- Ready as reference for mobile implementation
 
-### **Mobile App Next Phase** (from mobile-roadmap.md):
-- [ ] **Phase 1.2**: Authentication & Settings (Basic/Advanced mode toggle)
-- [ ] **Phase 1.3**: Party Management (add customers, search, contact integration)
-- [ ] **Phase 1.4**: Item Management (add items, party-specific pricing)
-- [ ] **Phase 1.5**: Enhanced Invoice Creation (step-by-step wizard, real data)
+### **Mobile App Development Path** (from mobile-roadmap.md):
+- [x] **Phase 1.1**: Project Setup & Basic/Advanced Mode Toggle
+- [ ] **Phase 1.2**: Invoice List & Detail Views
+- [ ] **Phase 1.3**: Party Management
+- [ ] **Phase 1.4**: Item Management (Advanced Mode)
+- [ ] **Phase 1.5**: Full Invoice Creation Flow
 
 ---
 
@@ -119,14 +143,16 @@ plasticmart/
 
 | File | Purpose |
 |------|---------|
-| `PROJECT-CONTEXT.md` | This file - session context |
-| `MOBILE-SETUP.md` | Mobile development achievements |
-| `roadmap.md` | Web app development progress |
-| `mobile-roadmap.md` | Mobile app detailed plan |
-| `ARCHITECTURE.md` | Code sharing strategy |
-| `packages/shared/` | Shared business logic & types |
-| `packages/web/src/app/(app)/` | Web app pages |
-| `packages/mobile/src/screens/` | Mobile app screens |
+| `docs/PROJECT-CONTEXT.md` | This file - session context |
+| `docs/MOBILE-SETUP.md` | Mobile development achievements |
+| `docs/roadmap.md` | Web app development progress |
+| `docs/mobile-roadmap.md` | Mobile app detailed plan |
+| `web/src/app/(app)/` | Web app pages & components |
+| `web/src/shared/` | Shared code (database, types, utils) |
+| `mobile/lib/` | Flutter app source code |
+| `mobile/lib/screens/` | Mobile app screens |
+| `mobile/lib/providers/` | State management |
+| `database/` | Database schemas & migrations |
 
 ---
 
@@ -144,24 +170,25 @@ plasticmart/
 
 **Tell Claude**:
 1. "Continue PlasticMart development - check PROJECT-CONTEXT.md"
-2. Specify focus: "Work on [mobile database integration / Basic Mode features / specific component]"
-3. Current git branch: `feature/new-features`
-4. **Structure**: Now using monorepo with packages/web/, packages/mobile/, packages/shared/
+2. Specify focus: "Work on [mobile invoices screen / parties / items / specific feature]"
+3. Current git branch: `main`
+4. **Structure**: Separate `web/` and `mobile/` folders
 
 **Claude will**:
-- Read current monorepo structure and context
-- Check mobile development status
-- Review shared package integration
+- Read current project structure and context
+- Check Flutter mobile development status
+- Review web app for feature reference
 - Continue mobile development from Phase 1.2+
 
 ---
 
 ## 🎯 **ACHIEVEMENT SUMMARY**
 
-✅ **Monorepo Architecture**: Successfully restructured project
-✅ **Shared Package**: 95% code reuse between web and mobile
-✅ **Mobile Foundation**: React Native + Expo app with Basic Mode UI
-✅ **Working Integration**: Shared calculations and utilities functional
-✅ **Both Apps Running**: Web (port 3001) and Mobile (port 8081) operational
+✅ **Clean Architecture**: Separate web/ and mobile/ projects
+✅ **Flutter SDK Installed**: Globally at ~/development/flutter (available for all projects)
+✅ **Mobile Foundation**: Flutter app with Basic/Advanced Mode toggle
+✅ **Supabase Integration**: Same database for web and mobile
+✅ **State Management**: Provider configured and working
+✅ **Professional Structure**: Organized folders ready for scaling
 
-**🚀 Ready for database integration and enhanced mobile features!**
+**🚀 Ready to implement full features following web app functionality!**

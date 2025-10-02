@@ -7,9 +7,10 @@ This document outlines the development plan for the PlasticMart Mobile applicati
 ## **App Overview**
 
 **Target Users:** Business owners, field staff, and anyone who needs to create invoices and manage basic data on-the-go
-**Platform:** Cross-platform (iOS & Android) using React Native
+**Platform:** Cross-platform (iOS & Android) using **Flutter**
 **Database:** Shared Supabase database with web application
 **Sync:** Real-time bidirectional sync with web app
+**State Management:** Provider (ChangeNotifier)
 
 ---
 
@@ -29,17 +30,19 @@ This document outlines the development plan for the PlasticMart Mobile applicati
 
 ## **Phase 1: MVP - Basic Mode Foundation**
 
-### **1.1 Project Setup & Architecture**
-- [ ] Set up React Native project with TypeScript
-- [ ] Configure shared components library (@plasticmart/shared)
-- [ ] Set up Supabase React Native client
-- [ ] Configure navigation (React Navigation v6)
-- [ ] Set up state management (Zustand/Redux Toolkit)
-- [ ] Configure offline storage (MMKV/AsyncStorage)
+### **1.1 Project Setup & Architecture** ✅ COMPLETE
+- [x] Set up Flutter project with Dart
+- [x] Configure Supabase Flutter client
+- [x] Set up navigation (Bottom Navigation Bar)
+- [x] Set up state management (Provider)
+- [x] Configure persistent storage (SharedPreferences)
+- [x] Implement Basic/Advanced Mode toggle
+- [x] Create home screen with adaptive tabs
+- [x] Set up project folder structure
 
-### **1.2 Authentication & Settings**
+### **1.2 Authentication & Settings** ⏳ IN PROGRESS
+- [x] **App Settings:** Mode toggle (Basic/Advanced) implemented
 - [ ] **Simple Login:** Basic authentication flow with Supabase
-- [ ] **App Settings:** Mode toggle (Basic/Advanced)
 - [ ] **User Preferences:** Theme, language, offline settings
 - [ ] **Data Sync Settings:** Auto-sync intervals, offline behavior
 - [ ] **Unit Management:** Add/edit/delete measurement units (KG, PCS, DZ, etc.)

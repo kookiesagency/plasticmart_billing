@@ -1,20 +1,15 @@
 {
-  "name": "plasticmart-ecosystem",
+  "name": "plasticmart",
+  "version": "1.0.0",
   "private": true,
-  "workspaces": [
-    "packages/*"
-  ],
   "scripts": {
-    "dev:web": "npm run dev --workspace=@plasticmart/web",
-    "dev:mobile": "npm run start --workspace=@plasticmart/mobile",
-    "build:web": "npm run build --workspace=@plasticmart/web",
-    "build:shared": "npm run build --workspace=@plasticmart/shared",
-    "test": "npm run test --workspaces",
-    "lint": "npm run lint --workspaces",
-    "dev": "npm run dev:web"
+    "dev:web": "cd web && npm run dev",
+    "build:web": "cd web && npm run build",
+    "start:web": "cd web && npm run start",
+    "lint:web": "cd web && npm run lint",
+    "dev:mobile": "cd mobile && flutter run",
+    "build:mobile:android": "cd mobile && flutter build apk",
+    "build:mobile:ios": "cd mobile && flutter build ios"
   },
-  "devDependencies": {
-    "typescript": "^5.0.0",
-    "@types/node": "^20.0.0"
-  }
+  "description": "PlasticMart Billing System - Web and Mobile"
 }
