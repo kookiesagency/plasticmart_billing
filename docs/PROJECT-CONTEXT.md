@@ -114,6 +114,12 @@ plasticmart/
 - Commit changes locally, but wait for push command
 - This prevents unnecessary deployments and gives control over timing
 
+**Branch Strategy:**
+- **`web`** branch: All web app development work
+- **`mobile`** branch: All mobile app development work
+- **`main`** branch: Production-ready merged code
+- Work on feature branches, merge to main when complete and tested
+
 ### **Immediate Options for Next Session**:
 
 1. **📱 Implement Invoices Screen** (Recommended First)
