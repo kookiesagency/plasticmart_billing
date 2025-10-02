@@ -15,8 +15,13 @@ export type Item = {
   name: string
   default_rate: number
   purchase_rate?: number | null
+  purchase_party_id?: number | null
   created_at: string
   units: {
+    id: number
+    name: string
+  } | null
+  purchase_party?: {
     id: number
     name: string
   } | null

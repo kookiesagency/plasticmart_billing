@@ -6,7 +6,8 @@
       "Bash(cp:*)",
       "Bash(flutter:*)",
       "Bash($HOME/development/flutter/bin/flutter --version)",
-      "Bash(lsof:*)"
+      "Bash(lsof:*)",
+      "Bash(psql:*)"
     ],
     "deny": [],
     "ask": []

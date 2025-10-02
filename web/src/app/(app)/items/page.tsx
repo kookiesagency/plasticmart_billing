@@ -40,6 +40,7 @@ const itemSchema = z.object({
     required_error: "Unit is required.",
     invalid_type_error: "Unit is required.",
   }).positive('Unit is required.'),
+  purchase_party_id: z.coerce.number().optional().nullable(),
   party_prices: z.array(partyPriceSchema).optional(),
 })
 
@@ -80,6 +81,7 @@ export default function ItemManager() {
       name: '',
       default_rate: 0,
       purchase_rate: undefined,
+      purchase_party_id: null,
       party_prices: [],
     },
   })
@@ -100,8 +102,8 @@ export default function ItemManager() {
   const fetchData = async () => {
     setLoading(true)
     const [itemsRes, deletedItemsRes, unitsRes, partiesRes] = await Promise.all([
-      supabase.from('items').select('*, units(id, name)').is('deleted_at', null).order('created_at', { ascending: false }),
-      supabase.from('items').select('*, units(id, name)').not('deleted_at', 'is', null).order('deleted_at', { ascending: false }),
+      supabase.from('items').select('*, units(id, name), purchase_party:parties!purchase_party_id(id, name)').is('deleted_at', null).order('created_at', { ascending: false }),
+      supabase.from('items').select('*, units(id, name), purchase_party:parties!purchase_party_id(id, name)').not('deleted_at', 'is', null).order('deleted_at', { ascending: false }),
       supabase.from('units').select('id, name').is('deleted_at', null),
       supabase.from('parties').select('id, name').is('deleted_at', null),
     ])
@@ -143,10 +145,11 @@ export default function ItemManager() {
         default_rate: item.default_rate,
         purchase_rate: item.purchase_rate ?? undefined,
         unit_id: item.units?.id,
+        purchase_party_id: item.purchase_party_id ?? null,
         party_prices: partyPricesData || [],
       })
     } else {
-      form.reset({ name: '', default_rate: 0, purchase_rate: undefined, unit_id: undefined, party_prices: [] })
+      form.reset({ name: '', default_rate: 0, purchase_rate: undefined, unit_id: undefined, purchase_party_id: null, party_prices: [] })
     }
     setIsDialogOpen(true)
   }
@@ -674,7 +677,79 @@ export default function ItemManager() {
                   }}
                 />
               </div>
-              
+
+              <FormField
+                control={form.control}
+                name="purchase_party_id"
+                render={({ field }) => {
+                  const [purchasePartyOpen, setPurchasePartyOpen] = useState(false)
+                  const purchasePartyTriggerRef = useRef<HTMLButtonElement>(null)
+                  const [purchasePartyPopoverWidth, setPurchasePartyPopoverWidth] = useState<number | undefined>(undefined)
+
+                  return (
+                    <FormItem>
+                      <FormLabel>Purchased From <span className="text-muted-foreground font-normal">(optional)</span></FormLabel>
+                      <Popover open={purchasePartyOpen} onOpenChange={setPurchasePartyOpen}>
+                        <PopoverTrigger asChild>
+                          <Button
+                            ref={purchasePartyTriggerRef}
+                            onClick={() => {
+                              if (purchasePartyTriggerRef.current) setPurchasePartyPopoverWidth(purchasePartyTriggerRef.current.offsetWidth);
+                            }}
+                            variant="outline"
+                            role="combobox"
+                            className={cn(
+                              "w-full justify-between",
+                              !field.value && "text-muted-foreground"
+                            )}
+                          >
+                            {field.value
+                              ? parties.find((party) => party.id === field.value)?.name
+                              : "Select a party"}
+                            <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                          </Button>
+                        </PopoverTrigger>
+                        <PopoverContent
+                          className="p-0"
+                          align="start"
+                          style={purchasePartyPopoverWidth ? { width: purchasePartyPopoverWidth } : {}}
+                        >
+                          <Command>
+                            <CommandInput placeholder="Search party..." />
+                            <CommandEmpty>No party found.</CommandEmpty>
+                            <CommandGroup>
+                              <CommandList>
+                                {parties.map((party) => (
+                                  <CommandItem
+                                    value={`${party.name}`}
+                                    key={party.id}
+                                    onSelect={() => {
+                                      form.setValue("purchase_party_id", field.value === party.id ? null : party.id)
+                                      setPurchasePartyOpen(false)
+                                    }}
+                                  >
+                                    <Check
+                                      className={cn(
+                                        "mr-2 h-4 w-4",
+                                        party.id === field.value
+                                          ? "opacity-100"
+                                          : "opacity-0"
+                                      )}
+                                    />
+                                    {party.name}
+                                  </CommandItem>
+                                ))}
+                              </CommandList>
+                            </CommandGroup>
+                          </Command>
+                        </PopoverContent>
+                      </Popover>
+                      <FormMessage />
+                    </FormItem>
+                  )
+                }}
+              />
+
               <div>
                 <h4 className="text-sm font-medium mb-2">Party-Specific Prices</h4>
                 <div className="mt-4">

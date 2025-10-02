@@ -62,8 +62,8 @@ This document outlines the development plan for the Smart Billing System. The pr
 | 🔴 High | Smart Unit Conversion | Medium | ✅ Completed |
 | 🔴 High | Fetch Updated Data | High | ✅ Completed |
 | 🟡 Medium | Duplicate Item | Low | ✅ Completed |
-| 🟡 Medium | Weekly Mini Report | Medium | Pending |
-| 🟡 Medium | Purchase Party Dropdown | Low | Pending |
+| 🟡 Medium | Weekly Mini Report | Medium | ✅ Completed |
+| 🟡 Medium | Purchase Party Dropdown | Low | ✅ Completed |
 | 🟡 Medium | Hindi and Urdu Localization | High | Pending |
 | 🟢 Low | AI Chat for Invoices | Very High | Future |
 
@@ -232,45 +232,62 @@ CREATE INDEX idx_invoices_is_offline ON invoices(is_offline);
 
 ---
 
-### **8. Weekly Mini Report** 🟡 Medium Priority
+### **8. Weekly Mini Report** 🟡 Medium Priority ✅ **COMPLETED**
 **Description:** Generate report showing previous outstanding balance + current week's invoices with totals, organized by party
 
-**Files to Edit:**
-- `web/src/app/(app)/page.tsx` - Add "Weekly Report" section or button
-- `web/src/components/reports/weekly-report.tsx` (new) - Report component
-- `web/src/components/reports/weekly-report-pdf.tsx` (new) - PDF export
+**Files Modified:**
+- `web/src/components/data-table.tsx` - Added customActions prop for custom buttons before Export CSV
+- `web/src/app/(app)/parties/[id]/page.tsx` - Added Download Mini Report button
+- `web/src/components/reports/party-mini-report-dialog.tsx` (new) - Dialog for weekly report preview
+- `web/src/components/reports/printable-party-report.tsx` (new) - PDF export component
 
 **Report Format:**
 ```
-Party Name:
+Party Name - Week of DD/MM/YYYY to DD/MM/YYYY
   Previous Outstanding Balance: ₹X,XXX
   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
   Current Week Invoices:
-    Invoice #2024/001 - ₹XXX
-    Invoice #2024/002 - ₹XXX
+    Invoice #2025-26/001 (24/09/2025) - ₹XXX
+    Invoice #2025-26/002 (25/09/2025) - ₹XXX
   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
   Total This Week: ₹X,XXX
   Grand Total Outstanding: ₹X,XXX
 ```
 
-**Database Query:**
-- Get outstanding balance before current week start
-- Get all invoices created in current week (grouped by party)
-- Calculate totals per party
+**Logic Implemented:**
+- Week calculation: Monday to Sunday using date-fns
+- Automatic fallback to last week if current week has no invoices
+- Previous Outstanding = Opening Balance + (Invoices before week - Payments)
+- Grand Total = Previous Outstanding + Week Total - Week Payments
+- Filter by invoice_date (not created_at)
+- Smart display: Show "All Paid" message when both balances are ₹0.00
+- Hide Download PDF button when everything is paid
+- Uses lucide-react Check icon for "All Paid" state
 
 ---
 
-### **9. Purchase Party Dropdown in Add Item** 🟡 Medium Priority
+### **9. Purchase Party Dropdown in Add Item** 🟡 Medium Priority ✅ **COMPLETED**
 **Description:** Add optional "Purchased From" party dropdown when creating/editing items
 
-**Files to Edit:**
-- `web/src/app/(app)/items/page.tsx` - Add party dropdown in item dialog
-- `web/src/app/(app)/invoices/new/invoice-form.tsx` - Update CreateItemDialog
+**Files Modified:**
+- `database/add_purchase_party_to_items.sql` (new) - Database migration script
+- `web/src/app/(app)/items/items-columns.tsx` - Updated Item type to include purchase_party_id and purchase_party
+- `web/src/app/(app)/items/page.tsx` - Added "Purchased From" dropdown field in item form
 
 **Database Changes:**
 ```sql
-ALTER TABLE items ADD COLUMN purchase_party_id INTEGER REFERENCES parties(id);
+ALTER TABLE items ADD COLUMN purchase_party_id INTEGER;
+ALTER TABLE items ADD CONSTRAINT fk_items_purchase_party FOREIGN KEY (purchase_party_id) REFERENCES parties(id) ON DELETE SET NULL;
+CREATE INDEX idx_items_purchase_party_id ON items(purchase_party_id);
 ```
+
+**Features Implemented:**
+- Optional "Purchased From" dropdown in Add/Edit Item dialog
+- Searchable party dropdown with Command component
+- Positioned below Unit field, before Party-Specific Prices section
+- Toggle selection to clear (click again to deselect)
+- Auto-fetches purchase party data when loading items
+- Properly handles nullable values
 
 ---
 
@@ -324,11 +341,11 @@ ALTER TABLE user_preferences ADD COLUMN language VARCHAR(5) DEFAULT 'en';
 3. ✅ Feature #3 (Invoice Numbering) - Important for business
 4. ✅ Feature #4 (Offline Bill Entry) - High value, low effort
 5. ✅ Feature #5 (Smart Unit Conversion) - UX improvement
-6. ✅ Feature #7 (Duplicate Item) - Quick win
-7. Feature #8 (Weekly Report) - Business reporting
-8. Feature #6 (Fetch Updated Data) - Complex but valuable
-9. Feature #9 (Purchase Party) - Nice to have
-10. Feature #10 (Hindi and Urud Localization) - Large effort
+6. ✅ Feature #6 (Fetch Updated Data) - Complex but valuable
+7. ✅ Feature #7 (Duplicate Item) - Quick win
+8. ✅ Feature #8 (Weekly Mini Report) - Business reporting
+9. ✅ Feature #9 (Purchase Party) - Nice to have
+10. Feature #10 (Hindi and Urdu Localization) - Large effort
 11. Feature #11 (AI Chat) - Future enhancement
 
 ---

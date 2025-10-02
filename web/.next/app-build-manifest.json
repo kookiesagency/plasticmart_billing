@@ -16,15 +16,20 @@
       "static/chunks/main-app.js",
       "static/chunks/app/(app)/invoices/page.js"
     ],
-    "/(app)/page": [
+    "/(app)/invoices/edit/[id]/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/(app)/page.js"
+      "static/chunks/app/(app)/invoices/edit/[id]/page.js"
     ],
-    "/(app)/invoices/new/page": [
+    "/(app)/parties/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/(app)/invoices/new/page.js"
+      "static/chunks/app/(app)/parties/page.js"
+    ],
+    "/(app)/parties/[id]/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/(app)/parties/[id]/page.js"
     ],
     "/(app)/items/page": [
       "static/chunks/webpack.js",

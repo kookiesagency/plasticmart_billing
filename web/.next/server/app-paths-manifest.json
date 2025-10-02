@@ -1,6 +1,8 @@
 {
   "/_not-found/page": "app/_not-found/page.js",
-  "/(app)/invoices/new/page": "app/(app)/invoices/new/page.js",
+  "/(app)/items/page": "app/(app)/items/page.js",
   "/(app)/invoices/page": "app/(app)/invoices/page.js",
-  "/(app)/items/page": "app/(app)/items/page.js"
+  "/(app)/invoices/edit/[id]/page": "app/(app)/invoices/edit/[id]/page.js",
+  "/(app)/parties/page": "app/(app)/parties/page.js",
+  "/(app)/parties/[id]/page": "app/(app)/parties/[id]/page.js"
 }
