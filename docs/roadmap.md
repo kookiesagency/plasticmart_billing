@@ -59,12 +59,12 @@ This document outlines the development plan for the Smart Billing System. The pr
 | 🔴 High | Opening Balance | Low | ✅ Completed |
 | 🔴 High | Invoice Numbering System | Medium | ✅ Completed |
 | 🔴 High | Offline Bill Entry | Low | ✅ Completed |
-| 🔴 High | Smart Unit Conversion | Medium | Pending |
+| 🔴 High | Smart Unit Conversion | Medium | ✅ Completed |
 | 🔴 High | Fetch Updated Data | High | Pending |
-| 🟡 Medium | Duplicate Item | Low | Pending |
+| 🟡 Medium | Duplicate Item | Low | ✅ Completed |
 | 🟡 Medium | Weekly Mini Report | Medium | Pending |
 | 🟡 Medium | Purchase Party Dropdown | Low | Pending |
-| 🟡 Medium | Hindi Localization | High | Pending |
+| 🟡 Medium | Hindi and Urud Localization | High | Pending |
 | 🟢 Low | AI Chat for Invoices | Very High | Future |
 
 ---
@@ -176,19 +176,21 @@ CREATE INDEX idx_invoices_is_offline ON invoices(is_offline);
 
 ---
 
-### **5. Smart Unit Conversion in Invoice Items** 🔴 High Priority
+### **5. Smart Unit Conversion in Invoice Items** 🔴 High Priority ✅ **COMPLETED**
 **Description:** When changing unit (e.g., DOZ to PCS), automatically recalculate rate
 
-**Files to Edit:**
-- `web/src/app/(app)/invoices/new/invoice-form.tsx` - Add unit change handler
-- `web/src/app/(app)/invoices/edit/[id]/page.tsx` - Add same logic for edit
-- `web/src/app/(app)/invoices/new/items-columns.tsx` - Handle unit dropdown change
+**Files Modified:**
+- `web/src/lib/unit-conversions.ts` (new) - Conversion utility with rules
+- `web/src/app/(app)/invoices/new/invoice-form.tsx` - Unit change handler with original rate tracking
+- Edit invoice uses same form component, so conversion applies there too
 
-**Conversion Logic:**
-- DOZ → PCS: rate ÷ 12
-- PCS → DOZ: rate × 12
-- KG → G: rate ÷ 1000
-- Store conversion factors in configuration
+**Conversion Logic Implemented:**
+- DOZ ↔ PCS: rate × 12 or ÷ 12
+- KG ↔ G: rate × 1000 or ÷ 1000
+- M ↔ CM: rate × 100 or ÷ 100
+- L ↔ ML: rate × 1000 or ÷ 1000
+- Stores original_rate and original_unit to prevent compounding conversions
+- Rounds to 2 decimal places for precision
 
 **Database Changes:** None (client-side calculation)
 
@@ -212,18 +214,18 @@ CREATE INDEX idx_invoices_is_offline ON invoices(is_offline);
 
 ---
 
-### **7. Duplicate Item Feature** 🟡 Medium Priority
+### **7. Duplicate Item Feature** 🟡 Medium Priority ✅ **COMPLETED**
 **Description:** Click "Duplicate" on item, opens popup with pre-filled data, change only item name
 
-**Files to Edit:**
-- `web/src/app/(app)/items/page.tsx` - Add "Duplicate" button in row actions
-- `web/src/app/(app)/items/items-columns.tsx` - Add duplicate action dropdown
+**Files Modified:**
+- `web/src/app/(app)/items/page.tsx` - Added handleDuplicate function with party prices fetch
+- `web/src/app/(app)/items/items-columns.tsx` - Added Copy icon and duplicate button in actions column
 
-**Logic:**
-1. Copy all item fields
+**Logic Implemented:**
+1. Copy all item fields including party-specific prices
 2. Append " (Copy)" to item name
 3. Open edit dialog with pre-filled data
-4. User modifies name, saves as new item
+4. User modifies name (or any field), saves as new item
 
 **Database Changes:** None (creates new item)
 
@@ -271,8 +273,8 @@ ALTER TABLE items ADD COLUMN purchase_party_id INTEGER REFERENCES parties(id);
 
 ---
 
-### **10. Hindi Localization Support** 🟡 Medium Priority
-**Description:** Add Hindi language support throughout the application with language toggle
+### **10. Hindi and Urud Localization Support** 🟡 Medium Priority
+**Description:** Add Hindi and Urud language support throughout the application with language toggle
 
 **Files to Edit:**
 - `web/src/app/layout.tsx` - Add language context provider
@@ -320,13 +322,13 @@ ALTER TABLE user_preferences ADD COLUMN language VARCHAR(5) DEFAULT 'en';
 2. ✅ Feature #1 (Party Invoice Count) - Quick win
 3. ✅ Feature #3 (Invoice Numbering) - Important for business
 4. ✅ Feature #4 (Offline Bill Entry) - High value, low effort
-5. ✅ Feature #7 (Duplicate Item) - Quick win
-6. ✅ Feature #5 (Smart Unit Conversion) - UX improvement
-7. ✅ Feature #8 (Weekly Report) - Business reporting
-8. ✅ Feature #6 (Fetch Updated Data) - Complex but valuable
-9. ✅ Feature #9 (Purchase Party) - Nice to have
-10. ✅ Feature #10 (Hindi Localization) - Large effort
-11. ✅ Feature #11 (AI Chat) - Future enhancement
+5. ✅ Feature #5 (Smart Unit Conversion) - UX improvement
+6. ✅ Feature #7 (Duplicate Item) - Quick win
+7. Feature #8 (Weekly Report) - Business reporting
+8. Feature #6 (Fetch Updated Data) - Complex but valuable
+9. Feature #9 (Purchase Party) - Nice to have
+10. Feature #10 (Hindi and Urud Localization) - Large effort
+11. Feature #11 (AI Chat) - Future enhancement
 
 ---
 

@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { ColumnDef } from '@tanstack/react-table'
-import { ArrowUpDown, Pencil, Trash, Check, X } from 'lucide-react'
+import { ArrowUpDown, Pencil, Trash, Check, X, Copy } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Input } from '@/components/ui/input'
@@ -120,6 +120,7 @@ const InlineEditableCell = ({
 export const columns = (
   openDialog: (item: Item) => void,
   handleDelete: (itemId: number) => void,
+  handleDuplicate: (item: Item) => void,
   onItemUpdate?: () => void
 ): ColumnDef<Item>[] => {
   const supabase = createClient();
@@ -277,6 +278,16 @@ export const columns = (
       const item = row.original
       return (
         <div className="flex items-center justify-end gap-2">
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button variant="ghost" size="icon" onClick={() => handleDuplicate(item)}>
+                <Copy className="h-4 w-4" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>Duplicate Item</p>
+            </TooltipContent>
+          </Tooltip>
           <Tooltip>
             <TooltipTrigger asChild>
               <Button variant="ghost" size="icon" onClick={() => openDialog(item)}>

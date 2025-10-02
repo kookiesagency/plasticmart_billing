@@ -352,6 +352,28 @@ export default function ItemManager() {
     fetchData()
   }
 
+  const handleDuplicate = async (item: Item) => {
+    const { data: partyPricesData, error } = await supabase
+      .from('item_party_prices')
+      .select('*')
+      .eq('item_id', item.id)
+
+    if (error) {
+      toast.error('Failed to fetch party prices: ' + error.message)
+      return
+    }
+
+    setEditingItem(null)
+    form.reset({
+      name: `${item.name} (Copy)`,
+      default_rate: item.default_rate,
+      purchase_rate: item.purchase_rate ?? undefined,
+      unit_id: item.units?.id,
+      party_prices: partyPricesData?.map(pp => ({ party_id: pp.party_id, price: pp.price })) || [],
+    })
+    setIsDialogOpen(true)
+  }
+
   const deletedItemColumns: ColumnDef<Item & { deleted_at: string }>[] = [
     {
       id: 'select',
@@ -505,7 +527,7 @@ export default function ItemManager() {
         </TabsList>
         <TabsContent value="active">
           <DataTable
-            columns={columns(openDialog, handleDeleteRequest, fetchData)}
+            columns={columns(openDialog, handleDeleteRequest, handleDuplicate, fetchData)}
             data={items}
             loading={loading}
             onBulkDelete={handleBulkDelete}
