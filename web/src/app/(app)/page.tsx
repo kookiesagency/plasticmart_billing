@@ -107,7 +107,7 @@ export default function Dashboard() {
 
   return (
     <>
-      <SetHeader title="Dashboard - Vercel Test Deployment" />
+      <SetHeader title="Dashboard" />
       <div className="flex justify-end items-center space-x-2 mb-4">
         <Tabs defaultValue="year" onValueChange={handlePresetRangeChange}>
           <TabsList>
