@@ -62,6 +62,7 @@ interface DataTableProps<TData, TValue> {
   onBulkPermanentDelete?: (selectedRows: TData[]) => void
   loading?: boolean
   bulkActionLabel?: string
+  customActions?: React.ReactNode
 }
 
 export function DataTable<TData, TValue>({
@@ -75,6 +76,7 @@ export function DataTable<TData, TValue>({
   onBulkPermanentDelete,
   loading,
   bulkActionLabel = 'Delete',
+  customActions,
 }: DataTableProps<TData, TValue>) {
   const [sorting, setSorting] = useState<SortingState>([])
   const [globalFilter, setGlobalFilter] = useState('')
@@ -190,8 +192,9 @@ export function DataTable<TData, TValue>({
           />
         </div>
         <div className="flex items-center gap-2">
+          {customActions}
           <Button onClick={handleExport}>Export to CSV</Button>
-          
+
           {selectedRows.length > 0 && onBulkRestore && (
             <Button
               variant="outline"

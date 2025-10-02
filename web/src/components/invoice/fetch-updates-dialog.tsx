@@ -129,14 +129,15 @@ export function FetchUpdatesDialog({
 
   const getUpdateLabel = (update: UpdateItem) => {
     if ('index' in update) {
-      const itemNum = update.index + 1
+      const item = currentItems[update.index]
+      const itemIdentifier = item?.item_name || `Item #${update.index + 1}`
       switch (update.field) {
         case 'item_name':
-          return `Item #${itemNum} Name`
+          return `${itemIdentifier} - Name`
         case 'rate':
-          return `Item #${itemNum} Rate`
+          return `${itemIdentifier} - Rate`
         case 'item_unit':
-          return `Item #${itemNum} Unit`
+          return `${itemIdentifier} - Unit`
       }
     } else {
       return 'Party Name'
@@ -152,7 +153,7 @@ export function FetchUpdatesDialog({
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogContent className="!max-w-5xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="!max-w-5xl max-h-[90vh] flex flex-col">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <RefreshCw className="h-5 w-5" />
@@ -178,15 +179,15 @@ export function FetchUpdatesDialog({
               </Button>
             </div>
 
-            <div className="border rounded-lg overflow-hidden">
-              <table className="w-full">
-                <thead className="bg-muted">
+            <div className="border rounded-lg overflow-hidden flex-1 overflow-y-auto">
+              <table className="w-full text-sm">
+                <thead className="bg-muted sticky top-0 z-10">
                   <tr>
-                    <th className="text-left p-3 w-12"></th>
-                    <th className="text-left p-3">Field</th>
-                    <th className="text-left p-3">Current Value</th>
-                    <th className="text-center p-3 w-12"></th>
-                    <th className="text-left p-3">New Value</th>
+                    <th className="text-left p-2 w-12"></th>
+                    <th className="text-left p-2">Field</th>
+                    <th className="text-left p-2">Current Value</th>
+                    <th className="text-center p-2 w-12"></th>
+                    <th className="text-left p-2">New Value</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -196,20 +197,20 @@ export function FetchUpdatesDialog({
 
                     return (
                       <tr key={updateKey} className="border-t hover:bg-muted/50">
-                        <td className="p-3">
+                        <td className="p-2">
                           <Checkbox
                             checked={isSelected}
                             onCheckedChange={() => toggleUpdate(updateKey)}
                           />
                         </td>
-                        <td className="p-3 font-medium">{getUpdateLabel(update)}</td>
-                        <td className="p-3 text-muted-foreground">
+                        <td className="p-2 font-medium">{getUpdateLabel(update)}</td>
+                        <td className="p-2 text-muted-foreground">
                           {formatValue(update.oldValue, update.field)}
                         </td>
-                        <td className="p-3 text-center">
+                        <td className="p-2 text-center">
                           <ArrowRight className="h-4 w-4 text-muted-foreground mx-auto" />
                         </td>
-                        <td className="p-3 font-medium text-green-600">
+                        <td className="p-2 font-medium text-green-600">
                           {formatValue(update.newValue, update.field)}
                         </td>
                       </tr>

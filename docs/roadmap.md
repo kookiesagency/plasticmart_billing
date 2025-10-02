@@ -64,7 +64,7 @@ This document outlines the development plan for the Smart Billing System. The pr
 | 🟡 Medium | Duplicate Item | Low | ✅ Completed |
 | 🟡 Medium | Weekly Mini Report | Medium | Pending |
 | 🟡 Medium | Purchase Party Dropdown | Low | Pending |
-| 🟡 Medium | Hindi and Urud Localization | High | Pending |
+| 🟡 Medium | Hindi and Urdu Localization | High | Pending |
 | 🟢 Low | AI Chat for Invoices | Very High | Future |
 
 ---

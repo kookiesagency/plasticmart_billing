@@ -46,6 +46,7 @@ export default function InvoicesPage() {
       public_id,
       invoice_number,
       invoice_date,
+      created_at,
       updated_at,
       party_id,
       party_name,
@@ -59,7 +60,7 @@ export default function InvoicesPage() {
       .from('invoices')
       .select(baseQuery)
       .is('deleted_at', null)
-      .order('invoice_date', { ascending: false })
+      .order('invoice_number', { ascending: false })
     
     // Fetch deleted invoices
     const { data: deletedData, error: deletedError } = await supabase

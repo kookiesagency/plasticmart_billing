@@ -30,6 +30,7 @@ export type Invoice = {
   public_id: string
   invoice_number: string
   invoice_date: string
+  created_at: string
   updated_at: string
   party?: {
     id?: number
@@ -107,15 +108,22 @@ export const columns = (
     ),
     cell: ({ row }) => {
       const partyName = row.getValue('party_name') as string;
-      const invoiceDateRaw = row.original.invoice_date; // e.g., '2025-07-09'
+      const createdAtRaw = row.original.created_at;    // e.g., '2025-07-09T18:32:50.628496+00:00'
       const updatedAtRaw = row.original.updated_at;     // e.g., '2025-07-09T18:32:50.628496+00:00'
       const isOffline = row.original.is_offline;
 
       // Get today's date in local YYYY-MM-DD
       const todayStr = new Date().toISOString().slice(0, 10);
 
-      // invoice_date is already YYYY-MM-DD
-      const isNew = invoiceDateRaw === todayStr;
+      // Convert created_at to local date string YYYY-MM-DD
+      const createdAtLocal = new Date(createdAtRaw);
+      const createdAtStr = new Date(
+        createdAtLocal.getFullYear(),
+        createdAtLocal.getMonth(),
+        createdAtLocal.getDate()
+      ).toISOString().slice(0, 10);
+
+      const isNew = createdAtStr === todayStr;
 
       // Convert updated_at to local date string YYYY-MM-DD
       const updatedAtLocal = new Date(updatedAtRaw);

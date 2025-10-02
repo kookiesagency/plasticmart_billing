@@ -75,7 +75,7 @@ export default function EditInvoicePage() {
       .map((item: any) => item.item_id)
       .filter((id: any) => id !== null)
 
-    const [latestItemsRes, latestPartyRes] = await Promise.all([
+    const [latestItemsRes, latestPartyRes, partySpecificPricesRes] = await Promise.all([
       supabase
         .from('items')
         .select('*, units(name)')
@@ -84,13 +84,35 @@ export default function EditInvoicePage() {
         .from('parties')
         .select('name')
         .eq('id', invoiceData.party_id)
-        .single()
+        .single(),
+      supabase
+        .from('item_party_prices')
+        .select('item_id, price')
+        .eq('party_id', invoiceData.party_id)
+        .in('item_id', itemIds)
     ])
 
     if (latestItemsRes.error || latestPartyRes.error) {
       toast.error('Failed to fetch latest data')
       return
     }
+
+    console.log('Party ID:', invoiceData.party_id)
+    console.log('Item IDs:', itemIds)
+    console.log('Party-specific prices response:', partySpecificPricesRes)
+
+    // Merge party-specific prices with items
+    const itemsWithPartyPrices = (latestItemsRes.data || []).map(item => {
+      const partyPrice = partySpecificPricesRes.data?.find(p => p.item_id === item.id)
+      return {
+        ...item,
+        default_rate: partyPrice ? partyPrice.price : item.default_rate
+      }
+    })
+
+    console.log('Party-specific prices:', partySpecificPricesRes.data)
+    console.log('Items with party prices:', itemsWithPartyPrices)
+    console.log('Current invoice items:', invoiceData.invoice_items)
 
     setCurrentInvoiceData({
       items: invoiceData.invoice_items,
@@ -99,7 +121,7 @@ export default function EditInvoicePage() {
     })
 
     setLatestData({
-      items: latestItemsRes.data || [],
+      items: itemsWithPartyPrices,
       partyName: latestPartyRes.data?.name || invoiceData.party_name,
     })
 

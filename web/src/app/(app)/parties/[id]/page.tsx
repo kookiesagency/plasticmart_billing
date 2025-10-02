@@ -16,6 +16,8 @@ import { subDays, startOfWeek, startOfMonth, startOfYear, endOfToday } from 'dat
 import { Button } from '@/components/ui/button'
 import { SetHeader } from '@/components/layout/header-context'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { FileDown } from 'lucide-react'
+import { PartyMiniReportDialog } from '@/components/reports/party-mini-report-dialog'
 
 type PartyDetails = {
   name: string
@@ -32,6 +34,7 @@ export default function PartyReportPage() {
   const [invoicesToDelete, setInvoicesToDelete] = useState<Invoice[] | null>(null)
   const [dateRange, setDateRange] = useState<DateRange | undefined>(undefined)
   const [datePreset, setDatePresetState] = useState<'week' | 'month' | 'year'>('year')
+  const [isMiniReportOpen, setIsMiniReportOpen] = useState(false)
 
   const fetchPartyData = async (range?: DateRange) => {
     if (!params.id) return
@@ -146,7 +149,7 @@ export default function PartyReportPage() {
 
   return (
     <>
-      <SetHeader 
+      <SetHeader
         title={`Report for ${party.name}`}
         actions={
           <div className="flex items-center gap-2 flex-wrap">
@@ -195,8 +198,21 @@ export default function PartyReportPage() {
           loading={loading}
           onBulkDelete={handleBulkDelete}
           searchPlaceholder="Search invoices..."
+          customActions={
+            <Button variant="outline" onClick={() => setIsMiniReportOpen(true)}>
+              <FileDown className="h-4 w-4 mr-2" />
+              Download Mini Report
+            </Button>
+          }
         />
       </div>
+
+      <PartyMiniReportDialog
+        isOpen={isMiniReportOpen}
+        onClose={() => setIsMiniReportOpen(false)}
+        partyId={Number(params.id)}
+        partyName={party.name}
+      />
     </>
   )
 } 
