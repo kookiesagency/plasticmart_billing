@@ -9,6 +9,7 @@ import { createClient } from '@/lib/supabase/client'
 import { Check, ChevronsUpDown, PlusCircle, ArrowUpDown, FileUp, Undo, Trash } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { ColumnDef } from '@tanstack/react-table'
+import { useTranslations } from 'next-intl'
 
 import { Button } from '@/components/ui/button'
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandList, CommandItem } from '@/components/ui/command'
@@ -49,6 +50,9 @@ type Party = { id: number; name: string }
 type PartyPrice = { item_id: number; party_id: number; price: number }
 
 export default function ItemManager() {
+  const t = useTranslations('items')
+  const tCommon = useTranslations('common')
+  const tValidation = useTranslations('validation')
   const supabase = createClient()
   const [items, setItems] = useState<Item[]>([])
   const [deletedItems, setDeletedItems] = useState<Item[]>([])
@@ -490,17 +494,17 @@ export default function ItemManager() {
 
   return (
     <>
-      <SetHeader 
-        title="Items"
+      <SetHeader
+        title={t('title')}
         actions={
           <div className="flex gap-2">
             <Button onClick={handleImport} variant="outline">
               <FileUp className="mr-2 h-4 w-4" />
-              Import
+              {tCommon('import')}
             </Button>
             <Button onClick={() => openDialog()}>
               <PlusCircle className="mr-2 h-4 w-4" />
-              Add Item
+              {t('createItem')}
             </Button>
           </div>
         }
@@ -553,7 +557,7 @@ export default function ItemManager() {
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
         <DialogContent className="sm:max-w-[625px]">
           <DialogHeader>
-            <DialogTitle>{editingItem ? 'Edit Item' : 'Create Item'}</DialogTitle>
+            <DialogTitle>{editingItem ? t('editItem') : t('createItem')}</DialogTitle>
           </DialogHeader>
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
@@ -562,7 +566,7 @@ export default function ItemManager() {
                 name="name"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Item Name</FormLabel>
+                    <FormLabel>{t('itemName')}</FormLabel>
                     <FormControl>
                       <Input placeholder="e.g. Plastic Bottle" {...field} />
                     </FormControl>
@@ -576,7 +580,7 @@ export default function ItemManager() {
                   name="default_rate"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Rate</FormLabel>
+                      <FormLabel>{t('defaultRate')}</FormLabel>
                       <FormControl>
                         <Input
                           type="number"
@@ -598,7 +602,7 @@ export default function ItemManager() {
                   name="purchase_rate"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Purchase Rate <span className="text-muted-foreground font-normal">(optional)</span></FormLabel>
+                      <FormLabel>{t('purchaseRate')} <span className="text-muted-foreground font-normal">({tCommon('optional')})</span></FormLabel>
                       <FormControl>
                         <Input type="number" step="0.01" min={0} placeholder="e.g. 100" value={field.value ?? ''} onChange={field.onChange} />
                       </FormControl>
@@ -613,7 +617,7 @@ export default function ItemManager() {
                     const [unitOpen, setUnitOpen] = useState(false)
                     return (
                       <FormItem>
-                        <FormLabel>Unit</FormLabel>
+                        <FormLabel>{t('unit')}</FormLabel>
                         <Popover open={unitOpen} onOpenChange={setUnitOpen}>
                           <PopoverTrigger asChild>
                             <Button
@@ -676,49 +680,49 @@ export default function ItemManager() {
                     )
                   }}
                 />
-              </div>
+                <FormField
+                  control={form.control}
+                  name="purchase_party_id"
+                  render={({ field }) => {
+                    const [purchasePartyOpen, setPurchasePartyOpen] = useState(false)
+                    const purchasePartyTriggerRef = useRef<HTMLButtonElement>(null)
+                    const [purchasePartyPopoverWidth, setPurchasePartyPopoverWidth] = useState<number | undefined>(undefined)
 
-              <FormField
-                control={form.control}
-                name="purchase_party_id"
-                render={({ field }) => {
-                  const [purchasePartyOpen, setPurchasePartyOpen] = useState(false)
-                  const purchasePartyTriggerRef = useRef<HTMLButtonElement>(null)
-                  const [purchasePartyPopoverWidth, setPurchasePartyPopoverWidth] = useState<number | undefined>(undefined)
-
-                  return (
-                    <FormItem>
-                      <FormLabel>Purchased From <span className="text-muted-foreground font-normal">(optional)</span></FormLabel>
-                      <Popover open={purchasePartyOpen} onOpenChange={setPurchasePartyOpen}>
-                        <PopoverTrigger asChild>
-                          <Button
-                            ref={purchasePartyTriggerRef}
-                            onClick={() => {
-                              if (purchasePartyTriggerRef.current) setPurchasePartyPopoverWidth(purchasePartyTriggerRef.current.offsetWidth);
-                            }}
-                            variant="outline"
-                            role="combobox"
-                            className={cn(
-                              "w-full justify-between",
-                              !field.value && "text-muted-foreground"
-                            )}
+                    return (
+                      <FormItem>
+                        <FormLabel>Purchased From <span className="text-muted-foreground font-normal">(optional)</span></FormLabel>
+                        <Popover open={purchasePartyOpen} onOpenChange={setPurchasePartyOpen} modal={false}>
+                          <PopoverTrigger asChild>
+                            <Button
+                              ref={purchasePartyTriggerRef}
+                              onClick={() => {
+                                if (purchasePartyTriggerRef.current) setPurchasePartyPopoverWidth(purchasePartyTriggerRef.current.offsetWidth);
+                              }}
+                              variant="outline"
+                              role="combobox"
+                              className={cn(
+                                "w-full justify-between",
+                                !field.value && "text-muted-foreground"
+                              )}
+                            >
+                              {field.value
+                                ? parties.find((party) => party.id === field.value)?.name
+                                : "Select a party"}
+                              <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                            </Button>
+                          </PopoverTrigger>
+                          <PopoverContent
+                            className="p-0"
+                            align="start"
+                            side="bottom"
+                            avoidCollisions={false}
+                            style={purchasePartyPopoverWidth ? { width: purchasePartyPopoverWidth } : {}}
                           >
-                            {field.value
-                              ? parties.find((party) => party.id === field.value)?.name
-                              : "Select a party"}
-                            <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                          </Button>
-                        </PopoverTrigger>
-                        <PopoverContent
-                          className="p-0"
-                          align="start"
-                          style={purchasePartyPopoverWidth ? { width: purchasePartyPopoverWidth } : {}}
-                        >
                           <Command>
                             <CommandInput placeholder="Search party..." />
-                            <CommandEmpty>No party found.</CommandEmpty>
-                            <CommandGroup>
-                              <CommandList>
+                            <CommandList className="max-h-[200px]">
+                              <CommandEmpty>No party found.</CommandEmpty>
+                              <CommandGroup>
                                 {parties.map((party) => (
                                   <CommandItem
                                     value={`${party.name}`}
@@ -739,8 +743,8 @@ export default function ItemManager() {
                                     {party.name}
                                   </CommandItem>
                                 ))}
-                              </CommandList>
-                            </CommandGroup>
+                              </CommandGroup>
+                            </CommandList>
                           </Command>
                         </PopoverContent>
                       </Popover>
@@ -749,6 +753,7 @@ export default function ItemManager() {
                   )
                 }}
               />
+              </div>
 
               <div>
                 <h4 className="text-sm font-medium mb-2">Party-Specific Prices</h4>

@@ -15,6 +15,7 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { SalesChart } from './sales-chart'
 import { FinancialSummaryChart } from './financial-summary-chart'
+import { useTranslations } from 'next-intl'
 
 type RecentInvoice = {
   id: number;
@@ -24,6 +25,8 @@ type RecentInvoice = {
 };
 
 export default function Dashboard() {
+  const t = useTranslations('dashboard')
+  const tCommon = useTranslations('common')
   const supabase = createClient()
   const [stats, setStats] = useState({
     totalReceived: 0,
@@ -99,21 +102,21 @@ export default function Dashboard() {
   }
 
   const statCards = [
-    { title: 'Total Received', value: formatCurrency(stats.totalReceived), icon: DollarSign },
-    { title: 'Total Outstanding', value: formatCurrency(stats.totalOutstanding), icon: AlertCircle },
-    { title: 'Total Billed', value: formatCurrency(stats.totalBilled), icon: FileText },
-    { title: 'Total Invoices', value: stats.totalInvoices, icon: FileText },
+    { title: t('totalReceived'), value: formatCurrency(stats.totalReceived), icon: DollarSign },
+    { title: t('totalOutstanding'), value: formatCurrency(stats.totalOutstanding), icon: AlertCircle },
+    { title: t('totalBilled'), value: formatCurrency(stats.totalBilled), icon: FileText },
+    { title: t('totalInvoices'), value: stats.totalInvoices, icon: FileText },
   ]
 
   return (
     <>
-      <SetHeader title="Dashboard" />
+      <SetHeader title={t('title')} />
       <div className="flex justify-end items-center space-x-2 mb-4">
         <Tabs defaultValue="year" onValueChange={handlePresetRangeChange}>
           <TabsList>
-            <TabsTrigger value="week">This Week</TabsTrigger>
-            <TabsTrigger value="month">This Month</TabsTrigger>
-            <TabsTrigger value="year">This Year</TabsTrigger>
+            <TabsTrigger value="week">{t('thisWeek')}</TabsTrigger>
+            <TabsTrigger value="month">{t('thisMonth')}</TabsTrigger>
+            <TabsTrigger value="year">{t('thisYear')}</TabsTrigger>
           </TabsList>
         </Tabs>
         <DateRangePicker date={dateRange} onDateChange={setDateRange} />
@@ -153,7 +156,7 @@ export default function Dashboard() {
         </div>
         <Card>
           <CardHeader>
-            <CardTitle>Recent Invoices</CardTitle>
+            <CardTitle>{t('recentInvoices')}</CardTitle>
           </CardHeader>
           <CardContent>
             {loading ? (
@@ -187,7 +190,7 @@ export default function Dashboard() {
                       {invoice.status}
                     </Badge>
                     <Button asChild variant="ghost" size="sm" className="ml-4">
-                      <Link href={`/invoices/${invoice.id}`}>View</Link>
+                      <Link href={`/invoices/${invoice.id}`}>{tCommon('view')}</Link>
                     </Button>
                   </div>
                 ))}

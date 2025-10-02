@@ -5,6 +5,7 @@ import { PlusCircle, ArrowUpDown, Undo, Trash } from 'lucide-react'
 import { toast } from 'sonner'
 import { createClient } from '@/lib/supabase/client'
 import { ColumnDef } from '@tanstack/react-table'
+import { useTranslations } from 'next-intl'
 
 import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
@@ -19,6 +20,8 @@ import type { Party } from '@/lib/types'
 import { ConfirmationDialog } from '@/components/confirmation-dialog'
 
 export default function PartyManager() {
+  const t = useTranslations('partiesList')
+  const tParties = useTranslations('parties')
   const supabase = createClient()
   const [isPartyFormOpen, setPartyFormOpen] = useState(false)
   const [selectedPartyId, setSelectedPartyId] = useState<string | null>(null)

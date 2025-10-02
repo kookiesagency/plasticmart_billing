@@ -7,6 +7,7 @@ import { createClient } from '@/lib/supabase/client'
 import { format } from 'date-fns'
 import { formatCurrency, parseLocalDate } from '@/lib/utils'
 import { ArrowLeft, Pencil, Trash } from 'lucide-react'
+import { useTranslations } from 'next-intl'
 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow, TableFooter } from '@/components/ui/table'
@@ -50,6 +51,8 @@ type Invoice = {
 }
 
 export default function InvoiceDetailsPage() {
+  const t = useTranslations('invoiceView')
+  const tInvoices = useTranslations('invoices')
   const params = useParams<{ id: string }>()
   const router = useRouter()
   const supabase = createClient()

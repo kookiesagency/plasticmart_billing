@@ -17,9 +17,12 @@ import { Checkbox } from '@/components/ui/checkbox'
 import { formatCurrency, formatDate } from '@/lib/utils'
 import { Badge } from '@/components/ui/badge'
 import { QuickEntryDialog } from './quick-entry-dialog'
+import { useTranslations } from 'next-intl'
 
 
 export default function InvoicesPage() {
+  const t = useTranslations('invoicesList')
+  const tInvoices = useTranslations('invoices')
   const supabase = createClient()
   const [activeInvoices, setActiveInvoices] = useState<Invoice[]>([])
   const [deletedInvoices, setDeletedInvoices] = useState<Invoice[]>([])
@@ -224,13 +227,13 @@ export default function InvoicesPage() {
   };
 
   const confirmationDescription = () => {
-    if (bulkDeleteIds) return `This action will mark ${bulkDeleteIds.length} invoices as deleted. You can restore them from the 'Deleted' tab within 30 days.`
-    if (invoiceToDelete) return "This action will mark the invoice as deleted. You can restore it from the 'Deleted' tab within 30 days."
-    if (bulkRestoreIds) return `This will restore ${bulkRestoreIds.length} invoices and make them active again.`
-    if (invoiceToRestore) return "This will restore the invoice and make it active again."
-    if (bulkPermanentDeleteIds) return `This action is IRREVERSIBLE. This will permanently delete ${bulkPermanentDeleteIds.length} invoices and all their associated data.`
-    if (invoiceToPermanentlyDelete) return "This action is IRREVERSIBLE. This will permanently delete the invoice and all its associated data."
-    return "Are you sure you want to proceed?"
+    if (bulkDeleteIds) return t('moveMultipleToDeleted', { count: bulkDeleteIds.length })
+    if (invoiceToDelete) return t('moveToDeleted')
+    if (bulkRestoreIds) return t('restoreMultipleConfirm', { count: bulkRestoreIds.length })
+    if (invoiceToRestore) return t('restoreConfirm')
+    if (bulkPermanentDeleteIds) return t('permanentDeleteMultipleConfirm', { count: bulkPermanentDeleteIds.length })
+    if (invoiceToPermanentlyDelete) return t('permanentDeleteConfirm')
+    return t('areYouSure')
   }
 
   
@@ -261,7 +264,7 @@ export default function InvoicesPage() {
       accessorKey: 'invoice_date',
       header: ({ column }) => (
         <div className="flex items-center cursor-pointer" onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}>
-          Invoice Date
+          {t('invoiceDate')}
           <ArrowUpDown className="ml-2 h-4 w-4" />
         </div>
       ),
@@ -271,7 +274,7 @@ export default function InvoicesPage() {
       accessorKey: 'party.name',
       header: ({ column }) => (
         <div className="flex items-center cursor-pointer" onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}>
-          Party
+          {tInvoices('party')}
           <ArrowUpDown className="ml-2 h-4 w-4" />
         </div>
       ),
@@ -281,7 +284,7 @@ export default function InvoicesPage() {
       accessorKey: 'total_amount',
       header: ({ column }) => (
         <div className="flex items-center cursor-pointer" onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}>
-          Total
+          {tInvoices('total')}
           <ArrowUpDown className="ml-2 h-4 w-4" />
         </div>
       ),
@@ -291,7 +294,7 @@ export default function InvoicesPage() {
       accessorKey: 'status',
       header: ({ column }) => (
         <div className="flex items-center cursor-pointer" onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}>
-          Status
+          {tInvoices('status')}
           <ArrowUpDown className="ml-2 h-4 w-4" />
         </div>
       ),
@@ -300,11 +303,11 @@ export default function InvoicesPage() {
         return <Badge variant={ status === 'Paid' ? 'paid' : status === 'Partial' ? 'partial' : 'destructive' } className="capitalize">{status}</Badge>
       },
     },
-    { 
-      accessorKey: 'deleted_at', 
+    {
+      accessorKey: 'deleted_at',
       header: ({ column }) => (
         <div className="flex items-center cursor-pointer" onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}>
-          Deleted At
+          {t('deletedAt')}
           <ArrowUpDown className="ml-2 h-4 w-4" />
         </div>
       ),
@@ -324,7 +327,7 @@ export default function InvoicesPage() {
               </Button>
             </TooltipTrigger>
             <TooltipContent>
-              <p>Restore Invoice</p>
+              <p>{t('restoreInvoice')}</p>
             </TooltipContent>
           </Tooltip>
           <Tooltip>
@@ -337,7 +340,7 @@ export default function InvoicesPage() {
               </Button>
             </TooltipTrigger>
             <TooltipContent>
-              <p>Delete Permanently</p>
+              <p>{t('deletePermanently')}</p>
             </TooltipContent>
           </Tooltip>
         </div>
@@ -348,17 +351,17 @@ export default function InvoicesPage() {
   return (
     <>
       <SetHeader
-        title="Invoices"
+        title={tInvoices('title')}
         actions={
           <div className="flex gap-2">
             <Button variant="outline" onClick={() => setIsQuickEntryOpen(true)}>
               <Zap className="h-4 w-4 mr-2" />
-              Create Offline Invoice
+              {tInvoices('createOfflineInvoice')}
             </Button>
             <Button asChild>
               <Link href="/invoices/new">
                 <PlusCircle className="h-4 w-4 mr-2" />
-                Create Invoice
+                {tInvoices('createInvoice')}
               </Link>
             </Button>
           </div>
@@ -366,8 +369,8 @@ export default function InvoicesPage() {
       />
       <Tabs defaultValue="active">
         <TabsList>
-          <TabsTrigger value="active">Active</TabsTrigger>
-          <TabsTrigger value="deleted">Deleted</TabsTrigger>
+          <TabsTrigger value="active">{t('active')}</TabsTrigger>
+          <TabsTrigger value="deleted">{t('deleted')}</TabsTrigger>
         </TabsList>
         <TabsContent value="active">
           <DataTable
@@ -375,7 +378,7 @@ export default function InvoicesPage() {
             data={activeInvoices}
             loading={loading}
             onBulkDelete={handleBulkDelete}
-            searchPlaceholder="Search invoices..."
+            searchPlaceholder={t('searchInvoices')}
           />
         </TabsContent>
         <TabsContent value="deleted">
@@ -383,10 +386,10 @@ export default function InvoicesPage() {
             columns={deletedInvoiceColumns}
             data={deletedInvoices as (Invoice & { deleted_at: string })[]}
             loading={loading}
-            searchPlaceholder="Search deleted invoices..."
+            searchPlaceholder={t('searchDeletedInvoices')}
             onBulkRestore={handleBulkRestore}
             onBulkDelete={handleBulkPermanentDelete}
-            bulkActionLabel="Delete Permanently"
+            bulkActionLabel={t('deletePermanently')}
           />
         </TabsContent>
       </Tabs>
@@ -395,7 +398,7 @@ export default function InvoicesPage() {
         isOpen={isConfirmOpen}
         onClose={closeConfirmation}
         onConfirm={onConfirm}
-        title="Are you sure?"
+        title={t('areYouSure')}
         description={confirmationDescription()}
       />
 

@@ -9,6 +9,7 @@ import { ColumnDef } from '@tanstack/react-table'
 import { ArrowUpDown, RotateCw, Undo, PlusCircle, Trash } from 'lucide-react'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { Checkbox } from '@/components/ui/checkbox'
+import { useTranslations } from 'next-intl'
 
 import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
@@ -40,6 +41,7 @@ const unitSchema = z.object({
 })
 
 export default function UnitManager() {
+  const t = useTranslations('settings')
   const supabase = createClient()
   const [units, setUnits] = useState<Unit[]>([])
   const [deletedUnits, setDeletedUnits] = useState<Unit[]>([])
