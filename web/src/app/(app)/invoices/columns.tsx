@@ -23,6 +23,7 @@ import { PrintableInvoice } from './printable-invoice'
 import { PaymentForm } from './[id]/payment-form'
 import { ConfirmationDialog } from '@/components/confirmation-dialog'
 import { useState } from 'react'
+import { QuickEntryDialog } from './quick-entry-dialog'
 
 export type Invoice = {
   id: number
@@ -30,9 +31,11 @@ export type Invoice = {
   invoice_number: string
   invoice_date: string
   updated_at: string
-  party: {
+  party?: {
+    id?: number
     name: string
   }
+  party_id?: number
   total_amount: number
   amount_received: number
   amount_pending: number
@@ -216,6 +219,7 @@ export const columns = (
     cell: ({ row, table }) => {
       const invoice = row.original
       const [isConfirmOpen, setIsConfirmOpen] = useState(false)
+      const [isQuickEditOpen, setIsQuickEditOpen] = useState(false)
 
       const handlePrint = () => {
         toast.loading("Preparing document...", { id: "print-toast" });
@@ -277,12 +281,19 @@ export const columns = (
                   <span>View</span>
                 </Link>
               </DropdownMenuItem>
-              <DropdownMenuItem asChild>
-                <Link href={`/invoices/edit/${invoice.id}`}>
+              {invoice.is_offline ? (
+                <DropdownMenuItem onClick={() => setIsQuickEditOpen(true)}>
                   <FilePenLine className="mr-2 h-4 w-4" />
                   <span>Edit</span>
-                </Link>
-              </DropdownMenuItem>
+                </DropdownMenuItem>
+              ) : (
+                <DropdownMenuItem asChild>
+                  <Link href={`/invoices/edit/${invoice.id}`}>
+                    <FilePenLine className="mr-2 h-4 w-4" />
+                    <span>Edit</span>
+                  </Link>
+                </DropdownMenuItem>
+              )}
               
               {onPaymentAdded && invoice.status !== 'Paid' && (
                 <PaymentForm
@@ -301,20 +312,24 @@ export const columns = (
                 </PaymentForm>
               )}
 
-              <DropdownMenuItem asChild>
-                <Link href={`/invoices/view/${invoice.public_id}`} className="flex items-center cursor-pointer" target="_blank" rel="noopener noreferrer">
-                  <Eye className="mr-2 h-4 w-4" />
-                  <span>View Public Invoice</span>
-                </Link>
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={handleShareOnWhatsApp}>
-                <MessageCircle className="mr-2 h-4 w-4" />
-                <span>Share on WhatsApp</span>
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={handlePrint}>
-                <FileDown className="mr-2 h-4 w-4" />
-                <span>Download PDF</span>
-              </DropdownMenuItem>
+              {!invoice.is_offline && (
+                <>
+                  <DropdownMenuItem asChild>
+                    <Link href={`/invoices/view/${invoice.public_id}`} className="flex items-center cursor-pointer" target="_blank" rel="noopener noreferrer">
+                      <Eye className="mr-2 h-4 w-4" />
+                      <span>View Public Invoice</span>
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={handleShareOnWhatsApp}>
+                    <MessageCircle className="mr-2 h-4 w-4" />
+                    <span>Share on WhatsApp</span>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={handlePrint}>
+                    <FileDown className="mr-2 h-4 w-4" />
+                    <span>Download PDF</span>
+                  </DropdownMenuItem>
+                </>
+              )}
               <DropdownMenuSeparator />
               <DropdownMenuItem
                 onClick={() => handleDelete(invoice.id)}
@@ -325,6 +340,24 @@ export const columns = (
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
+
+          {invoice.is_offline && (
+            <QuickEntryDialog
+              isOpen={isQuickEditOpen}
+              onClose={() => setIsQuickEditOpen(false)}
+              onSuccess={() => {
+                // @ts-ignore
+                table.options.meta?.fetchData()
+              }}
+              invoiceId={invoice.id}
+              editData={{
+                party_id: invoice.party_id || 0,
+                total_amount: invoice.total_amount,
+                invoice_date: invoice.invoice_date,
+                amount_received: invoice.amount_received,
+              }}
+            />
+          )}
         </>
       )
     },

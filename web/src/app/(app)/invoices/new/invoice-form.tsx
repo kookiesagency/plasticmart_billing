@@ -353,14 +353,6 @@ export function InvoiceForm({ invoiceId }: { invoiceId?: string }) {
             <div className="space-y-4">
               <h3 className="text-lg font-medium">Invoice Details</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {invoiceId && (
-                  <div className="md:col-span-2">
-                    <FormLabel>Invoice Number</FormLabel>
-                    <div className="flex items-center h-9 px-3 py-1 rounded-md border bg-muted text-sm font-mono">
-                      {form.watch('invoice_number') || 'Generating...'}
-                    </div>
-                  </div>
-                )}
                 <FormField
                   control={form.control}
                   name="party_id"

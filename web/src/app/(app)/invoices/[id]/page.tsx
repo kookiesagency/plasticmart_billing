@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useParams } from 'next/navigation'
+import { useParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
 import { format } from 'date-fns'
@@ -18,6 +18,7 @@ import { toast } from 'sonner'
 import { ConfirmationDialog } from '@/components/confirmation-dialog'
 import { SetHeader } from '@/components/layout/header-context'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
+import { QuickEntryDialog } from '../quick-entry-dialog'
 
 export type Payment = {
   id: number
@@ -28,11 +29,14 @@ export type Payment = {
 
 type Invoice = {
   id: string
+  invoice_number: string
   invoice_date: string
   total_amount: number
+  party_id: number
   party_name: string
   status: 'Paid' | 'Pending' | 'Partial'
   amount_pending: number
+  is_offline?: boolean
   invoice_items: {
     quantity: number
     rate: number
@@ -47,12 +51,14 @@ type Invoice = {
 
 export default function InvoiceDetailsPage() {
   const params = useParams<{ id: string }>()
+  const router = useRouter()
   const supabase = createClient()
   const [invoice, setInvoice] = useState<Invoice | null>(null)
   const [loading, setLoading] = useState(true)
   const [paymentToDelete, setPaymentToDelete] = useState<Payment | null>(null)
   const [paymentToEdit, setPaymentToEdit] = useState<Payment | null>(null)
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false)
+  const [isQuickEditOpen, setIsQuickEditOpen] = useState(false)
 
   const fetchInvoice = async () => {
     if (!params.id) return
@@ -62,11 +68,14 @@ export default function InvoiceDetailsPage() {
       .select(
         `
           id,
+          invoice_number,
           invoice_date,
           total_amount,
+          party_id,
           party_name,
           bundle_charge,
           bundle_quantity,
+          is_offline,
           invoice_items(quantity, rate, item_name, item_unit),
           payments(id, amount, payment_date, remark)
         `
@@ -137,8 +146,15 @@ export default function InvoiceDetailsPage() {
 
   return (
     <>
-      <SetHeader 
-        title={`Invoice #${invoice.id}`}
+      <SetHeader
+        title={
+          <div className="flex items-center gap-3">
+            <Button variant="ghost" size="icon" onClick={() => router.back()}>
+              <ArrowLeft className="h-5 w-5" />
+            </Button>
+            <span>Invoice - {invoice.invoice_number}</span>
+          </div>
+        }
         actions={
           <div className="flex items-center gap-2">
             <Badge variant={statusVariant(invoice.status)} className="capitalize text-base">
@@ -159,12 +175,19 @@ export default function InvoiceDetailsPage() {
                 />
               </>
             )}
-            <Button variant="outline" asChild>
-              <Link href={`/invoices/edit/${invoice.id}`}>
+            {invoice.is_offline ? (
+              <Button variant="outline" onClick={() => setIsQuickEditOpen(true)}>
                 <Pencil className="h-4 w-4" />
                 Edit Invoice
-              </Link>
-            </Button>
+              </Button>
+            ) : (
+              <Button variant="outline" asChild>
+                <Link href={`/invoices/edit/${invoice.id}`}>
+                  <Pencil className="h-4 w-4" />
+                  Edit Invoice
+                </Link>
+              </Button>
+            )}
           </div>
         }
       />
@@ -190,33 +213,35 @@ export default function InvoiceDetailsPage() {
       />
       <div className="grid md:grid-cols-3 gap-6">
         <div className="md:col-span-2 space-y-6">
-          <Card>
-            <CardHeader><CardTitle>Items</CardTitle></CardHeader>
-            <CardContent>
-              <Table>
-                <TableHeader>
-                  <TableRow className="bg-muted">
-                    <TableHead className="w-[50px]">#</TableHead>
-                    <TableHead>Item</TableHead>
-                    <TableHead>Quantity</TableHead>
-                    <TableHead className="text-right">Rate</TableHead>
-                    <TableHead className="text-right">Amount</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {invoice.invoice_items.map((item, index) => (
-                    <TableRow key={index}>
-                      <TableCell>{index + 1}</TableCell>
-                      <TableCell>{item.item_name}</TableCell>
-                      <TableCell>{item.quantity} {item.item_unit}</TableCell>
-                      <TableCell className="text-right">{formatCurrency(item.rate)}</TableCell>
-                      <TableCell className="text-right">{formatCurrency(item.quantity * item.rate)}</TableCell>
+          {!invoice.is_offline && (
+            <Card>
+              <CardHeader><CardTitle>Items</CardTitle></CardHeader>
+              <CardContent>
+                <Table>
+                  <TableHeader>
+                    <TableRow className="bg-muted">
+                      <TableHead className="w-[50px]">#</TableHead>
+                      <TableHead>Item</TableHead>
+                      <TableHead>Quantity</TableHead>
+                      <TableHead className="text-right">Rate</TableHead>
+                      <TableHead className="text-right">Amount</TableHead>
                     </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </CardContent>
-          </Card>
+                  </TableHeader>
+                  <TableBody>
+                    {invoice.invoice_items.map((item, index) => (
+                      <TableRow key={index}>
+                        <TableCell>{index + 1}</TableCell>
+                        <TableCell>{item.item_name}</TableCell>
+                        <TableCell>{item.quantity} {item.item_unit}</TableCell>
+                        <TableCell className="text-right">{formatCurrency(item.rate)}</TableCell>
+                        <TableCell className="text-right">{formatCurrency(item.quantity * item.rate)}</TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </CardContent>
+            </Card>
+          )}
 
           <Card>
             <CardHeader><CardTitle>Payment History</CardTitle></CardHeader>
@@ -266,7 +291,16 @@ export default function InvoiceDetailsPage() {
 
         <div className="space-y-6">
           <Card>
-            <CardHeader><CardTitle>Billed To</CardTitle></CardHeader>
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <CardTitle>Billed To</CardTitle>
+                {invoice.is_offline && (
+                  <Badge variant="secondary" className="bg-orange-100 text-orange-700">
+                    OFFLINE
+                  </Badge>
+                )}
+              </div>
+            </CardHeader>
             <CardContent>
               <p className="font-bold">{invoice.party_name}</p>
               <p className="text-sm text-muted-foreground">{format(new Date(invoice.invoice_date), 'PPP')}</p>
@@ -277,15 +311,19 @@ export default function InvoiceDetailsPage() {
               <CardTitle>Summary</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="flex justify-between">
-                <span>Subtotal</span>
-                <span>{formatCurrency(subTotal)}</span>
-              </div>
-              <div className="flex justify-between">
-                <span>Bundle ({invoice.bundle_quantity})</span>
-                <span>{formatCurrency(invoice.bundle_charge)}</span>
-              </div>
-              <Separator />
+              {!invoice.is_offline && (
+                <>
+                  <div className="flex justify-between">
+                    <span>Subtotal</span>
+                    <span>{formatCurrency(subTotal)}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Bundle ({invoice.bundle_quantity})</span>
+                    <span>{formatCurrency(invoice.bundle_charge)}</span>
+                  </div>
+                  <Separator />
+                </>
+              )}
               <div className="flex justify-between font-bold text-xl">
                 <span>Total</span>
                 <span>{formatCurrency(invoice.total_amount)}</span>
@@ -302,6 +340,21 @@ export default function InvoiceDetailsPage() {
           </Card>
         </div>
       </div>
+
+      {invoice.is_offline && (
+        <QuickEntryDialog
+          isOpen={isQuickEditOpen}
+          onClose={() => setIsQuickEditOpen(false)}
+          onSuccess={fetchInvoice}
+          invoiceId={parseInt(invoice.id)}
+          editData={{
+            party_id: invoice.party_id,
+            total_amount: invoice.total_amount,
+            invoice_date: invoice.invoice_date,
+            amount_received: invoice.amount_received,
+          }}
+        />
+      )}
     </>
   )
 } 

@@ -584,68 +584,72 @@ export default function ItemManager() {
                 <FormField
                   control={form.control}
                   name="unit_id"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Unit</FormLabel>
-                      <Popover>
-                        <PopoverTrigger asChild>
-                          <Button
-                            ref={unitTriggerRef}
-                            onClick={() => {
-                              if (unitTriggerRef.current) setUnitPopoverWidth(unitTriggerRef.current.offsetWidth);
-                            }}
-                            variant="outline"
-                            role="combobox"
-                            className={cn(
-                              "w-full justify-between",
-                              !field.value && "text-muted-foreground"
-                            )}
+                  render={({ field }) => {
+                    const [unitOpen, setUnitOpen] = useState(false)
+                    return (
+                      <FormItem>
+                        <FormLabel>Unit</FormLabel>
+                        <Popover open={unitOpen} onOpenChange={setUnitOpen}>
+                          <PopoverTrigger asChild>
+                            <Button
+                              ref={unitTriggerRef}
+                              onClick={() => {
+                                if (unitTriggerRef.current) setUnitPopoverWidth(unitTriggerRef.current.offsetWidth);
+                              }}
+                              variant="outline"
+                              role="combobox"
+                              className={cn(
+                                "w-full justify-between",
+                                !field.value && "text-muted-foreground"
+                              )}
+                            >
+                              {field.value
+                                ? units.find(
+                                    (unit) => unit.id === field.value
+                                  )?.name
+                                : "Select a unit"}
+                              <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                            </Button>
+                          </PopoverTrigger>
+                          <PopoverContent
+                            className="p-0"
+                            align="start"
+                            style={unitPopoverWidth ? { width: unitPopoverWidth } : {}}
                           >
-                            {field.value
-                              ? units.find(
-                                  (unit) => unit.id === field.value
-                                )?.name
-                              : "Select a unit"}
-                            <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                          </Button>
-                        </PopoverTrigger>
-                        <PopoverContent
-                          className="p-0"
-                          align="start"
-                          style={unitPopoverWidth ? { width: unitPopoverWidth } : {}}
-                        >
-                          <Command>
-                            <CommandInput placeholder="Search unit..." />
-                            <CommandEmpty>No unit found.</CommandEmpty>
-                            <CommandGroup>
-                              <CommandList>
-                                {units.map((unit) => (
-                                  <CommandItem
-                                    value={`${unit.name}`}
-                                    key={unit.id}
-                                    onSelect={() => {
-                                      form.setValue("unit_id", unit.id)
-                                    }}
-                                  >
-                                    <Check
-                                      className={cn(
-                                        "mr-2 h-4 w-4",
-                                        unit.id === field.value
-                                          ? "opacity-100"
-                                          : "opacity-0"
-                                      )}
-                                    />
-                                    {unit.name}
-                                  </CommandItem>
-                                ))}
-                              </CommandList>
-                            </CommandGroup>
-                          </Command>
-                        </PopoverContent>
-                      </Popover>
-                      <FormMessage />
-                    </FormItem>
-                  )}
+                            <Command>
+                              <CommandInput placeholder="Search unit..." />
+                              <CommandEmpty>No unit found.</CommandEmpty>
+                              <CommandGroup>
+                                <CommandList>
+                                  {units.map((unit) => (
+                                    <CommandItem
+                                      value={`${unit.name}`}
+                                      key={unit.id}
+                                      onSelect={() => {
+                                        form.setValue("unit_id", unit.id)
+                                        setUnitOpen(false)
+                                      }}
+                                    >
+                                      <Check
+                                        className={cn(
+                                          "mr-2 h-4 w-4",
+                                          unit.id === field.value
+                                            ? "opacity-100"
+                                            : "opacity-0"
+                                        )}
+                                      />
+                                      {unit.name}
+                                    </CommandItem>
+                                  ))}
+                                </CommandList>
+                              </CommandGroup>
+                            </Command>
+                          </PopoverContent>
+                        </Popover>
+                        <FormMessage />
+                      </FormItem>
+                    )
+                  }}
                 />
               </div>
               
@@ -675,8 +679,8 @@ export default function ItemManager() {
                       style={partyPopoverWidth ? { width: partyPopoverWidth } : {}}
                     >
                       <Command>
-                        <CommandInput 
-                          placeholder="Search party..." 
+                        <CommandInput
+                          placeholder="Search party..."
                           value={partySearch}
                           onValueChange={setPartySearch}
                           onKeyDown={(e) => {
@@ -686,7 +690,7 @@ export default function ItemManager() {
                             }
                           }}
                         />
-                        <CommandList>
+                        <CommandList className="max-h-[200px]">
                           <CommandEmpty>No party found.</CommandEmpty>
                           <CommandGroup>
                             {filteredPartiesForSearch.map((party) => (

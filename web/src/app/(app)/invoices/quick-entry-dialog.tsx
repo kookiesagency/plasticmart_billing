@@ -25,16 +25,11 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/ui/form'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command'
+import { Check, ChevronsUpDown } from 'lucide-react'
 import { useEffect, useState } from 'react'
 
 const quickEntrySchema = z.object({
@@ -59,12 +54,20 @@ interface QuickEntryDialogProps {
   isOpen: boolean
   onClose: () => void
   onSuccess: () => void
+  invoiceId?: number
+  editData?: {
+    party_id: number
+    total_amount: number
+    invoice_date: string
+    amount_received: number
+  }
 }
 
-export function QuickEntryDialog({ isOpen, onClose, onSuccess }: QuickEntryDialogProps) {
+export function QuickEntryDialog({ isOpen, onClose, onSuccess, invoiceId, editData }: QuickEntryDialogProps) {
   const supabase = createClient()
   const [parties, setParties] = useState<Party[]>([])
   const [loading, setLoading] = useState(false)
+  const isEditMode = !!invoiceId
 
   const form = useForm<QuickEntryFormValues>({
     resolver: zodResolver(quickEntrySchema),
@@ -98,16 +101,35 @@ export function QuickEntryDialog({ isOpen, onClose, onSuccess }: QuickEntryDialo
 
     if (isOpen) {
       fetchParties()
-      form.reset({
-        party_id: 0,
-        total_amount: 0,
-        invoice_date: formatLocalDate(new Date()),
-        payment_status: 'Pending',
-        amount_received: 0,
-        notes: '',
-      })
+      if (editData) {
+        // Determine payment status from edit data
+        let status: 'Paid' | 'Pending' | 'Partial' = 'Pending'
+        if (editData.amount_received >= editData.total_amount && editData.total_amount > 0) {
+          status = 'Paid'
+        } else if (editData.amount_received > 0) {
+          status = 'Partial'
+        }
+
+        form.reset({
+          party_id: editData.party_id,
+          total_amount: editData.total_amount,
+          invoice_date: editData.invoice_date,
+          payment_status: status,
+          amount_received: editData.amount_received,
+          notes: '',
+        })
+      } else {
+        form.reset({
+          party_id: 0,
+          total_amount: 0,
+          invoice_date: formatLocalDate(new Date()),
+          payment_status: 'Pending',
+          amount_received: 0,
+          notes: '',
+        })
+      }
     }
-  }, [isOpen, supabase, form])
+  }, [isOpen, supabase, form, editData])
 
   // Auto-set amount_received based on payment_status
   useEffect(() => {
@@ -138,6 +160,55 @@ export function QuickEntryDialog({ isOpen, onClose, onSuccess }: QuickEntryDialo
           setLoading(false)
           return
         }
+      }
+
+      if (isEditMode && invoiceId) {
+        // Update existing invoice
+        const { error: invoiceError } = await supabase
+          .from('invoices')
+          .update({
+            party_id: values.party_id,
+            party_name: party.name,
+            invoice_date: values.invoice_date,
+            total_amount: values.total_amount,
+          })
+          .eq('id', invoiceId)
+
+        if (invoiceError) {
+          toast.error('Failed to update invoice: ' + invoiceError.message)
+          setLoading(false)
+          return
+        }
+
+        // Delete existing payments and create new one
+        await supabase.from('payments').delete().eq('invoice_id', invoiceId)
+
+        const amountReceived = values.payment_status === 'Paid'
+          ? values.total_amount
+          : values.payment_status === 'Partial'
+          ? (values.amount_received || 0)
+          : 0
+
+        if (amountReceived > 0) {
+          const { error: paymentError } = await supabase
+            .from('payments')
+            .insert({
+              invoice_id: invoiceId,
+              amount: amountReceived,
+              payment_date: values.invoice_date,
+              notes: values.notes || 'Quick entry payment',
+            })
+
+          if (paymentError) {
+            toast.error('Invoice updated but failed to update payment: ' + paymentError.message)
+          }
+        }
+
+        toast.success('Offline invoice updated successfully!')
+        setLoading(false)
+        onSuccess()
+        onClose()
+        return
       }
 
       // Create invoice with is_offline flag
@@ -202,36 +273,71 @@ export function QuickEntryDialog({ isOpen, onClose, onSuccess }: QuickEntryDialo
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
-          <DialogTitle>Quick Offline Invoice Entry</DialogTitle>
+          <DialogTitle>{isEditMode ? 'Edit Offline Invoice' : 'Create Offline Invoice'}</DialogTitle>
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
             <FormField
               control={form.control}
               name="party_id"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Party *</FormLabel>
-                  <Select
-                    onValueChange={(value) => field.onChange(parseInt(value))}
-                    value={field.value ? field.value.toString() : ''}
-                  >
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select party" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      {parties.map((party) => (
-                        <SelectItem key={party.id} value={party.id.toString()}>
-                          {party.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
+              render={({ field }) => {
+                const [open, setOpen] = useState(false)
+                return (
+                  <FormItem className="flex flex-col">
+                    <FormLabel>Party *</FormLabel>
+                    <Popover open={open} onOpenChange={setOpen}>
+                      <PopoverTrigger asChild>
+                        <FormControl>
+                          <Button
+                            variant="outline"
+                            role="combobox"
+                            className={cn(
+                              "justify-between",
+                              !field.value && "text-muted-foreground"
+                            )}
+                          >
+                            {field.value
+                              ? parties.find((p) => p.id === field.value)?.name
+                              : "Select party"}
+                            <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                          </Button>
+                        </FormControl>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-[400px] p-0" align="start">
+                        <Command>
+                          <CommandInput placeholder="Search party..." />
+                          <CommandList>
+                            <CommandEmpty>No party found.</CommandEmpty>
+                            <CommandGroup>
+                              {parties.map((p) => (
+                                <CommandItem
+                                  value={p.name}
+                                  key={p.id}
+                                  onSelect={() => {
+                                    form.setValue("party_id", p.id)
+                                    setOpen(false)
+                                  }}
+                                >
+                                  <Check
+                                    className={cn(
+                                      "mr-2 h-4 w-4",
+                                      p.id === field.value
+                                        ? "opacity-100"
+                                        : "opacity-0"
+                                    )}
+                                  />
+                                  {p.name}
+                                </CommandItem>
+                              ))}
+                            </CommandGroup>
+                          </CommandList>
+                        </Command>
+                      </PopoverContent>
+                    </Popover>
+                    <FormMessage />
+                  </FormItem>
+                )
+              }}
             />
 
             <FormField
@@ -299,24 +405,62 @@ export function QuickEntryDialog({ isOpen, onClose, onSuccess }: QuickEntryDialo
             <FormField
               control={form.control}
               name="payment_status"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Payment Status *</FormLabel>
-                  <Select onValueChange={field.onChange} value={field.value}>
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select payment status" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      <SelectItem value="Paid">Paid</SelectItem>
-                      <SelectItem value="Pending">Pending</SelectItem>
-                      <SelectItem value="Partial">Partial</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
+              render={({ field }) => {
+                const [open, setOpen] = useState(false)
+                return (
+                  <FormItem className="flex flex-col">
+                    <FormLabel>Payment Status *</FormLabel>
+                    <Popover open={open} onOpenChange={setOpen}>
+                      <PopoverTrigger asChild>
+                        <FormControl>
+                          <Button
+                            variant="outline"
+                            role="combobox"
+                            className={cn(
+                              "justify-between",
+                              !field.value && "text-muted-foreground"
+                            )}
+                          >
+                            {field.value || "Select payment status"}
+                            <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                          </Button>
+                        </FormControl>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-[400px] p-0" align="start">
+                        <Command>
+                          <CommandInput placeholder="Search payment status..." />
+                          <CommandList>
+                            <CommandEmpty>No payment status found.</CommandEmpty>
+                            <CommandGroup>
+                              {['Paid', 'Pending', 'Partial'].map((status) => (
+                                <CommandItem
+                                  value={status}
+                                  key={status}
+                                  onSelect={() => {
+                                    form.setValue("payment_status", status as 'Paid' | 'Pending' | 'Partial')
+                                    setOpen(false)
+                                  }}
+                                >
+                                  <Check
+                                    className={cn(
+                                      "mr-2 h-4 w-4",
+                                      status === field.value
+                                        ? "opacity-100"
+                                        : "opacity-0"
+                                    )}
+                                  />
+                                  {status}
+                                </CommandItem>
+                              ))}
+                            </CommandGroup>
+                          </CommandList>
+                        </Command>
+                      </PopoverContent>
+                    </Popover>
+                    <FormMessage />
+                  </FormItem>
+                )
+              }}
             />
 
             {paymentStatus === 'Partial' && (
@@ -365,7 +509,7 @@ export function QuickEntryDialog({ isOpen, onClose, onSuccess }: QuickEntryDialo
                 Cancel
               </Button>
               <Button type="submit" disabled={loading}>
-                {loading ? 'Creating...' : 'Create Invoice'}
+                {loading ? (isEditMode ? 'Updating...' : 'Creating...') : (isEditMode ? 'Update Invoice' : 'Create Invoice')}
               </Button>
             </DialogFooter>
           </form>

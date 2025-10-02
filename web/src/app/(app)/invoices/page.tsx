@@ -44,8 +44,10 @@ export default function InvoicesPage() {
     const baseQuery = `
       id,
       public_id,
+      invoice_number,
       invoice_date,
       updated_at,
+      party_id,
       party_name,
       total_amount,
       is_offline,
@@ -350,7 +352,7 @@ export default function InvoicesPage() {
           <div className="flex gap-2">
             <Button variant="outline" onClick={() => setIsQuickEntryOpen(true)}>
               <Zap className="h-4 w-4 mr-2" />
-              Quick Entry
+              Create Offline Invoice
             </Button>
             <Button asChild>
               <Link href="/invoices/new">
