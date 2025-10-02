@@ -25,6 +25,7 @@ import { CSS } from '@dnd-kit/utilities'
 
 import { createClient } from '@/lib/supabase/client'
 import { cn, formatCurrency, parseLocalDate, formatLocalDate } from '@/lib/utils'
+import { convertRate } from '@/lib/unit-conversions'
 import { Button } from '@/components/ui/button'
 import { Calendar } from '@/components/ui/calendar'
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command'
@@ -512,21 +513,35 @@ export function InvoiceForm({ invoiceId }: { invoiceId?: string }) {
                                 <FormField
                                   control={form.control}
                                   name={`items.${index}.item_unit`}
-                                  render={({ field: unitField }) => (
-                                    <Select
-                                      value={unitField.value}
-                                      onValueChange={unitField.onChange}
-                                    >
-                                      <SelectTrigger className="w-full h-9 text-left">
-                                        <SelectValue placeholder="Select unit" />
-                                      </SelectTrigger>
-                                      <SelectContent>
-                                        {unitsData.map(unit => (
-                                          <SelectItem key={unit.id} value={unit.name}>{unit.name}</SelectItem>
-                                        ))}
-                                      </SelectContent>
-                                    </Select>
-                                  )}
+                                  render={({ field: unitField }) => {
+                                    const handleUnitChange = (newUnit: string) => {
+                                      const currentUnit = unitField.value
+                                      const currentRate = form.getValues(`items.${index}.rate`)
+
+                                      // Convert rate based on unit change
+                                      const convertedRate = convertRate(currentRate, currentUnit, newUnit)
+
+                                      // Update both unit and rate
+                                      unitField.onChange(newUnit)
+                                      form.setValue(`items.${index}.rate`, convertedRate)
+                                    }
+
+                                    return (
+                                      <Select
+                                        value={unitField.value}
+                                        onValueChange={handleUnitChange}
+                                      >
+                                        <SelectTrigger className="w-full h-9 text-left">
+                                          <SelectValue placeholder="Select unit" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                          {unitsData.map(unit => (
+                                            <SelectItem key={unit.id} value={unit.name}>{unit.name}</SelectItem>
+                                          ))}
+                                        </SelectContent>
+                                      </Select>
+                                    )
+                                  }}
                                 />
                               </TableCell>
                               <TableCell className="text-left">
