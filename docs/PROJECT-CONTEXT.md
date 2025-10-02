@@ -101,6 +101,19 @@ plasticmart/
 3. Get approval before moving to next task
 4. This ensures quality and allows feedback at each step
 
+### **Important Development Rules** ⚠️
+**Before Starting Any Feature:**
+1. **ALWAYS explain what you're going to build first**
+2. **Wait for explicit approval before writing any code**
+3. Show your understanding of the requirements
+4. Only start development after getting confirmation
+
+**Git Push Policy:**
+- **NEVER ask if you should push to GitHub**
+- **ONLY push when explicitly told: "push to github"**
+- Commit changes locally, but wait for push command
+- This prevents unnecessary deployments and gives control over timing
+
 ### **Immediate Options for Next Session**:
 
 1. **📱 Implement Invoices Screen** (Recommended First)
