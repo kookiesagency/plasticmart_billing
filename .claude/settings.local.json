@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm install)",
+      "Bash(npm run build:*)",
+      "Bash(cp:*)",
+      "Bash(flutter:*)",
+      "Bash($HOME/development/flutter/bin/flutter --version)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

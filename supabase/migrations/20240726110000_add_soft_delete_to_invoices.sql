@@ -1,2 +1,0 @@
-ALTER TABLE invoices
-ADD COLUMN deleted_at TIMESTAMPTZ; 
