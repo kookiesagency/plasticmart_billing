@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from 'react'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
-import { PlusCircle, ArrowUpDown, Undo, Trash } from 'lucide-react'
+import { PlusCircle, ArrowUpDown, Undo, Trash, Zap } from 'lucide-react'
 import { DataTable } from '@/components/data-table'
 import { columns as activeInvoiceColumns, Invoice } from './columns'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
@@ -16,6 +16,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip
 import { Checkbox } from '@/components/ui/checkbox'
 import { formatCurrency, formatDate } from '@/lib/utils'
 import { Badge } from '@/components/ui/badge'
+import { QuickEntryDialog } from './quick-entry-dialog'
 
 
 export default function InvoicesPage() {
@@ -23,7 +24,7 @@ export default function InvoicesPage() {
   const [activeInvoices, setActiveInvoices] = useState<Invoice[]>([])
   const [deletedInvoices, setDeletedInvoices] = useState<Invoice[]>([])
   const [loading, setLoading] = useState(true)
-  
+
   // State for confirmation dialog
   const [isConfirmOpen, setIsConfirmOpen] = useState(false)
   const [invoiceToDelete, setInvoiceToDelete] = useState<number | null>(null)
@@ -32,6 +33,9 @@ export default function InvoicesPage() {
   const [bulkDeleteIds, setBulkDeleteIds] = useState<number[] | null>(null)
   const [bulkRestoreIds, setBulkRestoreIds] = useState<number[] | null>(null)
   const [bulkPermanentDeleteIds, setBulkPermanentDeleteIds] = useState<number[] | null>(null)
+
+  // State for quick entry dialog
+  const [isQuickEntryOpen, setIsQuickEntryOpen] = useState(false)
 
 
   const fetchData = useCallback(async () => {
@@ -44,6 +48,7 @@ export default function InvoicesPage() {
       updated_at,
       party_name,
       total_amount,
+      is_offline,
       payments (amount)
     `
     
@@ -339,15 +344,21 @@ export default function InvoicesPage() {
 
   return (
     <>
-      <SetHeader 
+      <SetHeader
         title="Invoices"
         actions={
-          <Button asChild>
-            <Link href="/invoices/new">
-              <PlusCircle className="h-4 w-4 mr-2" />
-              Create Invoice
-            </Link>
-          </Button>
+          <div className="flex gap-2">
+            <Button variant="outline" onClick={() => setIsQuickEntryOpen(true)}>
+              <Zap className="h-4 w-4 mr-2" />
+              Quick Entry
+            </Button>
+            <Button asChild>
+              <Link href="/invoices/new">
+                <PlusCircle className="h-4 w-4 mr-2" />
+                Create Invoice
+              </Link>
+            </Button>
+          </div>
         }
       />
       <Tabs defaultValue="active">
@@ -383,6 +394,12 @@ export default function InvoicesPage() {
         onConfirm={onConfirm}
         title="Are you sure?"
         description={confirmationDescription()}
+      />
+
+      <QuickEntryDialog
+        isOpen={isQuickEntryOpen}
+        onClose={() => setIsQuickEntryOpen(false)}
+        onSuccess={fetchData}
       />
     </>
   )

@@ -38,6 +38,7 @@ export type Invoice = {
   amount_pending: number
   status: 'Paid' | 'Pending' | 'Partial'
   party_name: string
+  is_offline?: boolean
 }
 
 export const columns = (
@@ -105,6 +106,7 @@ export const columns = (
       const partyName = row.getValue('party_name') as string;
       const invoiceDateRaw = row.original.invoice_date; // e.g., '2025-07-09'
       const updatedAtRaw = row.original.updated_at;     // e.g., '2025-07-09T18:32:50.628496+00:00'
+      const isOffline = row.original.is_offline;
 
       // Get today's date in local YYYY-MM-DD
       const todayStr = new Date().toISOString().slice(0, 10);
@@ -125,6 +127,9 @@ export const columns = (
       return (
         <span className="flex items-center gap-2">
           {partyName}
+          {isOffline && (
+            <span className="px-1.5 py-0 rounded text-orange-700 bg-orange-100 text-[10px] font-bold tracking-wide">OFFLINE</span>
+          )}
           {isNew && (
             <span className="px-1.5 py-0 rounded text-green-700 bg-green-100 text-[10px] font-bold tracking-wide">NEW</span>
           )}
