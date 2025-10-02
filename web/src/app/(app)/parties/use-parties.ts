@@ -12,26 +12,38 @@ export default function useParties() {
 
   const fetchData = useCallback(async () => {
     setLoading(true)
-    
+
     const [activeRes, deletedRes] = await Promise.all([
-      supabase.from('parties').select('*').is('deleted_at', null).order('created_at', { ascending: false }),
-      supabase.from('parties').select('*').not('deleted_at', 'is', null).order('deleted_at', { ascending: false })
+      supabase.from('parties').select('*, invoices!party_id(count)').is('deleted_at', null).order('created_at', { ascending: false }),
+      supabase.from('parties').select('*, invoices!party_id(count)').not('deleted_at', 'is', null).order('deleted_at', { ascending: false })
     ])
 
     if (activeRes.error) {
       toast.error('Error fetching parties: ' + activeRes.error.message)
       setActiveParties([])
     } else {
-      setActiveParties(activeRes.data as Party[])
+      // Transform data to add invoice_count
+      const partiesWithCount = activeRes.data.map((party: any) => ({
+        ...party,
+        invoice_count: party.invoices?.[0]?.count || 0,
+        invoices: undefined // Remove the nested invoices object
+      }))
+      setActiveParties(partiesWithCount as Party[])
     }
 
     if (deletedRes.error) {
       toast.error('Error fetching deleted parties: ' + deletedRes.error.message)
       setDeletedParties([])
     } else {
-      setDeletedParties(deletedRes.data as Party[])
+      // Transform data to add invoice_count
+      const partiesWithCount = deletedRes.data.map((party: any) => ({
+        ...party,
+        invoice_count: party.invoices?.[0]?.count || 0,
+        invoices: undefined // Remove the nested invoices object
+      }))
+      setDeletedParties(partiesWithCount as Party[])
     }
-    
+
     setLoading(false)
   }, [supabase])
 

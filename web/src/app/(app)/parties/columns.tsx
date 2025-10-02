@@ -56,21 +56,14 @@ export const columns = ({ onEdit, onDelete }: ColumnsProps): ColumnDef<Party>[] 
     cell: ({ row }) => row.original.bundle_rate ?? 'N/A',
   },
   {
-    accessorKey: 'opening_balance',
+    accessorKey: 'invoice_count',
     header: ({ column }) => (
         <div className="flex items-center cursor-pointer" onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}>
-            Opening Balance
+            No. of Invoices
             <ArrowUpDown className="ml-2 h-4 w-4" />
         </div>
     ),
-    cell: ({ row }) => {
-      const balance = row.original.opening_balance ?? 0
-      return new Intl.NumberFormat('en-IN', {
-        style: 'currency',
-        currency: 'INR',
-        minimumFractionDigits: 0,
-      }).format(balance)
-    },
+    cell: ({ row }) => row.original.invoice_count ?? 0,
   },
   {
     accessorKey: 'created_at',
