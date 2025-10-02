@@ -28,6 +28,7 @@ import { Textarea } from '@/components/ui/textarea'
 const partySchema = z.object({
   name: z.string().min(1, 'Name is required'),
   bundle_rate: z.coerce.number().min(0).optional(),
+  opening_balance: z.coerce.number().optional(),
 })
 
 type PartyFormValues = z.infer<typeof partySchema>
@@ -46,6 +47,7 @@ export function PartyForm({ isOpen, onClose, onSubmit, partyId }: PartyFormProps
     defaultValues: {
       name: '',
       bundle_rate: 0,
+      opening_balance: 0,
     },
   })
 
@@ -64,6 +66,7 @@ export function PartyForm({ isOpen, onClose, onSubmit, partyId }: PartyFormProps
           form.reset({
             name: data.name,
             bundle_rate: data.bundle_rate ?? 0,
+            opening_balance: data.opening_balance ?? 0,
           })
         }
       }
@@ -72,6 +75,7 @@ export function PartyForm({ isOpen, onClose, onSubmit, partyId }: PartyFormProps
       form.reset({
         name: '',
         bundle_rate: 0,
+        opening_balance: 0,
       })
     }
   }, [partyId, isOpen, form, supabase])
@@ -110,6 +114,27 @@ export function PartyForm({ isOpen, onClose, onSubmit, partyId }: PartyFormProps
                   <FormControl>
                     <Input type="number" placeholder="Enter bundle rate" {...field} />
                   </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="opening_balance"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Opening Balance (Optional)</FormLabel>
+                  <FormControl>
+                    <Input
+                      type="number"
+                      step="0.01"
+                      placeholder="Enter opening balance"
+                      {...field}
+                    />
+                  </FormControl>
+                  <p className="text-xs text-muted-foreground">
+                    Initial amount owed at the start (can be positive or negative)
+                  </p>
                   <FormMessage />
                 </FormItem>
               )}

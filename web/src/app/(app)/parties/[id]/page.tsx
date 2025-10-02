@@ -19,6 +19,7 @@ import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 
 type PartyDetails = {
   name: string
+  opening_balance: number
   invoices: Invoice[]
 }
 
@@ -36,9 +37,9 @@ export default function PartyReportPage() {
     if (!params.id) return
     setLoading(true)
 
-    const { data: partyData, error: partyError } = await supabase
+    const { data: partyData, error: partyError} = await supabase
       .from('parties')
-      .select('name')
+      .select('name, opening_balance')
       .eq('id', params.id)
       .single()
 
@@ -92,8 +93,9 @@ export default function PartyReportPage() {
         }
       })
       
-      setParty({ name: partyData.name, invoices: processedInvoices })
-      setSummary({ totalBilled, totalReceived, balance: totalBilled - totalReceived })
+      const openingBalance = partyData.opening_balance ?? 0
+      setParty({ name: partyData.name, opening_balance: openingBalance, invoices: processedInvoices })
+      setSummary({ totalBilled, totalReceived, balance: openingBalance + totalBilled - totalReceived })
     }
     setLoading(false)
   }
@@ -167,7 +169,11 @@ export default function PartyReportPage() {
         description="Are you sure you want to delete the selected invoices? This action is not reversible."
       />
       <div className="space-y-6">
-        <div className="grid gap-4 md:grid-cols-3">
+        <div className="grid gap-4 md:grid-cols-4">
+          <div className="rounded-lg border bg-card text-card-foreground shadow-sm p-6">
+            <h3 className="text-sm font-medium text-muted-foreground mb-2">Opening Balance</h3>
+            <p className="text-2xl font-bold">{formatCurrency(party.opening_balance)}</p>
+          </div>
           <div className="rounded-lg border bg-card text-card-foreground shadow-sm p-6">
             <h3 className="text-sm font-medium text-muted-foreground mb-2">Total Billed</h3>
             <p className="text-2xl font-bold">{formatCurrency(summary.totalBilled)}</p>
@@ -177,8 +183,9 @@ export default function PartyReportPage() {
             <p className="text-2xl font-bold">{formatCurrency(summary.totalReceived)}</p>
           </div>
           <div className="rounded-lg border bg-card text-card-foreground shadow-sm p-6">
-            <h3 className="text-sm font-medium text-muted-foreground mb-2">Current Balance</h3>
+            <h3 className="text-sm font-medium text-muted-foreground mb-2">Total Outstanding</h3>
             <p className="text-2xl font-bold">{formatCurrency(summary.balance)}</p>
+            <p className="text-xs text-muted-foreground mt-1">Opening + Billed - Received</p>
           </div>
         </div>
 
