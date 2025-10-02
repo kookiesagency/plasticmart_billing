@@ -111,6 +111,7 @@ export function InvoiceForm({ invoiceId }: { invoiceId?: string }) {
   const [isPartyLocked, setIsPartyLocked] = useState(!!invoiceId)
   const [snapshottedPartyName, setSnapshottedPartyName] = useState<string | null>(null)
   const [unitsData, setUnitsData] = useState<{ id: number; name: string }[]>([])
+  const [isSubmitting, setIsSubmitting] = useState(false)
 
   const form = useForm<z.infer<typeof invoiceSchema>>({
     resolver: zodResolver(invoiceSchema),
@@ -283,10 +284,14 @@ export function InvoiceForm({ invoiceId }: { invoiceId?: string }) {
   )
 
   const onSubmit = async (values: z.infer<typeof invoiceSchema>) => {
+    if (isSubmitting) return // Prevent double submission
+
     if (!isPartyLocked && !values.party_id) {
       form.setError('party_id', { message: 'Party is required.' })
       return
     }
+
+    setIsSubmitting(true)
 
     const { items, subTotal, grandTotal, invoice_number, ...invoiceData } = values
     // invoice_date is already a string in YYYY-MM-DD format
@@ -342,9 +347,11 @@ export function InvoiceForm({ invoiceId }: { invoiceId?: string }) {
 
     if (error) {
       toast.error('Failed to save invoice: ' + error.message)
+      setIsSubmitting(false)
     } else {
       toast.success(`Invoice ${invoiceId ? 'updated' : 'created'} successfully!`)
       router.push('/invoices')
+      // Don't reset isSubmitting here as we're navigating away
     }
   }
 
@@ -672,7 +679,9 @@ export function InvoiceForm({ invoiceId }: { invoiceId?: string }) {
                   </div>
                 </div>
               </div>
-              <Button type="submit" className="w-full">Save Invoice</Button>
+              <Button type="submit" className="w-full" disabled={isSubmitting}>
+                {isSubmitting ? 'Saving...' : 'Save Invoice'}
+              </Button>
             </div>
           </div>
         </div>

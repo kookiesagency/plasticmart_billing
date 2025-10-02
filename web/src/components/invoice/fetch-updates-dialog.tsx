@@ -13,7 +13,6 @@ type ItemUpdate = {
   field: 'item_name' | 'rate' | 'item_unit'
   oldValue: string | number
   newValue: string | number
-  convertedRate?: number // For unit changes that need rate conversion
 }
 
 type PartyUpdate = {
@@ -77,33 +76,29 @@ export function FetchUpdatesDialog({
       })
     }
 
-    // Check unit (and convert rate if unit changed)
+    // Check unit
     const currentUnit = currentItem.item_unit
     const latestUnit = latestItem.units?.name || 'N/A'
 
     if (currentUnit !== latestUnit) {
-      // Calculate converted rate based on unit change
-      const convertedRate = convertRate(latestItem.default_rate, latestUnit, currentUnit)
-
       updates.push({
         index,
         itemId: currentItem.item_id,
         field: 'item_unit',
         oldValue: currentUnit,
         newValue: latestUnit,
-        convertedRate,
       })
-    } else {
-      // Check rate (only if unit hasn't changed)
-      if (currentItem.rate !== latestItem.default_rate) {
-        updates.push({
-          index,
-          itemId: currentItem.item_id,
-          field: 'rate',
-          oldValue: currentItem.rate,
-          newValue: latestItem.default_rate,
-        })
-      }
+    }
+
+    // Check rate (exact master value, no conversion)
+    if (currentItem.rate !== latestItem.default_rate) {
+      updates.push({
+        index,
+        itemId: currentItem.item_id,
+        field: 'rate',
+        oldValue: currentItem.rate,
+        newValue: latestItem.default_rate,
+      })
     }
   })
 
@@ -157,7 +152,7 @@ export function FetchUpdatesDialog({
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-3xl max-h-[80vh] overflow-y-auto">
+      <DialogContent className="!max-w-5xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <RefreshCw className="h-5 w-5" />
@@ -216,11 +211,6 @@ export function FetchUpdatesDialog({
                         </td>
                         <td className="p-3 font-medium text-green-600">
                           {formatValue(update.newValue, update.field)}
-                          {'convertedRate' in update && update.convertedRate !== undefined && (
-                            <span className="block text-xs text-muted-foreground mt-1">
-                              Rate will update to ₹{update.convertedRate.toFixed(2)} (converted for {update.oldValue} unit)
-                            </span>
-                          )}
                         </td>
                       </tr>
                     )

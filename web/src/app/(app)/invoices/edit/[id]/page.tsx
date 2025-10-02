@@ -3,7 +3,7 @@
 import { InvoiceForm } from '@/app/(app)/invoices/new/invoice-form'
 import { SetHeader } from '@/components/layout/header-context'
 import { useParams, useRouter } from 'next/navigation'
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
 import { ArrowLeft, RefreshCw } from 'lucide-react'
@@ -34,6 +34,7 @@ export default function EditInvoicePage() {
   const [isFetchDialogOpen, setIsFetchDialogOpen] = useState(false)
   const [currentInvoiceData, setCurrentInvoiceData] = useState<any>(null)
   const [latestData, setLatestData] = useState<any>(null)
+  const [refreshKey, setRefreshKey] = useState(0)
   const supabase = createClient()
 
   useEffect(() => {
@@ -135,10 +136,6 @@ export default function EditInvoicePage() {
           updateData.rate = update.newValue
         } else if (update.field === 'item_unit') {
           updateData.item_unit = update.newValue
-          // Also update rate if unit conversion was applied
-          if (update.convertedRate !== undefined) {
-            updateData.rate = update.convertedRate
-          }
         }
 
         const { error } = await supabase
@@ -150,7 +147,8 @@ export default function EditInvoicePage() {
       }
 
       toast.success('Invoice updated successfully!')
-      router.refresh()
+      setIsFetchDialogOpen(false)
+      setRefreshKey(prev => prev + 1)
     } catch (error: any) {
       toast.error('Failed to apply updates: ' + error.message)
     }
@@ -174,7 +172,7 @@ export default function EditInvoicePage() {
           </Button>
         }
       />
-      <InvoiceForm invoiceId={params.id} />
+      <InvoiceForm key={refreshKey} invoiceId={params.id} />
 
       {currentInvoiceData && latestData && (
         <FetchUpdatesDialog
