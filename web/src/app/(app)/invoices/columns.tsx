@@ -27,6 +27,7 @@ import { useState } from 'react'
 export type Invoice = {
   id: number
   public_id: string
+  invoice_number: string
   invoice_date: string
   updated_at: string
   party: {
@@ -65,10 +66,20 @@ export const columns = (
     enableSorting: false,
     enableHiding: false,
   },
-  // {
-  //   accessorKey: 'id',
-  //   header: 'Invoice ID',
-  // },
+  {
+    accessorKey: 'invoice_number',
+    header: ({ column }) => (
+      <div className="flex items-center cursor-pointer" onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}>
+        Invoice #
+        <ArrowUpDown className="ml-2 h-4 w-4" />
+      </div>
+    ),
+    cell: ({ row }) => (
+      <div className="font-mono text-sm font-medium">
+        {row.getValue('invoice_number') || 'N/A'}
+      </div>
+    ),
+  },
   {
     accessorKey: 'invoice_date',
     header: ({ column }) => (

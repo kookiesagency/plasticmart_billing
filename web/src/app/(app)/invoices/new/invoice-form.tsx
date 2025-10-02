@@ -57,11 +57,12 @@ const invoiceSchema = z.object({
   invoice_date: z.string(),
   bundle_rate: z.coerce.number().min(0),
   bundle_quantity: z.coerce.number().min(0),
-  
+
   bundle_charge: z.coerce.number().min(0),
   items: z.array(invoiceItemSchema).min(1, 'Please add at least one item.'),
   subTotal: z.number().optional(),
   grandTotal: z.number().optional(),
+  invoice_number: z.string().optional(),
 })
 
 type Party = {
@@ -190,7 +191,7 @@ export function InvoiceForm({ invoiceId }: { invoiceId?: string }) {
           .select('*, invoice_items(*)')
           .eq('id', invoiceId)
           .single()
-        
+
         if (invoiceData) {
           setSnapshottedPartyName(invoiceData.party_name)
           setIsPartyLocked(true)
@@ -201,6 +202,7 @@ export function InvoiceForm({ invoiceId }: { invoiceId?: string }) {
             bundle_rate: invoiceData.bundle_rate,
             bundle_quantity: invoiceData.bundle_quantity,
             bundle_charge: invoiceData.bundle_charge,
+            invoice_number: invoiceData.invoice_number,
             items: (invoiceData.invoice_items || [])
               .sort((a: { position?: number; id: number }, b: { position?: number; id: number }) => {
                 const ap = typeof a.position === 'number' ? a.position : Number.MAX_SAFE_INTEGER
@@ -280,15 +282,15 @@ export function InvoiceForm({ invoiceId }: { invoiceId?: string }) {
       return
     }
 
-    const { items, subTotal, grandTotal, ...invoiceData } = values
+    const { items, subTotal, grandTotal, invoice_number, ...invoiceData } = values
     // invoice_date is already a string in YYYY-MM-DD format
     const invoiceDateString = invoiceData.invoice_date;
-    
+
     const party = partiesData.find(p => p.id === values.party_id);
     if (!party && !isPartyLocked) {
         return toast.error("Could not find active party details to save.");
     }
-    
+
     const partyNameToSave = isPartyLocked ? snapshottedPartyName : party?.name;
 
     if (!partyNameToSave) {
@@ -298,15 +300,15 @@ export function InvoiceForm({ invoiceId }: { invoiceId?: string }) {
     const snapshotData = {
       party_name: partyNameToSave,
     }
-    
+
     let error = null
-    
+
     if (invoiceId) {
       const { error: updateError } = await supabase
         .from('invoices')
         .update({ ...invoiceData, invoice_date: invoiceDateString, ...snapshotData, total_amount: grandTotal })
         .eq('id', invoiceId)
-      
+
       if (!updateError) {
         await supabase.from('invoice_items').delete().eq('invoice_id', invoiceId)
         const itemsToInsert = items.map((item, idx) => ({ ...item, position: idx, invoice_id: parseInt(invoiceId, 10) }))
@@ -316,12 +318,13 @@ export function InvoiceForm({ invoiceId }: { invoiceId?: string }) {
         error = updateError
       }
     } else {
+      // For new invoices, let the database generate the invoice_number via SQL function
       const { data: newInvoice, error: invoiceError } = await supabase
         .from('invoices')
         .insert({ ...invoiceData, invoice_date: invoiceDateString, ...snapshotData, total_amount: grandTotal })
         .select('id')
         .single()
-  
+
       if (!invoiceError && newInvoice) {
         const itemsToInsert = items.map((item, idx) => ({ ...item, position: idx, invoice_id: newInvoice.id }))
         const { error: itemsError } = await supabase.from('invoice_items').insert(itemsToInsert)
@@ -350,6 +353,14 @@ export function InvoiceForm({ invoiceId }: { invoiceId?: string }) {
             <div className="space-y-4">
               <h3 className="text-lg font-medium">Invoice Details</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {invoiceId && (
+                  <div className="md:col-span-2">
+                    <FormLabel>Invoice Number</FormLabel>
+                    <div className="flex items-center h-9 px-3 py-1 rounded-md border bg-muted text-sm font-mono">
+                      {form.watch('invoice_number') || 'Generating...'}
+                    </div>
+                  </div>
+                )}
                 <FormField
                   control={form.control}
                   name="party_id"

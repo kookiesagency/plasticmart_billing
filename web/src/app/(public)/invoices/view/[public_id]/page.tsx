@@ -8,6 +8,7 @@ import { InvoiceActions } from './invoice-actions'
 
 type Invoice = {
   id: number
+  invoice_number: string
   invoice_date: string
   total_amount: number
   party_name: string
@@ -58,7 +59,8 @@ export default async function PublicInvoicePage({ params }: any) {
               <h3 className="font-semibold mb-1">Bill To:</h3>
               <p className="font-bold">{invoice.party_name}</p>
             </div>
-            <div className="text-right">
+            <div className="text-right space-y-1">
+              <p><strong>Invoice #:</strong> <span className="font-mono">{invoice.invoice_number}</span></p>
               <p><strong>Date:</strong> {format(new Date(invoice.invoice_date), 'PPP')}</p>
             </div>
           </div>

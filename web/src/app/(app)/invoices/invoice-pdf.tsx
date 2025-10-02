@@ -2,6 +2,7 @@ import { formatCurrency, formatDate } from '@/lib/utils'
 
 type InvoicePDFProps = {
   invoice: {
+    invoice_number: string
     invoice_date: string
     party_name: string
     invoice_items: {
@@ -25,7 +26,7 @@ export const InvoicePDF = ({ invoice, settings }: InvoicePDFProps) => {
         <h2 className="text-xl font-bold mt-4 underline underline-offset-4">CASH MEMO</h2>
       </header>
 
-      {/* Bill To and Date Section */}
+      {/* Bill To, Invoice Number and Date Section */}
       <table className="w-full mb-6 text-sm">
         <tbody>
           <tr>
@@ -33,7 +34,12 @@ export const InvoicePDF = ({ invoice, settings }: InvoicePDFProps) => {
               <span className="font-bold">Bill To:</span> <span className="font-bold">{invoice.party_name}</span>
             </td>
             <td className="w-1/2 text-right">
-              <span className="font-bold">Date:</span> {formatDate(invoice.invoice_date)}
+              <div className="mb-1">
+                <span className="font-bold">Invoice #:</span> <span className="font-mono">{invoice.invoice_number}</span>
+              </div>
+              <div>
+                <span className="font-bold">Date:</span> {formatDate(invoice.invoice_date)}
+              </div>
             </td>
           </tr>
         </tbody>

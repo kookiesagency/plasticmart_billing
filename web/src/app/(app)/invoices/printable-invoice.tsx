@@ -14,6 +14,7 @@ type PrintableInvoiceItem = {
 
 type FullInvoice = {
   id: number
+  invoice_number: string
   invoice_date: string
   party_name: string
   invoice_items: PrintableInvoiceItem[]
