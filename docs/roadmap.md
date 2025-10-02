@@ -60,7 +60,7 @@ This document outlines the development plan for the Smart Billing System. The pr
 | 🔴 High | Invoice Numbering System | Medium | ✅ Completed |
 | 🔴 High | Offline Bill Entry | Low | ✅ Completed |
 | 🔴 High | Smart Unit Conversion | Medium | ✅ Completed |
-| 🔴 High | Fetch Updated Data | High | Pending |
+| 🔴 High | Fetch Updated Data | High | ✅ Completed |
 | 🟡 Medium | Duplicate Item | Low | ✅ Completed |
 | 🟡 Medium | Weekly Mini Report | Medium | Pending |
 | 🟡 Medium | Purchase Party Dropdown | Low | Pending |
@@ -196,21 +196,22 @@ CREATE INDEX idx_invoices_is_offline ON invoices(is_offline);
 
 ---
 
-### **6. Fetch Updated Data in Invoice** 🔴 High Priority
+### **6. Fetch Updated Data in Invoice** 🔴 High Priority ✅ **COMPLETED**
 **Description:** Show popup with updated item names, rates, party names, units with manual approval to update invoice
 
-**Files to Edit:**
-- `web/src/app/(app)/invoices/edit/[id]/page.tsx` - Add "Fetch Updates" button
-- `web/src/components/invoice/fetch-updates-dialog.tsx` (new) - Changes table
-- `web/src/components/invoice/update-comparison.tsx` (new) - Side-by-side view
+**Files Modified:**
+- `web/src/app/(app)/invoices/edit/[id]/page.tsx` - Added "Fetch Updates" button and logic
+- `web/src/components/invoice/fetch-updates-dialog.tsx` (new) - Comparison dialog with checkboxes
 
-**Features:**
+**Features Implemented:**
 - Compare current invoice data with latest from database
-- Show: Old Value → New Value
-- Checkboxes for each change
-- "Fetch Selected" or "Fetch All" buttons
+- Show: Old Value → New Value in table format
+- Checkboxes for selective updates
+- Smart unit conversion when updating units (converts rate automatically)
+- "Apply Selected" button to update chosen fields
+- Handles both party name and item updates (name, rate, unit)
 
-**Database Changes:** None (reads current data)
+**Database Changes:** None (reads and updates existing data)
 
 ---
 
