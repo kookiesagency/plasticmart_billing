@@ -9,6 +9,19 @@ This document outlines the development plan for the PlasticMart Mobile applicati
 3. Once approved, we move to the next task
 4. This ensures quality and allows for feedback at each step
 
+### **Important Development Rules** ⚠️
+**Before Starting Any Feature:**
+1. **ALWAYS explain what I'm going to build first**
+2. **Wait for explicit approval before writing any code**
+3. Show my understanding of the requirements
+4. Only start development after getting confirmation
+
+**Git Push Policy:**
+- **NEVER ask if I should push to GitHub**
+- **ONLY push when explicitly told: "push to github"**
+- Commit changes locally, but wait for push command
+- This prevents unnecessary deployments and gives control over timing
+
 ---
 
 ## **App Overview**
