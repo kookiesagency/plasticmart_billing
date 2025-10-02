@@ -7,6 +7,7 @@ export type Party = {
   phone: string | null
   address: string | null
   bundle_rate: number | null
+  invoice_count?: number
   created_at: string
   deleted_at?: string | null
 }
