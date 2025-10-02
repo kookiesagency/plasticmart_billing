@@ -10,6 +10,7 @@ import { createClient } from '@/lib/supabase/client'
 import { cn, formatLocalDate, parseLocalDate } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import { Calendar } from '@/components/ui/calendar'
+import { useTranslations } from 'next-intl'
 import {
   Dialog,
   DialogContent,
@@ -64,6 +65,9 @@ interface QuickEntryDialogProps {
 }
 
 export function QuickEntryDialog({ isOpen, onClose, onSuccess, invoiceId, editData }: QuickEntryDialogProps) {
+  const t = useTranslations('quickEntry')
+  const tCommon = useTranslations('common')
+  const tValidation = useTranslations('validation')
   const supabase = createClient()
   const [parties, setParties] = useState<Party[]>([])
   const [loading, setLoading] = useState(false)
@@ -93,7 +97,7 @@ export function QuickEntryDialog({ isOpen, onClose, onSuccess, invoiceId, editDa
         .order('name', { ascending: true })
 
       if (error) {
-        toast.error('Failed to fetch parties: ' + error.message)
+        toast.error(t('failedToFetchParties') + ': ' + error.message)
       } else if (data) {
         setParties(data)
       }
@@ -147,7 +151,7 @@ export function QuickEntryDialog({ isOpen, onClose, onSuccess, invoiceId, editDa
       // Get party name for snapshot
       const party = parties.find((p) => p.id === values.party_id)
       if (!party) {
-        toast.error('Party not found')
+        toast.error(t('partyNotFound'))
         setLoading(false)
         return
       }
@@ -156,7 +160,7 @@ export function QuickEntryDialog({ isOpen, onClose, onSuccess, invoiceId, editDa
       if (values.payment_status === 'Partial') {
         const amountReceived = values.amount_received || 0
         if (amountReceived <= 0 || amountReceived >= values.total_amount) {
-          toast.error('Amount received must be between 0 and total amount for Partial payment')
+          toast.error(t('partialPaymentValidation'))
           setLoading(false)
           return
         }
@@ -175,7 +179,7 @@ export function QuickEntryDialog({ isOpen, onClose, onSuccess, invoiceId, editDa
           .eq('id', invoiceId)
 
         if (invoiceError) {
-          toast.error('Failed to update invoice: ' + invoiceError.message)
+          toast.error(t('failedToUpdateInvoice') + ': ' + invoiceError.message)
           setLoading(false)
           return
         }
@@ -200,11 +204,11 @@ export function QuickEntryDialog({ isOpen, onClose, onSuccess, invoiceId, editDa
             })
 
           if (paymentError) {
-            toast.error('Invoice updated but failed to update payment: ' + paymentError.message)
+            toast.error(t('invoiceUpdatedPaymentFailed') + ': ' + paymentError.message)
           }
         }
 
-        toast.success('Offline invoice updated successfully!')
+        toast.success(t('invoiceUpdatedSuccess'))
         setLoading(false)
         onSuccess()
         onClose()
@@ -228,7 +232,7 @@ export function QuickEntryDialog({ isOpen, onClose, onSuccess, invoiceId, editDa
         .single()
 
       if (invoiceError) {
-        toast.error('Failed to create invoice: ' + invoiceError.message)
+        toast.error(t('failedToCreateInvoice') + ': ' + invoiceError.message)
         setLoading(false)
         return
       }
@@ -251,7 +255,7 @@ export function QuickEntryDialog({ isOpen, onClose, onSuccess, invoiceId, editDa
           })
 
         if (paymentError) {
-          toast.error('Invoice created but failed to add payment: ' + paymentError.message)
+          toast.error(t('invoiceCreatedPaymentFailed') + ': ' + paymentError.message)
           setLoading(false)
           onSuccess()
           onClose()
@@ -259,12 +263,12 @@ export function QuickEntryDialog({ isOpen, onClose, onSuccess, invoiceId, editDa
         }
       }
 
-      toast.success('Offline invoice created successfully!')
+      toast.success(t('invoiceCreatedSuccess'))
       setLoading(false)
       onSuccess()
       onClose()
     } catch (error) {
-      toast.error('An unexpected error occurred')
+      toast.error(t('unexpectedError'))
       setLoading(false)
     }
   }
@@ -273,7 +277,7 @@ export function QuickEntryDialog({ isOpen, onClose, onSuccess, invoiceId, editDa
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
-          <DialogTitle>{isEditMode ? 'Edit Offline Invoice' : 'Create Offline Invoice'}</DialogTitle>
+          <DialogTitle>{isEditMode ? t('editOfflineInvoice') : t('createOfflineInvoice')}</DialogTitle>
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
@@ -284,7 +288,7 @@ export function QuickEntryDialog({ isOpen, onClose, onSuccess, invoiceId, editDa
                 const [open, setOpen] = useState(false)
                 return (
                   <FormItem className="flex flex-col">
-                    <FormLabel>Party *</FormLabel>
+                    <FormLabel>{t('party')}</FormLabel>
                     <Popover open={open} onOpenChange={setOpen}>
                       <PopoverTrigger asChild>
                         <FormControl>
@@ -298,16 +302,16 @@ export function QuickEntryDialog({ isOpen, onClose, onSuccess, invoiceId, editDa
                           >
                             {field.value
                               ? parties.find((p) => p.id === field.value)?.name
-                              : "Select party"}
+                              : t('selectParty')}
                             <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                           </Button>
                         </FormControl>
                       </PopoverTrigger>
                       <PopoverContent className="w-[400px] p-0" align="start">
                         <Command>
-                          <CommandInput placeholder="Search party..." />
+                          <CommandInput placeholder={t('searchParty')} />
                           <CommandList>
-                            <CommandEmpty>No party found.</CommandEmpty>
+                            <CommandEmpty>{t('noPartyFound')}</CommandEmpty>
                             <CommandGroup>
                               {parties.map((p) => (
                                 <CommandItem
@@ -345,12 +349,12 @@ export function QuickEntryDialog({ isOpen, onClose, onSuccess, invoiceId, editDa
               name="total_amount"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Total Amount *</FormLabel>
+                  <FormLabel>{t('totalAmount')}</FormLabel>
                   <FormControl>
                     <Input
                       type="number"
                       step="0.01"
-                      placeholder="Enter total amount"
+                      placeholder={t('enterTotalAmount')}
                       {...field}
                       onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)}
                     />
@@ -365,7 +369,7 @@ export function QuickEntryDialog({ isOpen, onClose, onSuccess, invoiceId, editDa
               name="invoice_date"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Invoice Date *</FormLabel>
+                  <FormLabel>{t('invoiceDate')}</FormLabel>
                   <Popover>
                     <PopoverTrigger asChild>
                       <FormControl>
@@ -379,7 +383,7 @@ export function QuickEntryDialog({ isOpen, onClose, onSuccess, invoiceId, editDa
                           {field.value ? (
                             format(parseLocalDate(field.value), 'dd/MM/yyyy')
                           ) : (
-                            <span>Pick a date</span>
+                            <span>{t('pickADate')}</span>
                           )}
                           <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
                         </Button>
@@ -409,7 +413,7 @@ export function QuickEntryDialog({ isOpen, onClose, onSuccess, invoiceId, editDa
                 const [open, setOpen] = useState(false)
                 return (
                   <FormItem className="flex flex-col">
-                    <FormLabel>Payment Status *</FormLabel>
+                    <FormLabel>{t('paymentStatus')}</FormLabel>
                     <Popover open={open} onOpenChange={setOpen}>
                       <PopoverTrigger asChild>
                         <FormControl>
@@ -421,16 +425,16 @@ export function QuickEntryDialog({ isOpen, onClose, onSuccess, invoiceId, editDa
                               !field.value && "text-muted-foreground"
                             )}
                           >
-                            {field.value || "Select payment status"}
+                            {field.value || t('selectPaymentStatus')}
                             <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                           </Button>
                         </FormControl>
                       </PopoverTrigger>
                       <PopoverContent className="w-[400px] p-0" align="start">
                         <Command>
-                          <CommandInput placeholder="Search payment status..." />
+                          <CommandInput placeholder={t('searchPaymentStatus')} />
                           <CommandList>
-                            <CommandEmpty>No payment status found.</CommandEmpty>
+                            <CommandEmpty>{t('noPaymentStatusFound')}</CommandEmpty>
                             <CommandGroup>
                               {['Paid', 'Pending', 'Partial'].map((status) => (
                                 <CommandItem
@@ -469,12 +473,12 @@ export function QuickEntryDialog({ isOpen, onClose, onSuccess, invoiceId, editDa
                 name="amount_received"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Amount Received *</FormLabel>
+                    <FormLabel>{t('amountReceived')}</FormLabel>
                     <FormControl>
                       <Input
                         type="number"
                         step="0.01"
-                        placeholder="Enter amount received"
+                        placeholder={t('enterAmountReceived')}
                         {...field}
                         onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)}
                       />
@@ -490,10 +494,10 @@ export function QuickEntryDialog({ isOpen, onClose, onSuccess, invoiceId, editDa
               name="notes"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Notes (Optional)</FormLabel>
+                  <FormLabel>{t('notes')}</FormLabel>
                   <FormControl>
                     <Textarea
-                      placeholder="Add any additional notes..."
+                      placeholder={t('addNotes')}
                       className="resize-none"
                       rows={3}
                       {...field}
@@ -506,10 +510,10 @@ export function QuickEntryDialog({ isOpen, onClose, onSuccess, invoiceId, editDa
 
             <DialogFooter>
               <Button type="button" variant="outline" onClick={onClose} disabled={loading}>
-                Cancel
+                {tCommon('cancel')}
               </Button>
               <Button type="submit" disabled={loading}>
-                {loading ? (isEditMode ? 'Updating...' : 'Creating...') : (isEditMode ? 'Update Invoice' : 'Create Invoice')}
+                {loading ? (isEditMode ? t('updating') : t('creating')) : (isEditMode ? t('updateInvoice') : t('createInvoice'))}
               </Button>
             </DialogFooter>
           </form>

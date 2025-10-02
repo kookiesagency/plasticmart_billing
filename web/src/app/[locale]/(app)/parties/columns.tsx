@@ -11,9 +11,10 @@ import type { Party } from '@/lib/types'
 interface ColumnsProps {
   onEdit: (id: string) => void
   onDelete: (id: string) => void
+  t: (key: string) => string
 }
 
-export const columns = ({ onEdit, onDelete }: ColumnsProps): ColumnDef<Party>[] => [
+export const columns = ({ onEdit, onDelete, t }: ColumnsProps): ColumnDef<Party>[] => [
   {
     id: 'select',
     header: ({ table }) => (
@@ -40,7 +41,7 @@ export const columns = ({ onEdit, onDelete }: ColumnsProps): ColumnDef<Party>[] 
     accessorKey: 'name',
     header: ({ column }) => (
         <div className="flex items-center cursor-pointer" onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}>
-            Name
+            {t('name')}
             <ArrowUpDown className="ml-2 h-4 w-4" />
         </div>
     ),
@@ -49,7 +50,7 @@ export const columns = ({ onEdit, onDelete }: ColumnsProps): ColumnDef<Party>[] 
     accessorKey: 'bundle_rate',
     header: ({ column }) => (
         <div className="flex items-center cursor-pointer" onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}>
-            Bundle Rate
+            {t('bundleRate')}
             <ArrowUpDown className="ml-2 h-4 w-4" />
         </div>
     ),
@@ -59,7 +60,7 @@ export const columns = ({ onEdit, onDelete }: ColumnsProps): ColumnDef<Party>[] 
     accessorKey: 'invoice_count',
     header: ({ column }) => (
         <div className="flex items-center cursor-pointer" onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}>
-            No. of Invoices
+            {t('invoiceCount')}
             <ArrowUpDown className="ml-2 h-4 w-4" />
         </div>
     ),
@@ -69,7 +70,7 @@ export const columns = ({ onEdit, onDelete }: ColumnsProps): ColumnDef<Party>[] 
     accessorKey: 'created_at',
     header: ({ column }) => (
         <div className="flex items-center cursor-pointer" onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}>
-            Created On
+            {t('createdAt')}
             <ArrowUpDown className="ml-2 h-4 w-4" />
         </div>
     ),
@@ -90,7 +91,7 @@ export const columns = ({ onEdit, onDelete }: ColumnsProps): ColumnDef<Party>[] 
               </Button>
             </TooltipTrigger>
             <TooltipContent>
-              <p>View Report</p>
+              <p>{t('viewReport')}</p>
             </TooltipContent>
           </Tooltip>
           <Tooltip>
@@ -104,7 +105,7 @@ export const columns = ({ onEdit, onDelete }: ColumnsProps): ColumnDef<Party>[] 
               </Button>
             </TooltipTrigger>
             <TooltipContent>
-              <p>Edit Party</p>
+              <p>{t('editParty')}</p>
             </TooltipContent>
           </Tooltip>
           <Tooltip>
@@ -121,7 +122,7 @@ export const columns = ({ onEdit, onDelete }: ColumnsProps): ColumnDef<Party>[] 
               </Button>
             </TooltipTrigger>
             <TooltipContent>
-              <p>Delete Party</p>
+              <p>{t('deleteParty')}</p>
             </TooltipContent>
           </Tooltip>
         </div>

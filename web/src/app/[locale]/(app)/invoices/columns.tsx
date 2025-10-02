@@ -47,7 +47,8 @@ export type Invoice = {
 
 export const columns = (
   handleDelete: (id: number) => void,
-  onPaymentAdded?: () => void
+  onPaymentAdded: (() => void) | undefined,
+  t: (key: string) => string
 ): ColumnDef<Invoice>[] => [
   {
     id: 'select',
@@ -75,7 +76,7 @@ export const columns = (
     accessorKey: 'invoice_number',
     header: ({ column }) => (
       <div className="flex items-center cursor-pointer" onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}>
-        Invoice #
+        {t('invoiceNumber')}
         <ArrowUpDown className="ml-2 h-4 w-4" />
       </div>
     ),
@@ -89,7 +90,7 @@ export const columns = (
     accessorKey: 'invoice_date',
     header: ({ column }) => (
       <div className="flex items-center cursor-pointer" onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}>
-        Invoice Date
+        {t('invoiceDate')}
         <ArrowUpDown className="ml-2 h-4 w-4" />
       </div>
     ),
@@ -102,7 +103,7 @@ export const columns = (
         variant="ghost"
         onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
       >
-        Party
+        {t('party')}
         <ArrowUpDown className="ml-2 h-4 w-4" />
       </Button>
     ),
@@ -139,13 +140,13 @@ export const columns = (
         <span className="flex items-center gap-2">
           {partyName}
           {isOffline && (
-            <span className="px-1.5 py-0 rounded text-orange-700 bg-orange-100 text-[10px] font-bold tracking-wide">OFFLINE</span>
+            <span className="px-1.5 py-0 rounded text-orange-700 bg-orange-100 text-[10px] font-bold tracking-wide">{t('offline')}</span>
           )}
           {isNew && (
-            <span className="px-1.5 py-0 rounded text-green-700 bg-green-100 text-[10px] font-bold tracking-wide">NEW</span>
+            <span className="px-1.5 py-0 rounded text-green-700 bg-green-100 text-[10px] font-bold tracking-wide">{t('new')}</span>
           )}
           {isUpdated && (
-            <span className="px-1.5 py-0 rounded text-blue-700 bg-blue-100 text-[10px] font-bold tracking-wide">UPDATED</span>
+            <span className="px-1.5 py-0 rounded text-blue-700 bg-blue-100 text-[10px] font-bold tracking-wide">{t('updated')}</span>
           )}
         </span>
       );
@@ -155,7 +156,7 @@ export const columns = (
     accessorKey: 'total_amount',
     header: ({ column }) => (
       <div className="flex items-center cursor-pointer" onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}>
-        Total
+        {t('total')}
         <ArrowUpDown className="ml-2 h-4 w-4" />
       </div>
     ),
@@ -172,7 +173,7 @@ export const columns = (
     accessorKey: 'amount_received',
     header: ({ column }) => (
       <div className="flex items-center cursor-pointer" onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}>
-        Received
+        {t('amountReceived')}
         <ArrowUpDown className="ml-2 h-4 w-4" />
       </div>
     ),
@@ -182,7 +183,7 @@ export const columns = (
     accessorKey: 'amount_pending',
     header: ({ column }) => (
       <div className="flex items-center cursor-pointer" onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}>
-        Pending
+        {t('amountPending')}
         <ArrowUpDown className="ml-2 h-4 w-4" />
       </div>
     ),
@@ -192,7 +193,7 @@ export const columns = (
     accessorKey: 'status',
     header: ({ column }) => (
       <div className="flex items-center cursor-pointer" onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}>
-        Status
+        {t('status')}
         <ArrowUpDown className="ml-2 h-4 w-4" />
       </div>
     ),
@@ -216,7 +217,7 @@ export const columns = (
     accessorKey: 'updated_at',
     header: ({ column }) => (
       <div className="flex items-center cursor-pointer" onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}>
-        Last Updated
+        {t('lastUpdated')}
         <ArrowUpDown className="ml-2 h-4 w-4" />
       </div>
     ),
@@ -230,7 +231,7 @@ export const columns = (
       const [isQuickEditOpen, setIsQuickEditOpen] = useState(false)
 
       const handlePrint = () => {
-        toast.loading("Preparing document...", { id: "print-toast" });
+        toast.loading(t('preparingDocument'), { id: "print-toast" });
 
         // Create a temporary container for rendering the printable component
         const container = document.createElement("div");
@@ -268,7 +269,10 @@ export const columns = (
 
       const handleShareOnWhatsApp = () => {
         const publicUrl = `${window.location.origin}/invoices/view/${invoice.public_id}`;
-        const message = `*Hello ${invoice.party_name}*,\n\nHere is your invoice from *${formatDate(invoice.invoice_date)}*.\n\nYou can view it here: ${publicUrl}\n\nThank you for your business!`;
+        const message = t('whatsappMessage')
+          .replace('{partyName}', invoice.party_name)
+          .replace('{invoiceDate}', formatDate(invoice.invoice_date))
+          .replace('{publicUrl}', publicUrl);
         const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(message)}`;
         window.open(whatsappUrl, '_blank');
       };
@@ -282,27 +286,27 @@ export const columns = (
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              <DropdownMenuLabel>Actions</DropdownMenuLabel>
+              <DropdownMenuLabel>{t('actionsLabel')}</DropdownMenuLabel>
               <DropdownMenuItem asChild>
                 <Link href={`/invoices/${invoice.id}`}>
                   <Eye className="mr-2 h-4 w-4" />
-                  <span>View</span>
+                  <span>{t('viewAction')}</span>
                 </Link>
               </DropdownMenuItem>
               {invoice.is_offline ? (
                 <DropdownMenuItem onClick={() => setIsQuickEditOpen(true)}>
                   <FilePenLine className="mr-2 h-4 w-4" />
-                  <span>Edit</span>
+                  <span>{t('editAction')}</span>
                 </DropdownMenuItem>
               ) : (
                 <DropdownMenuItem asChild>
                   <Link href={`/invoices/edit/${invoice.id}`}>
                     <FilePenLine className="mr-2 h-4 w-4" />
-                    <span>Edit</span>
+                    <span>{t('editAction')}</span>
                   </Link>
                 </DropdownMenuItem>
               )}
-              
+
               {onPaymentAdded && invoice.status !== 'Paid' && (
                 <PaymentForm
                   invoiceId={invoice.id}
@@ -315,7 +319,7 @@ export const columns = (
                 >
                   <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="flex items-center cursor-pointer">
                     <CreditCard className="mr-2 h-4 w-4" />
-                    <span>Add Payment</span>
+                    <span>{t('addPaymentAction')}</span>
                   </DropdownMenuItem>
                 </PaymentForm>
               )}
@@ -325,16 +329,16 @@ export const columns = (
                   <DropdownMenuItem asChild>
                     <Link href={`/invoices/view/${invoice.public_id}`} className="flex items-center cursor-pointer" target="_blank" rel="noopener noreferrer">
                       <Eye className="mr-2 h-4 w-4" />
-                      <span>View Public Invoice</span>
+                      <span>{t('viewPublicInvoice')}</span>
                     </Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={handleShareOnWhatsApp}>
                     <MessageCircle className="mr-2 h-4 w-4" />
-                    <span>Share on WhatsApp</span>
+                    <span>{t('shareOnWhatsApp')}</span>
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={handlePrint}>
                     <FileDown className="mr-2 h-4 w-4" />
-                    <span>Download PDF</span>
+                    <span>{t('downloadPDF')}</span>
                   </DropdownMenuItem>
                 </>
               )}
@@ -344,7 +348,7 @@ export const columns = (
                 className="text-red-600 focus:text-red-600 focus:bg-red-50"
               >
                 <Trash className="mr-2 h-4 w-4" />
-                <span>Delete</span>
+                <span>{t('deleteAction')}</span>
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>

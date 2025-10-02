@@ -374,7 +374,7 @@ export default function InvoicesPage() {
         </TabsList>
         <TabsContent value="active">
           <DataTable
-            columns={activeInvoiceColumns(handleDeleteRequest, fetchData)}
+            columns={activeInvoiceColumns(handleDeleteRequest, fetchData, tInvoices)}
             data={activeInvoices}
             loading={loading}
             onBulkDelete={handleBulkDelete}

@@ -326,7 +326,7 @@ export default function PartyManager() {
         </TabsList>
         <TabsContent value="active">
           <DataTable
-            columns={activePartyColumns({ onEdit: openEditPartyForm, onDelete: handleDeleteRequest })}
+            columns={activePartyColumns({ onEdit: openEditPartyForm, onDelete: handleDeleteRequest, t })}
             data={activeParties}
             loading={loading}
             searchPlaceholder="Search parties..."
