@@ -461,6 +461,29 @@ This document outlines the development plan for the PlasticMart Mobile applicati
 
 ---
 
+## **Feature Parity with Web App - Additional Features**
+
+The following features from the web app roadmap will also be implemented in the mobile app to ensure full feature parity:
+
+### **Priority Features for Mobile:**
+1. **Party Invoice Count** - Show invoice count in party list
+2. **Opening Balance** - Track initial party balances
+3. **Invoice Numbering System** - Format: YYYY/001
+4. **Offline Bill Entry** - Quick manual bill entry
+5. **Smart Unit Conversion** - Auto-calculate rates when changing units
+6. **Duplicate Item** - Clone items with name change
+7. **Weekly Mini Report** - Party-wise weekly summary
+8. **Fetch Updated Data** - Update invoice with latest item/party data
+9. **Purchase Party** - Track which party items were purchased from
+10. **Hindi Localization** - Full Hindi language support
+
+### **Future Enhancements:**
+11. **AI Chat for Invoices** - Create invoices via ChatGPT from images/Excel/text
+
+**Note:** These features will be implemented in both Basic and Advanced modes as appropriate, following the same phase-by-phase development approach.
+
+---
+
 ## **Success Metrics**
 
 ### **User Adoption**
