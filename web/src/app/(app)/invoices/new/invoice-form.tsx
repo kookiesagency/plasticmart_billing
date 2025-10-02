@@ -51,6 +51,8 @@ const invoiceItemSchema = z.object({
   item_name: z.string(),
   item_unit: z.string(),
   position: z.number().optional(),
+  original_rate: z.coerce.number().optional(),
+  original_unit: z.string().optional(),
 })
 
 const invoiceSchema = z.object({
@@ -260,12 +262,15 @@ export function InvoiceForm({ invoiceId }: { invoiceId?: string }) {
     const item = itemsData.find(i => i.id === itemId)
     if (!item) return
     const price = getItemPrice(itemId)
-    append({ 
-      item_id: itemId, 
-      quantity: 1, 
+    const unit = item.units?.name || 'N/A'
+    append({
+      item_id: itemId,
+      quantity: 1,
       rate: price,
       item_name: item.name,
-      item_unit: item.units?.name || 'N/A'
+      item_unit: unit,
+      original_rate: price,
+      original_unit: unit
     })
   }
 
@@ -515,13 +520,16 @@ export function InvoiceForm({ invoiceId }: { invoiceId?: string }) {
                                   name={`items.${index}.item_unit`}
                                   render={({ field: unitField }) => {
                                     const handleUnitChange = (newUnit: string) => {
-                                      const currentUnit = unitField.value
-                                      const currentRate = form.getValues(`items.${index}.rate`)
+                                      const item = form.getValues(`items.${index}`)
 
-                                      // Convert rate based on unit change
-                                      const convertedRate = convertRate(currentRate, currentUnit, newUnit)
+                                      // Use original rate and unit for conversion, or fallback to current values
+                                      const baseRate = item.original_rate ?? item.rate
+                                      const baseUnit = item.original_unit ?? unitField.value
 
-                                      // Update both unit and rate
+                                      // Convert rate from original unit to new unit
+                                      const convertedRate = convertRate(baseRate, baseUnit, newUnit)
+
+                                      // Update unit and rate
                                       unitField.onChange(newUnit)
                                       form.setValue(`items.${index}.rate`, convertedRate)
                                     }
