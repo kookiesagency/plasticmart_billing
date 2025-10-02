@@ -3,10 +3,10 @@
 import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react'
 
 interface HeaderContextType {
-  title: string | null
+  title: ReactNode | null
   actions: ReactNode | null
   isSidebarOpen: boolean
-  setTitle: (title: string) => void
+  setTitle: (title: ReactNode) => void
   setActions: (actions: ReactNode) => void
   toggleSidebar: () => void
   clearHeader: () => void
@@ -15,11 +15,11 @@ interface HeaderContextType {
 const HeaderContext = createContext<HeaderContextType | undefined>(undefined)
 
 export function HeaderProvider({ children }: { children: ReactNode }) {
-  const [title, setTitleState] = useState<string | null>(null)
+  const [title, setTitleState] = useState<ReactNode | null>(null)
   const [actions, setActionsState] = useState<ReactNode | null>(null)
   const [isSidebarOpen, setSidebarOpen] = useState(false)
 
-  const setTitle = (newTitle: string) => setTitleState(newTitle)
+  const setTitle = (newTitle: ReactNode) => setTitleState(newTitle)
   const setActions = (newActions: ReactNode) => setActionsState(newActions)
   const toggleSidebar = () => setSidebarOpen(prev => !prev)
   const clearHeader = () => {
@@ -42,7 +42,7 @@ export function useHeader() {
   return context
 }
 
-export function SetHeader({ title, actions }: { title: string; actions?: ReactNode }) {
+export function SetHeader({ title, actions }: { title: ReactNode; actions?: ReactNode }) {
   const { setTitle, setActions, clearHeader } = useHeader()
 
   useEffect(() => {
