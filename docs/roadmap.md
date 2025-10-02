@@ -58,7 +58,7 @@ This document outlines the development plan for the Smart Billing System. The pr
 | 🔴 High | Party Invoice Count | Low | ✅ Completed |
 | 🔴 High | Opening Balance | Low | ✅ Completed |
 | 🔴 High | Invoice Numbering System | Medium | ✅ Completed |
-| 🔴 High | Offline Bill Entry | Low | Pending |
+| 🔴 High | Offline Bill Entry | Low | ✅ Completed |
 | 🔴 High | Smart Unit Conversion | Medium | Pending |
 | 🔴 High | Fetch Updated Data | High | Pending |
 | 🟡 Medium | Duplicate Item | Low | Pending |
@@ -138,23 +138,41 @@ CREATE TRIGGER trigger_auto_generate_invoice_number -- Auto-generate on insert
 
 ---
 
-### **4. Quick Offline Bill Entry** 🔴 High Priority
-**Description:** Quickly add invoices sent manually with only date, amount, and party name
+### **4. Quick Offline Bill Entry** 🔴 High Priority ✅ **COMPLETED**
+**Description:** Quickly add invoices sent manually with date, amount, party name, and payment status
 
-**Files to Edit:**
-- `web/src/app/(app)/invoices/page.tsx` - Add "Quick Entry" button
-- `web/src/components/invoice/quick-entry-dialog.tsx` (new) - Simple 3-field form
-
-**Form Fields:**
-- Party (dropdown, required)
-- Amount (number, required)
-- Date (date picker, required)
-- Notes (optional)
+**Files Modified:**
+- `database/add_is_offline_to_invoices.sql` - Database migration
+- `web/src/app/(app)/invoices/quick-entry-dialog.tsx` (new) - Quick entry form with payment logic
+- `web/src/app/(app)/invoices/page.tsx` - Added Quick Entry button
+- `web/src/app/(app)/invoices/columns.tsx` - Added OFFLINE badge and is_offline field
 
 **Database Changes:**
 ```sql
-ALTER TABLE invoices ADD COLUMN is_offline BOOLEAN DEFAULT FALSE;
+ALTER TABLE invoices ADD COLUMN is_offline BOOLEAN DEFAULT FALSE NOT NULL;
+CREATE INDEX idx_invoices_is_offline ON invoices(is_offline);
 ```
+
+**Form Fields:**
+- Party (dropdown, required)
+- Total Amount (number, required)
+- Invoice Date (date picker, required)
+- Payment Status (dropdown: Paid/Pending/Partial, required)
+- Amount Received (conditional field for Partial status)
+- Notes (optional)
+
+**Payment Logic:**
+- **Paid:** Auto-sets amount_received = total_amount, creates payment record
+- **Pending:** amount_received = 0, no payment record
+- **Partial:** User enters amount_received, creates payment record
+- Automatic payment record creation on invoice submission
+- Validation for partial payments (0 < amount < total)
+
+**UI Features:**
+- Quick Entry button with ⚡ Zap icon in header
+- OFFLINE badge (orange) displayed in invoice list for quick entries
+- Auto-calculation of amount_received based on status
+- Conditional form fields for optimal UX
 
 ---
 
