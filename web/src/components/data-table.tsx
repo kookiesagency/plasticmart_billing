@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { useTranslations } from 'next-intl'
 import {
   ColumnDef,
   flexRender,
@@ -78,6 +79,8 @@ export function DataTable<TData, TValue>({
   bulkActionLabel = 'Delete',
   customActions,
 }: DataTableProps<TData, TValue>) {
+  const t = useTranslations('dataTable')
+  const tCommon = useTranslations('common')
   const [sorting, setSorting] = useState<SortingState>([])
   const [globalFilter, setGlobalFilter] = useState('')
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({})
@@ -166,7 +169,7 @@ export function DataTable<TData, TValue>({
     });
 
     if (dataToExport.length === 0) {
-      toast.error("No data to export.");
+      toast.error(t('noDataToExport'));
       return;
     }
   
@@ -185,7 +188,7 @@ export function DataTable<TData, TValue>({
       <div className="flex items-center justify-between py-4">
         <div className="flex-grow">
           <Input
-            placeholder={searchPlaceholder ?? `Search all columns...`}
+            placeholder={searchPlaceholder ?? t('searchPlaceholder')}
             value={globalFilter ?? ''}
             onChange={(event) => setGlobalFilter(event.target.value)}
             className="max-w-sm"
@@ -193,7 +196,7 @@ export function DataTable<TData, TValue>({
         </div>
         <div className="flex items-center gap-2">
           {customActions}
-          <Button onClick={handleExport}>Export to CSV</Button>
+          <Button onClick={handleExport}>{t('exportToCsv')}</Button>
 
           {selectedRows.length > 0 && onBulkRestore && (
             <Button
@@ -201,7 +204,7 @@ export function DataTable<TData, TValue>({
               onClick={handleBulkRestoreAction}
             >
               <Undo className="mr-2 h-4 w-4" />
-              Restore ({selectedRows.length})
+              {t('restore')} ({selectedRows.length})
             </Button>
           )}
 
@@ -221,7 +224,7 @@ export function DataTable<TData, TValue>({
               onClick={handleBulkPermanentDeleteAction}
             >
               <Trash2 className="mr-2 h-4 w-4" />
-              Delete Permanently ({selectedRows.length})
+              {t('deletePermanently')} ({selectedRows.length})
             </Button>
           )}
         </div>
@@ -278,7 +281,7 @@ export function DataTable<TData, TValue>({
                   colSpan={columns.length}
                   className="h-24 text-center"
                 >
-                  No results.
+                  {tCommon('noResults')}
                 </TableCell>
               </TableRow>
             )}
@@ -287,12 +290,11 @@ export function DataTable<TData, TValue>({
       </div>
       <div className="flex items-center justify-between space-x-2 py-4">
         <div className="flex-1 text-sm text-muted-foreground">
-          {table.getFilteredSelectedRowModel().rows.length} of{" "}
-          {table.getFilteredRowModel().rows.length} row(s) selected.
+          {t('rowsSelected', { count: table.getFilteredSelectedRowModel().rows.length, total: table.getFilteredRowModel().rows.length })}
         </div>
         <div className="flex items-center space-x-6 lg:space-x-8">
             <div className="flex items-center space-x-2">
-                <p className="text-sm font-medium">Rows per page</p>
+                <p className="text-sm font-medium">{t('rowsPerPage')}</p>
                 <Select
                 value={`${table.getState().pagination.pageSize}`}
                 onValueChange={(value) => {
@@ -312,8 +314,7 @@ export function DataTable<TData, TValue>({
                 </Select>
             </div>
             <div className="flex w-[100px] items-center justify-center text-sm font-medium">
-                Page {table.getState().pagination.pageIndex + 1} of{" "}
-                {table.getPageCount()}
+                {t('pageOf', { current: table.getState().pagination.pageIndex + 1, total: table.getPageCount() })}
             </div>
             <div className="flex items-center space-x-2">
                 <Button
@@ -322,7 +323,7 @@ export function DataTable<TData, TValue>({
                 onClick={() => table.setPageIndex(0)}
                 disabled={!table.getCanPreviousPage()}
                 >
-                <span className="sr-only">Go to first page</span>
+                <span className="sr-only">{t('goToFirstPage')}</span>
                 <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 19l-7-7 7-7m8 14l-7-7 7-7" /></svg>
                 </Button>
                 <Button
@@ -331,7 +332,7 @@ export function DataTable<TData, TValue>({
                 onClick={() => table.previousPage()}
                 disabled={!table.getCanPreviousPage()}
                 >
-                <span className="sr-only">Go to previous page</span>
+                <span className="sr-only">{t('goToPreviousPage')}</span>
                 <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
                 </Button>
                 <Button
@@ -340,7 +341,7 @@ export function DataTable<TData, TValue>({
                 onClick={() => table.nextPage()}
                 disabled={!table.getCanNextPage()}
                 >
-                <span className="sr-only">Go to next page</span>
+                <span className="sr-only">{t('goToNextPage')}</span>
                 <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
                 </Button>
                 <Button
@@ -349,7 +350,7 @@ export function DataTable<TData, TValue>({
                 onClick={() => table.setPageIndex(table.getPageCount() - 1)}
                 disabled={!table.getCanNextPage()}
                 >
-                <span className="sr-only">Go to last page</span>
+                <span className="sr-only">{t('goToLastPage')}</span>
                 <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 5l7 7-7 7M5 5l7 7-7 7" /></svg>
                 </Button>
             </div>

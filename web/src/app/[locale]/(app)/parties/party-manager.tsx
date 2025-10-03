@@ -22,6 +22,7 @@ import { ConfirmationDialog } from '@/components/confirmation-dialog'
 export default function PartyManager() {
   const t = useTranslations('partiesList')
   const tParties = useTranslations('parties')
+  const tPartiesColumns = useTranslations('partiesColumns')
   const supabase = createClient()
   const [isPartyFormOpen, setPartyFormOpen] = useState(false)
   const [selectedPartyId, setSelectedPartyId] = useState<string | null>(null)
@@ -326,7 +327,7 @@ export default function PartyManager() {
         </TabsList>
         <TabsContent value="active">
           <DataTable
-            columns={activePartyColumns({ onEdit: openEditPartyForm, onDelete: handleDeleteRequest, t })}
+            columns={activePartyColumns({ onEdit: openEditPartyForm, onDelete: handleDeleteRequest, t: tPartiesColumns })}
             data={activeParties}
             loading={loading}
             searchPlaceholder="Search parties..."

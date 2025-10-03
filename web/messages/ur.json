@@ -15,7 +15,27 @@
     "required": "ضروری",
     "back": "واپس",
     "import": "امپورٹ",
-    "logout": "لاگ آؤٹ"
+    "logout": "لاگ آؤٹ",
+    "confirm": "Confirm karein",
+    "close": "Band karein",
+    "saving": "Save ho raha hai...",
+    "areYouSure": "Kya aap sure hain?"
+  },
+  "dataTable": {
+    "searchPlaceholder": "Sabhi columns mein search karein...",
+    "exportToCsv": "CSV mein export karein",
+    "restore": "Restore karein",
+    "deletePermanently": "Permanent delete karein",
+    "rowsSelected": "{total} mein se {count} row(s) select hain.",
+    "rowsPerPage": "Har page par rows",
+    "pageOf": "Page {current} of {total}",
+    "goToFirstPage": "Pehle page par jayein",
+    "goToPreviousPage": "Pichle page par jayein",
+    "goToNextPage": "Agle page par jayein",
+    "goToLastPage": "Aakhri page par jayein",
+    "noDataToExport": "Export karne ke liye koi data nahi hai.",
+    "selectAll": "Sab select karein",
+    "selectRow": "Row select karein"
   },
   "nav": {
     "dashboard": "ڈیش بورڈ",

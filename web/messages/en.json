@@ -15,7 +15,27 @@
     "required": "required",
     "back": "Back",
     "import": "Import",
-    "logout": "Logout"
+    "logout": "Logout",
+    "confirm": "Confirm",
+    "close": "Close",
+    "saving": "Saving...",
+    "areYouSure": "Are you sure?"
+  },
+  "dataTable": {
+    "searchPlaceholder": "Search all columns...",
+    "exportToCsv": "Export to CSV",
+    "restore": "Restore",
+    "deletePermanently": "Delete Permanently",
+    "rowsSelected": "{count} of {total} row(s) selected.",
+    "rowsPerPage": "Rows per page",
+    "pageOf": "Page {current} of {total}",
+    "goToFirstPage": "Go to first page",
+    "goToPreviousPage": "Go to previous page",
+    "goToNextPage": "Go to next page",
+    "goToLastPage": "Go to last page",
+    "noDataToExport": "No data to export.",
+    "selectAll": "Select all",
+    "selectRow": "Select row"
   },
   "nav": {
     "dashboard": "Dashboard",
