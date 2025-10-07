@@ -165,6 +165,106 @@ plasticmart/
 
 ---
 
+## 🛠️ Mobile App Reusable Utilities
+
+### **Date Picker Theme** (`mobile/lib/utils/date_picker_theme.dart`)
+
+**Purpose**: Ensures consistent date picker styling across the entire app with white background and light grey dividers.
+
+**Usage**:
+```dart
+import '../../utils/date_picker_theme.dart';
+
+// Use the helper function
+Future<void> _selectDate() async {
+  final DateTime? picked = await showAppDatePicker(
+    context: context,
+    initialDate: _selectedDate,
+    firstDate: DateTime(2020),
+    lastDate: DateTime(2100),
+  );
+
+  if (picked != null) {
+    setState(() {
+      _selectedDate = picked;
+    });
+  }
+}
+```
+
+**Why it exists**:
+- Provides consistent white background for date picker dialogs
+- Ensures light grey dividers instead of default dark dividers
+- Matches the app's overall design system
+- Reduces code duplication across different screens
+
+**Where it's used**:
+- `lib/screens/invoices/add_payment_dialog.dart` - Payment date selection
+- `lib/screens/invoices/create_invoice_screen.dart` - Bill date selection
+
+**Important**: Always use `showAppDatePicker()` instead of Flutter's built-in `showDatePicker()` to maintain consistency.
+
+### **Date Formatting Standards**
+
+**Display Format**: `EEE, MMM d` (e.g., "Tue, Oct 7")
+- Used for showing dates to users in a friendly, concise format
+
+**Database Format**: `yyyy-MM-dd` (e.g., "2025-10-07")
+- Used for storing dates in Supabase database
+- ISO 8601 standard format
+
+**Implementation**:
+```dart
+import 'package:intl/intl.dart';
+
+String _formatDateForDisplay(DateTime date) {
+  return DateFormat('EEE, MMM d').format(date);
+}
+
+String _formatDateForDatabase(DateTime date) {
+  return DateFormat('yyyy-MM-dd').format(date);
+}
+```
+
+### **Mobile Design System**
+
+**Dialog Styling**:
+- Background color: `Colors.white`
+- Border radius: `16.0` for main dialogs
+- Padding: `24.0` for content
+- Date picker border radius: `8.0`
+
+**Form Fields**:
+- Border radius: `12.0`
+- Standard spacing between fields: `16.0`
+- Section spacing: `24.0`
+
+**Color Conventions**:
+- Success/Paid: `Colors.green`
+- Error/Due: `Colors.red`
+- Partial payment: `Colors.orange`
+- Pending: `Colors.grey`
+
+### **Payment Management Patterns**
+
+**Status Calculation**: Payment status is **calculated client-side**, not stored in the database:
+```dart
+String get _paymentStatus {
+  if (_balanceDue <= 0) return 'paid';
+  if (_totalPaid > 0 && _balanceDue > 0) return 'partial';
+  return 'pending';
+}
+```
+
+**Payment Form Auto-fill**: When adding a new payment, the amount field is automatically prefilled with the current balance due:
+```dart
+_amountController.text = widget.balanceDue > 0
+    ? widget.balanceDue.toStringAsFixed(2)
+    : '0';
+```
+
+---
+
 ## 🔑 Key Files to Reference
 
 | File | Purpose |

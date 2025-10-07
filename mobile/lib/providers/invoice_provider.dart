@@ -219,25 +219,26 @@ class InvoiceProvider with ChangeNotifier {
 
       await _supabase.from('invoices').update(invoiceData).eq('id', id);
 
-      // Delete existing invoice items
-      await _supabase.from('invoice_items').delete().eq('invoice_id', id);
-
-      // Create new invoice items
+      // Use atomic function to update invoice items (prevents data loss on error)
       final itemsData = items.asMap().entries.map((entry) {
         final index = entry.key;
         final item = entry.value;
         return {
-          'invoice_id': id,
           'item_id': item.itemId,
           'item_name': item.itemName,
           'item_unit': item.itemUnit,
           'quantity': item.quantity.toInt(),
           'rate': item.rate,
           'position': index,
+          'original_rate': item.rate, // Add if available
+          'original_unit': item.itemUnit, // Add if available
         };
       }).toList();
 
-      await _supabase.from('invoice_items').insert(itemsData);
+      await _supabase.rpc('update_invoice_items', params: {
+        'p_invoice_id': id,
+        'p_items': itemsData,
+      });
 
       await fetchInvoices();
       return true;

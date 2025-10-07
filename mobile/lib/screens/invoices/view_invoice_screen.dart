@@ -3,8 +3,11 @@ import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 import '../../models/invoice.dart';
 import '../../models/invoice_item.dart';
+import '../../models/payment.dart';
 import '../../providers/invoice_provider.dart';
+import '../../services/payment_service.dart';
 import 'create_invoice_screen.dart';
+import 'add_payment_dialog.dart';
 
 class ViewInvoiceScreen extends StatefulWidget {
   final int invoiceId;
@@ -20,8 +23,11 @@ class ViewInvoiceScreen extends StatefulWidget {
 
 class _ViewInvoiceScreenState extends State<ViewInvoiceScreen> {
   bool _isLoading = true;
+  bool _hasChanges = false;
   Invoice? _invoice;
   List<InvoiceItem> _items = [];
+  List<Payment> _payments = [];
+  final PaymentService _paymentService = PaymentService();
 
   @override
   void initState() {
@@ -36,9 +42,13 @@ class _ViewInvoiceScreenState extends State<ViewInvoiceScreen> {
     final result = await invoiceProvider.getInvoiceWithItems(widget.invoiceId);
 
     if (result != null && mounted) {
+      // Load payments
+      final payments = await _paymentService.getPaymentsByInvoice(widget.invoiceId);
+
       setState(() {
         _invoice = result['invoice'] as Invoice;
         _items = result['items'] as List<InvoiceItem>;
+        _payments = payments;
         _isLoading = false;
       });
     } else {
@@ -67,6 +77,29 @@ class _ViewInvoiceScreenState extends State<ViewInvoiceScreen> {
     return number.toStringAsFixed(2);
   }
 
+  // Calculate sub-total from items
+  double get _calculatedSubTotal {
+    return _items.fold(0.0, (sum, item) => sum + item.total);
+  }
+
+  // Calculate total amount paid
+  double get _totalPaid {
+    return _payments.fold(0.0, (sum, payment) => sum + payment.amount);
+  }
+
+  // Calculate balance due
+  double get _balanceDue {
+    final grandTotal = _calculatedSubTotal + (_invoice?.bundleCharge ?? 0);
+    return grandTotal - _totalPaid;
+  }
+
+  // Calculate payment status
+  String get _paymentStatus {
+    if (_balanceDue <= 0) return 'paid';
+    if (_totalPaid > 0 && _balanceDue > 0) return 'partial';
+    return 'pending';
+  }
+
   Color _getStatusColor(String status) {
     switch (status.toLowerCase()) {
       case 'paid':
@@ -88,11 +121,22 @@ class _ViewInvoiceScreenState extends State<ViewInvoiceScreen> {
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
 
-    return Scaffold(
-      backgroundColor: const Color(0xFFF5F5F5),
-      appBar: AppBar(
-        title: Text(_invoice?.invoiceNumber ?? 'Bill Details'),
-        actions: [
+    return PopScope(
+      canPop: false,
+      onPopInvoked: (didPop) {
+        if (!didPop) {
+          Navigator.pop(context, _hasChanges);
+        }
+      },
+      child: Scaffold(
+        backgroundColor: Colors.white,
+        appBar: AppBar(
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back),
+            onPressed: () => Navigator.pop(context, _hasChanges),
+          ),
+          title: Text(_invoice?.invoiceNumber ?? 'Bill Details'),
+          actions: [
           PopupMenuButton<String>(
             onSelected: (value) async {
               switch (value) {
@@ -109,32 +153,25 @@ class _ViewInvoiceScreenState extends State<ViewInvoiceScreen> {
                     _loadInvoiceData();
                   }
                   break;
-                case 'duplicate':
-                  _duplicateInvoice();
-                  break;
                 case 'delete':
                   _deleteInvoice();
                   break;
               }
             },
+            color: Colors.white,
+            elevation: 2,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+              side: BorderSide(color: Colors.grey.shade200, width: 1),
+            ),
             itemBuilder: (context) => [
-              const PopupMenuItem(
+              PopupMenuItem(
                 value: 'edit',
                 child: Row(
                   children: [
-                    Icon(Icons.edit, size: 20),
-                    SizedBox(width: 12),
-                    Text('Edit'),
-                  ],
-                ),
-              ),
-              const PopupMenuItem(
-                value: 'duplicate',
-                child: Row(
-                  children: [
-                    Icon(Icons.copy, size: 20),
-                    SizedBox(width: 12),
-                    Text('Duplicate'),
+                    Icon(Icons.edit_outlined, size: 20, color: Colors.grey.shade700),
+                    const SizedBox(width: 12),
+                    const Text('Edit', style: TextStyle(fontSize: 15)),
                   ],
                 ),
               ),
@@ -142,9 +179,9 @@ class _ViewInvoiceScreenState extends State<ViewInvoiceScreen> {
                 value: 'delete',
                 child: Row(
                   children: [
-                    Icon(Icons.delete, size: 20, color: Colors.red),
+                    Icon(Icons.delete_outline, size: 20, color: Colors.red),
                     SizedBox(width: 12),
-                    Text('Delete', style: TextStyle(color: Colors.red)),
+                    Text('Delete', style: TextStyle(color: Colors.red, fontSize: 15)),
                   ],
                 ),
               ),
@@ -203,13 +240,13 @@ class _ViewInvoiceScreenState extends State<ViewInvoiceScreen> {
                                     vertical: 6,
                                   ),
                                   decoration: BoxDecoration(
-                                    color: _getStatusColor(_invoice!.status).withOpacity(0.1),
+                                    color: _getStatusColor(_paymentStatus).withOpacity(0.1),
                                     borderRadius: BorderRadius.circular(8),
                                   ),
                                   child: Text(
-                                    _getStatusText(_invoice!.status),
+                                    _getStatusText(_paymentStatus),
                                     style: TextStyle(
-                                      color: _getStatusColor(_invoice!.status),
+                                      color: _getStatusColor(_paymentStatus),
                                       fontSize: 13,
                                       fontWeight: FontWeight.bold,
                                     ),
@@ -231,6 +268,22 @@ class _ViewInvoiceScreenState extends State<ViewInvoiceScreen> {
                                 ),
                               ],
                             ),
+                            if (_invoice!.createdAt != null) ...[
+                              const SizedBox(height: 8),
+                              Row(
+                                children: [
+                                  Icon(Icons.access_time, size: 16, color: Colors.grey.shade600),
+                                  const SizedBox(width: 8),
+                                  Text(
+                                    'Created: ${DateFormat('dd MMM yyyy, hh:mm a').format(_invoice!.createdAt!)}',
+                                    style: TextStyle(
+                                      color: Colors.grey.shade600,
+                                      fontSize: 12,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
                           ],
                         ),
                       ),
@@ -303,6 +356,157 @@ class _ViewInvoiceScreenState extends State<ViewInvoiceScreen> {
                       ),
                       const SizedBox(height: 16),
 
+                      // Payment History Card
+                      Container(
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(color: Colors.grey.shade200),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                const Text(
+                                  'Payment History',
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                FilledButton.icon(
+                                  onPressed: () => _showAddPaymentDialog(),
+                                  icon: const Icon(Icons.add, size: 18),
+                                  label: const Text('Add'),
+                                  style: FilledButton.styleFrom(
+                                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                                    minimumSize: const Size(0, 0),
+                                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 16),
+                            if (_payments.isEmpty)
+                              Center(
+                                child: Padding(
+                                  padding: const EdgeInsets.all(24),
+                                  child: Text(
+                                    'No payments recorded',
+                                    style: TextStyle(
+                                      color: Colors.grey.shade600,
+                                      fontSize: 14,
+                                    ),
+                                  ),
+                                ),
+                              )
+                            else
+                              ..._payments.map((payment) => Dismissible(
+                                    key: Key('payment_${payment.id}'),
+                                    direction: DismissDirection.endToStart,
+                                    background: Container(
+                                      margin: const EdgeInsets.only(bottom: 12),
+                                      padding: const EdgeInsets.symmetric(horizontal: 20),
+                                      decoration: BoxDecoration(
+                                        color: Colors.red,
+                                        borderRadius: BorderRadius.circular(8),
+                                      ),
+                                      alignment: Alignment.centerRight,
+                                      child: const Icon(
+                                        Icons.delete,
+                                        color: Colors.white,
+                                        size: 24,
+                                      ),
+                                    ),
+                                    confirmDismiss: (direction) async {
+                                      return await showDialog(
+                                        context: context,
+                                        builder: (BuildContext context) {
+                                          return AlertDialog(
+                                            backgroundColor: Colors.white,
+                                            title: const Text('Delete Payment'),
+                                            content: const Text('Are you sure you want to delete this payment?'),
+                                            actions: [
+                                              TextButton(
+                                                onPressed: () => Navigator.of(context).pop(false),
+                                                child: const Text('Cancel'),
+                                              ),
+                                              TextButton(
+                                                onPressed: () => Navigator.of(context).pop(true),
+                                                child: const Text('Delete', style: TextStyle(color: Colors.red)),
+                                              ),
+                                            ],
+                                          );
+                                        },
+                                      );
+                                    },
+                                    onDismissed: (direction) {
+                                      _deletePayment(payment);
+                                    },
+                                    child: Container(
+                                      margin: const EdgeInsets.only(bottom: 8),
+                                      decoration: BoxDecoration(
+                                        color: Colors.white,
+                                        borderRadius: BorderRadius.circular(8),
+                                        border: Border.all(color: Colors.grey.shade200),
+                                      ),
+                                      child: Padding(
+                                        padding: const EdgeInsets.all(12),
+                                        child: Column(
+                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          children: [
+                                            Row(
+                                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                              crossAxisAlignment: CrossAxisAlignment.start,
+                                              children: [
+                                                Text(
+                                                  _formatDate(payment.paymentDate),
+                                                  style: TextStyle(
+                                                    fontSize: 12,
+                                                    color: Colors.grey.shade600,
+                                                  ),
+                                                ),
+                                                InkWell(
+                                                  onTap: () => _showAddPaymentDialog(paymentToEdit: payment),
+                                                  child: Padding(
+                                                    padding: const EdgeInsets.all(4),
+                                                    child: Icon(Icons.edit_outlined, size: 16, color: Colors.grey.shade600),
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                            const SizedBox(height: 4),
+                                            Text(
+                                              '₹${_formatNumber(payment.amount)}',
+                                              style: TextStyle(
+                                                fontSize: 20,
+                                                fontWeight: FontWeight.bold,
+                                                color: Colors.green.shade700,
+                                              ),
+                                            ),
+                                            if (payment.remark != null && payment.remark!.isNotEmpty) ...[
+                                              const SizedBox(height: 4),
+                                              Text(
+                                                payment.remark!,
+                                                style: TextStyle(
+                                                  fontSize: 12,
+                                                  color: Colors.grey.shade600,
+                                                ),
+                                              ),
+                                            ],
+                                          ],
+                                        ),
+                                      ),
+                                    ),
+                                  )),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+
                       // Summary Card
                       Container(
                         padding: const EdgeInsets.all(16),
@@ -315,7 +519,13 @@ class _ViewInvoiceScreenState extends State<ViewInvoiceScreen> {
                           children: [
                             _buildSummaryRow(
                               'Sub Total',
-                              '₹${_formatNumber(_invoice!.subTotal ?? 0)}',
+                              '₹${_formatNumber(_calculatedSubTotal)}',
+                              false,
+                            ),
+                            const SizedBox(height: 8),
+                            _buildSummaryRow(
+                              'Bundle Qty',
+                              _formatNumber(_invoice!.bundleQuantity ?? 1),
                               false,
                             ),
                             const SizedBox(height: 8),
@@ -327,8 +537,20 @@ class _ViewInvoiceScreenState extends State<ViewInvoiceScreen> {
                             const Divider(height: 24),
                             _buildSummaryRow(
                               'Grand Total',
-                              '₹${_formatNumber(_invoice!.totalAmount ?? 0)}',
+                              '₹${_formatNumber(_calculatedSubTotal + _invoice!.bundleCharge)}',
                               true,
+                            ),
+                            const Divider(height: 24),
+                            _buildSummaryRowWithColor(
+                              'Paid',
+                              '₹${_formatNumber(_totalPaid)}',
+                              Colors.green,
+                            ),
+                            const SizedBox(height: 8),
+                            _buildSummaryRowWithColor(
+                              'Balance Due',
+                              '₹${_formatNumber(_balanceDue)}',
+                              _balanceDue > 0 ? Colors.red : Colors.green,
                             ),
                           ],
                         ),
@@ -374,6 +596,7 @@ class _ViewInvoiceScreenState extends State<ViewInvoiceScreen> {
                     ],
                   ),
                 ),
+      ),
     );
   }
 
@@ -401,56 +624,62 @@ class _ViewInvoiceScreenState extends State<ViewInvoiceScreen> {
     );
   }
 
-  Future<void> _duplicateInvoice() async {
-    if (_invoice == null) return;
+  Widget _buildSummaryRowWithColor(String label, String value, Color color) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(
+          label,
+          style: const TextStyle(
+            fontSize: 14,
+            fontWeight: FontWeight.normal,
+          ),
+        ),
+        Text(
+          value,
+          style: TextStyle(
+            fontSize: 14,
+            fontWeight: FontWeight.bold,
+            color: color,
+          ),
+        ),
+      ],
+    );
+  }
 
-    final confirmed = await showDialog<bool>(
+  Future<void> _showAddPaymentDialog({Payment? paymentToEdit}) async {
+    showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        backgroundColor: const Color(0xFFF5F5F5),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        title: const Text('Duplicate Bill'),
-        content: const Text('Create a copy of this bill with today\'s date?'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: const Text('Cancel'),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.pop(context, true),
-            child: const Text('Duplicate'),
-          ),
-        ],
+      builder: (context) => AddPaymentDialog(
+        invoiceId: widget.invoiceId,
+        balanceDue: _balanceDue,
+        paymentToEdit: paymentToEdit,
+        onPaymentSaved: () {
+          _hasChanges = true;
+          _loadInvoiceData();
+        },
       ),
     );
+  }
 
-    if (confirmed != true || !mounted) return;
-
-    final invoiceProvider = Provider.of<InvoiceProvider>(context, listen: false);
-    final result = await invoiceProvider.createInvoice(
-      partyId: _invoice!.partyId,
-      partyName: _invoice!.partyName ?? 'Unknown',
-      invoiceDate: DateFormat('yyyy-MM-dd').format(DateTime.now()),
-      items: _items,
-      bundleCharge: _invoice!.bundleCharge,
-      bundleRate: _invoice!.bundleRate,
-      bundleQuantity: _invoice!.bundleQuantity?.toInt(),
-    );
+  Future<void> _deletePayment(Payment payment) async {
+    final success = await _paymentService.deletePayment(payment.id!);
 
     if (!mounted) return;
 
-    if (result?['success'] == true) {
-      Navigator.pop(context, true); // Return to list screen
+    if (success) {
+      _hasChanges = true;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Bill ${result?['invoice_number'] ?? ''} created successfully'),
+        const SnackBar(
+          content: Text('Payment deleted successfully'),
           backgroundColor: Colors.green,
         ),
       );
+      _loadInvoiceData();
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Failed to duplicate bill'),
+          content: Text('Failed to delete payment'),
           backgroundColor: Colors.red,
         ),
       );
@@ -461,7 +690,7 @@ class _ViewInvoiceScreenState extends State<ViewInvoiceScreen> {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        backgroundColor: const Color(0xFFF5F5F5),
+        backgroundColor: Colors.white,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         title: const Text('Delete Bill'),
         content: const Text('Are you sure you want to delete this bill?'),

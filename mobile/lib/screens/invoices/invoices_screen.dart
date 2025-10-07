@@ -122,7 +122,7 @@ class _InvoicesScreenState extends State<InvoicesScreen> with SingleTickerProvid
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        backgroundColor: const Color(0xFFF5F5F5),
+        backgroundColor: Colors.white,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         title: const Text('Permanently Delete Bill'),
         content: const Text('This action is IRREVERSIBLE. This will permanently delete the bill and all associated data. Are you sure?'),
@@ -268,7 +268,7 @@ class _InvoicesScreenState extends State<InvoicesScreen> with SingleTickerProvid
                               return await showDialog<bool>(
                                 context: context,
                                 builder: (context) => AlertDialog(
-                                  backgroundColor: const Color(0xFFF5F5F5),
+                                  backgroundColor: Colors.white,
                                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                                   title: const Text('Delete Bill'),
                                   content: const Text('Are you sure you want to delete this bill?'),
