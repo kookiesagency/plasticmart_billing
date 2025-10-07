@@ -27,10 +27,11 @@ class InvoiceProvider with ChangeNotifier {
           .select('''
             *,
             parties!inner(name),
-            invoice_items(*)
+            invoice_items(*),
+            payments(amount)
           ''')
           .isFilter('deleted_at', null)
-          .order('invoice_date', ascending: false);
+          .order('invoice_number', ascending: false);
 
       _invoices = (response as List).map((json) {
         // Extract party name
@@ -44,13 +45,33 @@ class InvoiceProvider with ChangeNotifier {
         );
         final totalAmount = subTotal + ((json['bundle_charge'] as num?)?.toDouble() ?? 0);
 
+        // Calculate total paid from payments
+        final payments = json['payments'] as List? ?? [];
+        final totalPaid = payments.fold<double>(
+          0,
+          (sum, payment) => sum + ((payment['amount'] as num?)?.toDouble() ?? 0),
+        );
+
+        // Calculate status from payments (client-side)
+        final balanceDue = totalAmount - totalPaid;
+        String calculatedStatus;
+        if (balanceDue <= 0) {
+          calculatedStatus = 'paid';
+        } else if (totalPaid > 0 && balanceDue > 0) {
+          calculatedStatus = 'partial';
+        } else {
+          calculatedStatus = 'pending';
+        }
+
         // Create invoice data
         final invoiceData = Map<String, dynamic>.from(json);
         invoiceData.remove('parties');
         invoiceData.remove('invoice_items');
+        invoiceData.remove('payments');
         invoiceData['party_name'] = partyName;
         invoiceData['sub_total'] = subTotal;
         invoiceData['total_amount'] = totalAmount;
+        invoiceData['status'] = calculatedStatus; // Override with calculated status
 
         return Invoice.fromJson(invoiceData);
       }).toList();
@@ -73,7 +94,8 @@ class InvoiceProvider with ChangeNotifier {
           .select('''
             *,
             parties!inner(name),
-            invoice_items(*)
+            invoice_items(*),
+            payments(amount)
           ''')
           .not('deleted_at', 'is', null)
           .order('deleted_at', ascending: false);
@@ -88,12 +110,32 @@ class InvoiceProvider with ChangeNotifier {
         );
         final totalAmount = subTotal + ((json['bundle_charge'] as num?)?.toDouble() ?? 0);
 
+        // Calculate total paid from payments
+        final payments = json['payments'] as List? ?? [];
+        final totalPaid = payments.fold<double>(
+          0,
+          (sum, payment) => sum + ((payment['amount'] as num?)?.toDouble() ?? 0),
+        );
+
+        // Calculate status from payments (client-side)
+        final balanceDue = totalAmount - totalPaid;
+        String calculatedStatus;
+        if (balanceDue <= 0) {
+          calculatedStatus = 'paid';
+        } else if (totalPaid > 0 && balanceDue > 0) {
+          calculatedStatus = 'partial';
+        } else {
+          calculatedStatus = 'pending';
+        }
+
         final invoiceData = Map<String, dynamic>.from(json);
         invoiceData.remove('parties');
         invoiceData.remove('invoice_items');
+        invoiceData.remove('payments');
         invoiceData['party_name'] = partyName;
         invoiceData['sub_total'] = subTotal;
         invoiceData['total_amount'] = totalAmount;
+        invoiceData['status'] = calculatedStatus; // Override with calculated status
 
         return Invoice.fromJson(invoiceData);
       }).toList();
@@ -293,6 +335,68 @@ class InvoiceProvider with ChangeNotifier {
       _errorMessage = e.toString();
       notifyListeners();
       return false;
+    }
+  }
+
+  Future<List<Invoice>> fetchInvoicesByParty(int partyId) async {
+    try {
+      final response = await _supabase
+          .from('invoices')
+          .select('''
+            *,
+            parties!inner(name),
+            invoice_items(*),
+            payments(amount)
+          ''')
+          .eq('party_id', partyId)
+          .isFilter('deleted_at', null)
+          .order('invoice_date', ascending: false);
+
+      final invoices = (response as List).map((json) {
+        final partyName = json['parties'] != null ? json['parties']['name'] as String? : null;
+
+        final items = json['invoice_items'] as List? ?? [];
+        final subTotal = items.fold<double>(
+          0,
+          (sum, item) => sum + ((item['quantity'] as num) * (item['rate'] as num)).toDouble(),
+        );
+        final totalAmount = subTotal + ((json['bundle_charge'] as num?)?.toDouble() ?? 0);
+
+        // Calculate total paid from payments
+        final payments = json['payments'] as List? ?? [];
+        final totalPaid = payments.fold<double>(
+          0,
+          (sum, payment) => sum + ((payment['amount'] as num?)?.toDouble() ?? 0),
+        );
+
+        // Calculate status from payments (client-side)
+        final balanceDue = totalAmount - totalPaid;
+        String calculatedStatus;
+        if (balanceDue <= 0) {
+          calculatedStatus = 'paid';
+        } else if (totalPaid > 0 && balanceDue > 0) {
+          calculatedStatus = 'partial';
+        } else {
+          calculatedStatus = 'pending';
+        }
+
+        final invoiceData = Map<String, dynamic>.from(json);
+        invoiceData.remove('parties');
+        invoiceData.remove('invoice_items');
+        invoiceData.remove('payments');
+        invoiceData['party_name'] = partyName;
+        invoiceData['sub_total'] = subTotal;
+        invoiceData['total_amount'] = totalAmount;
+        invoiceData['status'] = calculatedStatus;
+
+        return Invoice.fromJson(invoiceData);
+      }).toList();
+
+      return invoices;
+    } catch (e) {
+      _errorMessage = e.toString();
+      notifyListeners();
+      return [];
     }
   }
 

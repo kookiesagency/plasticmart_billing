@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 import '../../models/party.dart';
@@ -330,14 +331,22 @@ class _CreateInvoiceScreenState extends State<CreateInvoiceScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                FilledButton(
+                ElevatedButton(
                   onPressed: canContinue ? details.onStepContinue : null,
-                  style: FilledButton.styleFrom(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Theme.of(context).colorScheme.primary,
+                    foregroundColor: Colors.white,
                     padding: const EdgeInsets.symmetric(vertical: 16),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
                   ),
-                  child: Text(_currentStep == 2
-                    ? (widget.invoiceId != null ? 'Update Bill' : 'Create Bill')
-                    : 'Continue'),
+                  child: Text(
+                    _currentStep == 2
+                      ? (widget.invoiceId != null ? 'Update Bill' : 'Create Bill')
+                      : 'Continue',
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                  ),
                 ),
                 if (_currentStep > 0) ...[
                   const SizedBox(height: 12),
@@ -345,8 +354,12 @@ class _CreateInvoiceScreenState extends State<CreateInvoiceScreen> {
                     onPressed: _isLoading ? null : details.onStepCancel,
                     style: OutlinedButton.styleFrom(
                       padding: const EdgeInsets.symmetric(vertical: 16),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      side: BorderSide(color: Theme.of(context).colorScheme.primary),
                     ),
-                    child: const Text('Back'),
+                    child: const Text('Back', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
                   ),
                 ],
               ],
@@ -565,14 +578,19 @@ class _CreateInvoiceScreenState extends State<CreateInvoiceScreen> {
           // Continue Button
           SizedBox(
             width: double.infinity,
-            child: FilledButton(
+            child: ElevatedButton(
               onPressed: _selectedParty == null ? null : () {
                 setState(() => _currentStep = 1);
               },
-              style: FilledButton.styleFrom(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Theme.of(context).colorScheme.primary,
+                foregroundColor: Colors.white,
                 padding: const EdgeInsets.symmetric(vertical: 16),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
               ),
-              child: const Text('Continue'),
+              child: const Text('Continue', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
             ),
           ),
         ],
@@ -599,12 +617,17 @@ class _CreateInvoiceScreenState extends State<CreateInvoiceScreen> {
           // Add Item Button (Sticky)
           SizedBox(
             width: double.infinity,
-            child: FilledButton.icon(
+            child: ElevatedButton.icon(
               onPressed: () => _showAddItemDialog(items),
               icon: const Icon(Icons.add, size: 20),
-              label: const Text('Add Item'),
-              style: FilledButton.styleFrom(
+              label: const Text('Add Item', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Theme.of(context).colorScheme.primary,
+                foregroundColor: Colors.white,
                 padding: const EdgeInsets.symmetric(vertical: 16),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
               ),
             ),
           ),
@@ -1055,7 +1078,57 @@ class _CreateInvoiceScreenState extends State<CreateInvoiceScreen> {
                       // Items List
                       Expanded(
                         child: filteredItems.isEmpty
-                            ? const Center(child: Text('No items found'))
+                            ? Center(
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Icon(
+                                      Icons.search_off,
+                                      size: 64,
+                                      color: Colors.grey.shade400,
+                                    ),
+                                    const SizedBox(height: 16),
+                                    Text(
+                                      'No items found',
+                                      style: TextStyle(
+                                        fontSize: 16,
+                                        color: Colors.grey.shade600,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 24),
+                                    ElevatedButton.icon(
+                                      onPressed: () async {
+                                        Navigator.pop(context);
+                                        final result = await Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                            builder: (context) => const AddEditItemScreen(),
+                                          ),
+                                        );
+                                        if (result == true) {
+                                          // Reload items
+                                          final itemProvider = Provider.of<ItemProvider>(context, listen: false);
+                                          await itemProvider.fetchItems();
+                                          // Show the item selection dialog again
+                                          if (mounted) {
+                                            _showAddItemDialog(itemProvider.items);
+                                          }
+                                        }
+                                      },
+                                      icon: const Icon(Icons.add),
+                                      label: const Text('Create Item', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+                                      style: ElevatedButton.styleFrom(
+                                        backgroundColor: Theme.of(context).colorScheme.primary,
+                                        foregroundColor: Colors.white,
+                                        padding: const EdgeInsets.symmetric(vertical: 16),
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.circular(12),
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              )
                             : ListView.builder(
                                 controller: scrollController,
                                 itemCount: filteredItems.length,
@@ -1182,6 +1255,9 @@ class _CreateInvoiceScreenState extends State<CreateInvoiceScreen> {
                             contentPadding: const EdgeInsets.symmetric(vertical: 8),
                           ),
                           keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                          inputFormatters: [
+                            FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d*')),
+                          ],
                           autofocus: true,
                           onChanged: (value) {
                             quantity = double.tryParse(value);
@@ -1280,7 +1356,7 @@ class _CreateInvoiceScreenState extends State<CreateInvoiceScreen> {
                           child: const Text('Cancel'),
                         ),
                         const SizedBox(width: 12),
-                        FilledButton(
+                        ElevatedButton(
                           onPressed: () {
                             // Validate quantity
                             if (quantity == null || quantity! <= 0) {
@@ -1302,7 +1378,15 @@ class _CreateInvoiceScreenState extends State<CreateInvoiceScreen> {
                             });
                             Navigator.pop(context);
                           },
-                          child: const Text('Add'),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Theme.of(context).colorScheme.primary,
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(vertical: 16),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                          ),
+                          child: const Text('Add', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
                         ),
                       ],
                     ),
@@ -1364,6 +1448,9 @@ class _CreateInvoiceScreenState extends State<CreateInvoiceScreen> {
                         contentPadding: const EdgeInsets.symmetric(vertical: 8),
                       ),
                       keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                      inputFormatters: [
+                        FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d*')),
+                      ],
                       autofocus: true,
                       onChanged: (value) {
                         final parsed = double.tryParse(value);
@@ -1450,7 +1537,7 @@ class _CreateInvoiceScreenState extends State<CreateInvoiceScreen> {
                           child: const Text('Cancel'),
                         ),
                         const SizedBox(width: 12),
-                        FilledButton(
+                        ElevatedButton(
                           onPressed: () {
                             // Validate quantity
                             if (quantity <= 0) {
@@ -1475,7 +1562,15 @@ class _CreateInvoiceScreenState extends State<CreateInvoiceScreen> {
                             });
                             Navigator.pop(context);
                           },
-                          child: const Text('Save'),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Theme.of(context).colorScheme.primary,
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(vertical: 16),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                          ),
+                          child: const Text('Save', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
                         ),
                       ],
                     ),

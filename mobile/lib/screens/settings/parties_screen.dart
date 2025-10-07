@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 import '../../providers/party_provider.dart';
 import '../../models/party.dart';
+import 'party_weekly_report_screen.dart';
 
 class PartiesScreen extends StatefulWidget {
   const PartiesScreen({Key? key}) : super(key: key);
@@ -124,9 +125,17 @@ class _PartiesScreenState extends State<PartiesScreen> {
             onPressed: () => Navigator.pop(context),
             child: const Text('Cancel'),
           ),
-          FilledButton(
+          ElevatedButton(
             onPressed: () => _saveParty(),
-            child: const Text('Save'),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Theme.of(context).colorScheme.primary,
+              foregroundColor: Colors.white,
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+            ),
+            child: const Text('Save', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
           ),
         ],
       ),
@@ -206,10 +215,17 @@ class _PartiesScreenState extends State<PartiesScreen> {
             onPressed: () => Navigator.pop(context, false),
             child: const Text('Cancel'),
           ),
-          FilledButton(
+          ElevatedButton(
             onPressed: () => Navigator.pop(context, true),
-            style: FilledButton.styleFrom(backgroundColor: Colors.red),
-            child: const Text('Delete'),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.red,
+              foregroundColor: Colors.white,
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+            ),
+            child: const Text('Delete', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
           ),
         ],
       ),
@@ -283,10 +299,17 @@ class _PartiesScreenState extends State<PartiesScreen> {
                     ),
                   ),
                   const SizedBox(height: 32),
-                  FilledButton.icon(
+                  ElevatedButton(
                     onPressed: () => _showAddEditDialog(),
-                    icon: const Icon(Icons.add),
-                    label: const Text('Add First Party'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Theme.of(context).colorScheme.primary,
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    child: const Text('Add First Party', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
                   ),
                 ],
               ),
@@ -304,6 +327,17 @@ class _PartiesScreenState extends State<PartiesScreen> {
                   margin: const EdgeInsets.only(bottom: 12),
                   child: ListTile(
                     contentPadding: const EdgeInsets.all(16),
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => PartyWeeklyReportScreen(
+                            partyId: party.id!,
+                            partyName: party.name,
+                          ),
+                        ),
+                      );
+                    },
                     leading: CircleAvatar(
                       backgroundColor: colorScheme.primaryContainer,
                       foregroundColor: colorScheme.onPrimaryContainer,

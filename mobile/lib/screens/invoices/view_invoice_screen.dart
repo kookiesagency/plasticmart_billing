@@ -209,48 +209,48 @@ class _ViewInvoiceScreenState extends State<ViewInvoiceScreen> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        _invoice!.partyName ?? 'Unknown Party',
-                                        style: const TextStyle(
-                                          fontSize: 20,
+                                Text(
+                                  _invoice!.partyName ?? 'Unknown Party',
+                                  style: const TextStyle(
+                                    fontSize: 20,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                  maxLines: 2,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                                const SizedBox(height: 8),
+                                Row(
+                                  children: [
+                                    Text(
+                                      'Bill #${_invoice!.invoiceNumber ?? 'N/A'}',
+                                      style: TextStyle(
+                                        color: Colors.grey.shade700,
+                                        fontSize: 14,
+                                      ),
+                                    ),
+                                    const SizedBox(width: 12),
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 12,
+                                        vertical: 4,
+                                      ),
+                                      decoration: BoxDecoration(
+                                        color: _getStatusColor(_paymentStatus).withOpacity(0.1),
+                                        borderRadius: BorderRadius.circular(8),
+                                      ),
+                                      child: Text(
+                                        _getStatusText(_paymentStatus),
+                                        style: TextStyle(
+                                          color: _getStatusColor(_paymentStatus),
+                                          fontSize: 12,
                                           fontWeight: FontWeight.bold,
                                         ),
                                       ),
-                                      const SizedBox(height: 4),
-                                      Text(
-                                        'Bill #${_invoice!.invoiceNumber ?? 'N/A'}',
-                                        style: TextStyle(
-                                          color: Colors.grey.shade700,
-                                          fontSize: 14,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                                Container(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 12,
-                                    vertical: 6,
-                                  ),
-                                  decoration: BoxDecoration(
-                                    color: _getStatusColor(_paymentStatus).withOpacity(0.1),
-                                    borderRadius: BorderRadius.circular(8),
-                                  ),
-                                  child: Text(
-                                    _getStatusText(_paymentStatus),
-                                    style: TextStyle(
-                                      color: _getStatusColor(_paymentStatus),
-                                      fontSize: 13,
-                                      fontWeight: FontWeight.bold,
                                     ),
-                                  ),
+                                  ],
                                 ),
                               ],
                             ),
@@ -262,8 +262,8 @@ class _ViewInvoiceScreenState extends State<ViewInvoiceScreen> {
                                 Text(
                                   _formatDate(_invoice!.invoiceDate),
                                   style: TextStyle(
-                                    color: Colors.grey.shade700,
-                                    fontSize: 14,
+                                    color: Colors.grey.shade600,
+                                    fontSize: 12,
                                   ),
                                 ),
                               ],
@@ -308,11 +308,22 @@ class _ViewInvoiceScreenState extends State<ViewInvoiceScreen> {
                               ),
                             ),
                             const SizedBox(height: 16),
-                            ..._items.map((item) => Padding(
+                            ..._items.asMap().entries.map((entry) {
+                              final index = entry.key;
+                              final item = entry.value;
+                              return Padding(
                                   padding: const EdgeInsets.only(bottom: 12),
                                   child: Row(
                                     crossAxisAlignment: CrossAxisAlignment.start,
                                     children: [
+                                      Text(
+                                        '${index + 1}. ',
+                                        style: TextStyle(
+                                          fontWeight: FontWeight.w500,
+                                          fontSize: 14,
+                                          color: Colors.grey.shade700,
+                                        ),
+                                      ),
                                       Expanded(
                                         flex: 3,
                                         child: Column(
@@ -350,7 +361,8 @@ class _ViewInvoiceScreenState extends State<ViewInvoiceScreen> {
                                       ),
                                     ],
                                   ),
-                                )),
+                                );
+                            }),
                           ],
                         ),
                       ),
@@ -377,15 +389,17 @@ class _ViewInvoiceScreenState extends State<ViewInvoiceScreen> {
                                     fontWeight: FontWeight.bold,
                                   ),
                                 ),
-                                FilledButton.icon(
+                                ElevatedButton(
                                   onPressed: () => _showAddPaymentDialog(),
-                                  icon: const Icon(Icons.add, size: 18),
-                                  label: const Text('Add'),
-                                  style: FilledButton.styleFrom(
-                                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                                    minimumSize: const Size(0, 0),
-                                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: Theme.of(context).colorScheme.primary,
+                                    foregroundColor: Colors.white,
+                                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
                                   ),
+                                  child: const Text('Add', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
                                 ),
                               ],
                             ),
@@ -566,25 +580,28 @@ class _ViewInvoiceScreenState extends State<ViewInvoiceScreen> {
                                 // TODO: Share invoice
                               },
                               icon: const Icon(Icons.share),
-                              label: const Text('Share'),
+                              label: const Text('Share', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
                               style: OutlinedButton.styleFrom(
-                                padding: const EdgeInsets.symmetric(vertical: 12),
+                                padding: const EdgeInsets.symmetric(vertical: 16),
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(12),
                                 ),
+                                side: BorderSide(color: Theme.of(context).colorScheme.primary),
                               ),
                             ),
                           ),
                           const SizedBox(width: 12),
                           Expanded(
-                            child: FilledButton.icon(
+                            child: ElevatedButton.icon(
                               onPressed: () {
                                 // TODO: Print/Download PDF
                               },
                               icon: const Icon(Icons.picture_as_pdf),
-                              label: const Text('PDF'),
-                              style: FilledButton.styleFrom(
-                                padding: const EdgeInsets.symmetric(vertical: 12),
+                              label: const Text('PDF', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Theme.of(context).colorScheme.primary,
+                                foregroundColor: Colors.white,
+                                padding: const EdgeInsets.symmetric(vertical: 16),
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(12),
                                 ),
@@ -699,12 +716,17 @@ class _ViewInvoiceScreenState extends State<ViewInvoiceScreen> {
             onPressed: () => Navigator.pop(context, false),
             child: const Text('Cancel'),
           ),
-          FilledButton(
+          ElevatedButton(
             onPressed: () => Navigator.pop(context, true),
-            style: FilledButton.styleFrom(
+            style: ElevatedButton.styleFrom(
               backgroundColor: Colors.red,
+              foregroundColor: Colors.white,
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
             ),
-            child: const Text('Delete'),
+            child: const Text('Delete', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
           ),
         ],
       ),

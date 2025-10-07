@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../../config/supabase_config.dart';
+import '../../models/party.dart';
+import 'party_details_screen.dart';
 
 class PartyWeeklyReportScreen extends StatefulWidget {
   final int partyId;
@@ -25,6 +27,7 @@ class _PartyWeeklyReportScreenState extends State<PartyWeeklyReportScreen> {
   List<Map<String, dynamic>> _weeklyInvoices = [];
   DateTime? _weekStart;
   DateTime? _weekEnd;
+  Party? _party;
 
   @override
   void initState() {
@@ -54,12 +57,14 @@ class _PartyWeeklyReportScreenState extends State<PartyWeeklyReportScreen> {
 
       final allInvoices = allInvoicesResponse as List;
 
-      // Get party opening balance
+      // Get party full details
       final partyData = await _supabase
           .from('parties')
-          .select('opening_balance')
+          .select('*')
           .eq('id', widget.partyId)
           .single();
+
+      _party = Party.fromJson(partyData);
 
       // Check if current week has any invoices
       List<Map<String, dynamic>> weeklyInvoices = allInvoices
@@ -222,10 +227,10 @@ class _PartyWeeklyReportScreenState extends State<PartyWeeklyReportScreen> {
                           width: double.infinity,
                           padding: const EdgeInsets.all(16),
                           decoration: BoxDecoration(
-                            color: Colors.orange.shade50,
+                            color: Colors.white,
                             borderRadius: BorderRadius.circular(12),
                             border: Border.all(
-                              color: Colors.orange.shade200,
+                              color: Colors.grey.shade200,
                               width: 1,
                             ),
                           ),
@@ -241,10 +246,9 @@ class _PartyWeeklyReportScreenState extends State<PartyWeeklyReportScreen> {
                               ),
                               Text(
                                 _formatCurrency(_previousOutstanding),
-                                style: TextStyle(
-                                  fontSize: 16,
+                                style: const TextStyle(
+                                  fontSize: 14,
                                   fontWeight: FontWeight.bold,
-                                  color: Colors.orange.shade800,
                                 ),
                               ),
                             ],
@@ -362,10 +366,10 @@ class _PartyWeeklyReportScreenState extends State<PartyWeeklyReportScreen> {
                           width: double.infinity,
                           padding: const EdgeInsets.all(16),
                           decoration: BoxDecoration(
-                            color: Colors.blue.shade50,
+                            color: Colors.white,
                             borderRadius: BorderRadius.circular(12),
                             border: Border.all(
-                              color: Colors.blue.shade200,
+                              color: Colors.grey.shade200,
                               width: 1,
                             ),
                           ),
@@ -375,16 +379,15 @@ class _PartyWeeklyReportScreenState extends State<PartyWeeklyReportScreen> {
                               const Text(
                                 'Total This Week',
                                 style: TextStyle(
-                                  fontSize: 15,
+                                  fontSize: 14,
                                   fontWeight: FontWeight.w600,
                                 ),
                               ),
                               Text(
                                 _formatCurrency(_weekTotal),
-                                style: TextStyle(
-                                  fontSize: 16,
+                                style: const TextStyle(
+                                  fontSize: 14,
                                   fontWeight: FontWeight.bold,
-                                  color: Colors.blue.shade800,
                                 ),
                               ),
                             ],
@@ -392,50 +395,68 @@ class _PartyWeeklyReportScreenState extends State<PartyWeeklyReportScreen> {
                         ),
                         const SizedBox(height: 12),
 
-                        // Grand Total Outstanding
+                        // Total
                         Container(
                           width: double.infinity,
-                          padding: const EdgeInsets.all(18),
+                          padding: const EdgeInsets.all(16),
                           decoration: BoxDecoration(
-                            gradient: LinearGradient(
-                              colors: [
-                                colorScheme.primary,
-                                colorScheme.primary.withOpacity(0.8),
-                              ],
-                              begin: Alignment.topLeft,
-                              end: Alignment.bottomRight,
-                            ),
+                            color: Colors.white,
                             borderRadius: BorderRadius.circular(12),
-                            boxShadow: [
-                              BoxShadow(
-                                color: colorScheme.primary.withOpacity(0.3),
-                                blurRadius: 8,
-                                offset: const Offset(0, 2),
-                              ),
-                            ],
+                            border: Border.all(
+                              color: Colors.grey.shade200,
+                              width: 1,
+                            ),
                           ),
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
                               const Text(
-                                'Grand Total Outstanding',
+                                'Total',
                                 style: TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.white,
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w600,
                                 ),
                               ),
                               Text(
                                 _formatCurrency(_grandTotal),
                                 style: const TextStyle(
-                                  fontSize: 18,
+                                  fontSize: 14,
                                   fontWeight: FontWeight.bold,
-                                  color: Colors.white,
                                 ),
                               ),
                             ],
                           ),
                         ),
+                        const SizedBox(height: 20),
+
+                        // More Details Button
+                        if (_party != null)
+                          SizedBox(
+                            width: double.infinity,
+                            child: ElevatedButton(
+                              onPressed: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => PartyDetailsScreen(party: _party!),
+                                  ),
+                                );
+                              },
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Theme.of(context).colorScheme.primary,
+                                foregroundColor: Colors.white,
+                                padding: const EdgeInsets.symmetric(vertical: 16),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                              ),
+                              child: const Text(
+                                'More Details',
+                                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                              ),
+                            ),
+                          ),
+                        const SizedBox(height: 20),
                       ],
                     ),
                   ),

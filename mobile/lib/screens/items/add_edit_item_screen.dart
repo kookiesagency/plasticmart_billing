@@ -688,12 +688,17 @@ class _AddEditItemScreenState extends State<AddEditItemScreen> {
                             onPressed: () => Navigator.pop(context, false),
                             child: const Text('Cancel'),
                           ),
-                          FilledButton(
+                          ElevatedButton(
                             onPressed: () => Navigator.pop(context, true),
-                            style: FilledButton.styleFrom(
+                            style: ElevatedButton.styleFrom(
                               backgroundColor: Colors.red,
+                              foregroundColor: Colors.white,
+                              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
                             ),
-                            child: const Text('Remove'),
+                            child: const Text('Remove', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
                           ),
                         ],
                       ),
@@ -756,21 +761,31 @@ class _AddEditItemScreenState extends State<AddEditItemScreen> {
                 );
               }).toList(),
             const SizedBox(height: 32),
-            FilledButton.icon(
-              onPressed: _isLoading ? null : _save,
-              icon: _isLoading
-                  ? const SizedBox(
-                      width: 20,
-                      height: 20,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2,
-                        color: Colors.white,
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: _isLoading ? null : _save,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Theme.of(context).colorScheme.primary,
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+                child: _isLoading
+                    ? const SizedBox(
+                        width: 20,
+                        height: 20,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: Colors.white,
+                        ),
+                      )
+                    : Text(
+                        widget.item == null ? 'Add Item' : 'Update Item',
+                        style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
                       ),
-                    )
-                  : const Icon(Icons.check),
-              label: Text(widget.item == null ? 'Add Item' : 'Update Item'),
-              style: FilledButton.styleFrom(
-                padding: const EdgeInsets.symmetric(vertical: 16),
               ),
             ),
           ],

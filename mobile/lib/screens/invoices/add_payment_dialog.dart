@@ -227,8 +227,16 @@ class _AddPaymentDialogState extends State<AddPaymentDialog> {
                       child: const Text('Cancel'),
                     ),
                     const SizedBox(width: 12),
-                    FilledButton(
+                    ElevatedButton(
                       onPressed: _isLoading ? null : _savePayment,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Theme.of(context).colorScheme.primary,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
                       child: _isLoading
                           ? const SizedBox(
                               width: 20,
@@ -238,7 +246,7 @@ class _AddPaymentDialogState extends State<AddPaymentDialog> {
                                 valueColor: AlwaysStoppedAnimation(Colors.white),
                               ),
                             )
-                          : const Text('Save'),
+                          : const Text('Save', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
                     ),
                   ],
                 ),
