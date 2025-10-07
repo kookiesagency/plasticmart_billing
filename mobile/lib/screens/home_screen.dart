@@ -2,8 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/app_mode_provider.dart';
 import 'invoices/invoices_screen.dart';
+import 'invoices/create_invoice_screen.dart';
 import 'items/items_screen.dart';
+import 'items/add_edit_item_screen.dart';
 import 'parties/parties_screen.dart';
+import 'parties/add_edit_party_screen.dart';
 import 'settings/settings_screen.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -18,6 +21,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   static final List<Widget> _basicScreens = [
     const InvoicesScreen(),
+    const ItemsScreen(),
     const PartiesScreen(),
     const SettingsScreen(),
   ];
@@ -27,6 +31,13 @@ class _HomeScreenState extends State<HomeScreen> {
     const ItemsScreen(),
     const PartiesScreen(),
     const SettingsScreen(),
+  ];
+
+  static const List<String> _screenTitles = [
+    'Bills',
+    'Items',
+    'Parties',
+    'Settings',
   ];
 
   @override
@@ -41,28 +52,59 @@ class _HomeScreenState extends State<HomeScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('PlasticMart Billing'),
-        actions: [
-          // Mode toggle switch
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16.0),
-            child: Row(
-              children: [
-                Text(
-                  appMode.isBasicMode ? 'Basic' : 'Advanced',
-                  style: Theme.of(context).textTheme.titleSmall,
+        title: Text(_screenTitles[_selectedIndex]),
+        actions: _selectedIndex == 0 // Invoices tab
+            ? [
+                IconButton(
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const CreateInvoiceScreen(),
+                      ),
+                    );
+                  },
+                  icon: const Icon(Icons.add),
+                  tooltip: 'Create Bill',
                 ),
-                const SizedBox(width: 8),
-                Switch(
-                  value: appMode.isAdvancedMode,
-                  onChanged: (value) => appMode.toggleMode(),
-                ),
-              ],
-            ),
-          ),
-        ],
+              ]
+            : _selectedIndex == 1 // Items tab
+                ? [
+                    IconButton(
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const AddEditItemScreen(),
+                          ),
+                        );
+                      },
+                      icon: const Icon(Icons.add),
+                      tooltip: 'Add Item',
+                    ),
+                  ]
+                : _selectedIndex == 2 // Parties tab
+                    ? [
+                        IconButton(
+                          onPressed: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => const AddEditPartyScreen(),
+                              ),
+                            );
+                          },
+                          icon: const Icon(Icons.add),
+                          tooltip: 'Add Party',
+                        ),
+                      ]
+                    : null,
       ),
-      body: screens[_selectedIndex],
+      body: GestureDetector(
+        onTap: () => FocusScope.of(context).unfocus(),
+        behavior: HitTestBehavior.opaque,
+        child: screens[_selectedIndex],
+      ),
       bottomNavigationBar: BottomNavigationBar(
         type: BottomNavigationBarType.fixed,
         currentIndex: _selectedIndex,
@@ -71,39 +113,24 @@ class _HomeScreenState extends State<HomeScreen> {
             _selectedIndex = index;
           });
         },
-        items: appMode.isBasicMode
-            ? const [
-                BottomNavigationBarItem(
-                  icon: Icon(Icons.receipt),
-                  label: 'Invoices',
-                ),
-                BottomNavigationBarItem(
-                  icon: Icon(Icons.people),
-                  label: 'Parties',
-                ),
-                BottomNavigationBarItem(
-                  icon: Icon(Icons.settings),
-                  label: 'Settings',
-                ),
-              ]
-            : const [
-                BottomNavigationBarItem(
-                  icon: Icon(Icons.receipt),
-                  label: 'Invoices',
-                ),
-                BottomNavigationBarItem(
-                  icon: Icon(Icons.inventory),
-                  label: 'Items',
-                ),
-                BottomNavigationBarItem(
-                  icon: Icon(Icons.people),
-                  label: 'Parties',
-                ),
-                BottomNavigationBarItem(
-                  icon: Icon(Icons.settings),
-                  label: 'Settings',
-                ),
-              ],
+        items: const [
+          BottomNavigationBarItem(
+            icon: Icon(Icons.receipt),
+            label: 'Bills',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.inventory),
+            label: 'Items',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.people),
+            label: 'Parties',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.settings),
+            label: 'Settings',
+          ),
+        ],
       ),
     );
   }
