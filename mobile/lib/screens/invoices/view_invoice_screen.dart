@@ -6,6 +6,7 @@ import '../../models/invoice_item.dart';
 import '../../models/payment.dart';
 import '../../providers/invoice_provider.dart';
 import '../../services/payment_service.dart';
+import '../../services/pdf_service.dart';
 import 'create_invoice_screen.dart';
 import 'add_payment_dialog.dart';
 
@@ -28,6 +29,7 @@ class _ViewInvoiceScreenState extends State<ViewInvoiceScreen> {
   List<InvoiceItem> _items = [];
   List<Payment> _payments = [];
   final PaymentService _paymentService = PaymentService();
+  final PdfService _pdfService = PdfService();
 
   @override
   void initState() {
@@ -576,8 +578,12 @@ class _ViewInvoiceScreenState extends State<ViewInvoiceScreen> {
                         children: [
                           Expanded(
                             child: OutlinedButton.icon(
-                              onPressed: () {
-                                // TODO: Share invoice
+                              onPressed: () async {
+                                if (_invoice == null) return;
+                                await _pdfService.sharePdf(
+                                  invoice: _invoice!,
+                                  items: _items,
+                                );
                               },
                               icon: const Icon(Icons.share),
                               label: const Text('Share', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
@@ -593,8 +599,12 @@ class _ViewInvoiceScreenState extends State<ViewInvoiceScreen> {
                           const SizedBox(width: 12),
                           Expanded(
                             child: ElevatedButton.icon(
-                              onPressed: () {
-                                // TODO: Print/Download PDF
+                              onPressed: () async {
+                                if (_invoice == null) return;
+                                await _pdfService.previewPdf(
+                                  invoice: _invoice!,
+                                  items: _items,
+                                );
                               },
                               icon: const Icon(Icons.picture_as_pdf),
                               label: const Text('PDF', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),

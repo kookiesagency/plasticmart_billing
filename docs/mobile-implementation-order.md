@@ -371,17 +371,11 @@ This document provides a step-by-step implementation order for building the Plas
   - [ ] Invoice number and date
   - [ ] Party details (billed to)
   - [ ] Items table with quantities, rates, amounts
-  - [ ] Sub-total, bundle charge, grand total
+  - [ ] Sub-total,bundle qty, bundle charge, grand total
   - [ ] Payment status and amount received
 - [ ] PDF Actions (from invoice details screen)
-  - [ ] Preview PDF
   - [ ] Download PDF to device
   - [ ] Share via WhatsApp
-  - [ ] Share via Email
-  - [ ] Share via SMS (for small files)
-- [ ] Print integration (optional)
-  - [ ] Bluetooth printer support
-
 **Dependencies:** `pdf`, `printing`, `share_plus`
 
 **Testing:** Can generate, preview, download, and share invoice PDFs

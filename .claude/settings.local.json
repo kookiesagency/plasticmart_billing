@@ -7,7 +7,18 @@
       "Bash(flutter:*)",
       "Bash($HOME/development/flutter/bin/flutter --version)",
       "Bash(lsof:*)",
-      "Bash(psql:*)"
+      "Bash(psql:*)",
+      "Bash($HOME/development/flutter/bin/flutter pub get)",
+      "Bash($HOME/development/flutter/bin/flutter attach:*)",
+      "Bash($HOME/development/flutter/bin/flutter:*)",
+      "Bash(nc localhost 53833)",
+      "Bash(grep:*)",
+      "Bash(nc localhost 60522)",
+      "Bash(pkill:*)",
+      "Bash(nc:*)",
+      "Bash(git add:*)",
+      "Bash(git restore:*)",
+      "Bash(git commit:*)"
     ],
     "deny": [],
     "ask": []
