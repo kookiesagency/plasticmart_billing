@@ -249,55 +249,114 @@ This document provides a step-by-step implementation order for building the Plas
 
 ---
 
-### **Step 6: Payment Management (Basic Mode)** 💰
+### ✅ **Step 6: Payment Management (Basic Mode)** 💰 - COMPLETED
 **Why sixth?** Essential for tracking outstanding balances.
 
-**What to build:**
-- [ ] Create `models/payment.dart` model
-- [ ] Create `services/payment_service.dart`
-- [ ] Add Payment dialog (from invoice view)
-  - [ ] Payment amount field
-  - [ ] Payment method dropdown (Cash, Bank, UPI, Cheque, etc.)
-  - [ ] Payment date picker
-  - [ ] Notes field (optional)
-- [ ] Payment history list (on invoice details screen)
-  - [ ] Date, amount, method
-  - [ ] Edit payment
-  - [ ] Delete payment
-- [ ] Outstanding balance calculation
-  - [ ] Show on invoice list
-  - [ ] Show on party details
-  - [ ] Visual indicators for pending payments
+**What was built:**
+- [x] Create `models/payment.dart` model
+- [x] Create `services/payment_service.dart`
+- [x] Add Payment dialog (from invoice view)
+  - [x] Payment amount field (auto-filled with balance due)
+  - [x] Payment date picker with consistent white background theming
+  - [x] Remark/Note field (optional)
+  - [x] **Note:** Payment method dropdown was NOT added - matched web implementation exactly (web only has amount, date, remark)
+- [x] Payment history list (on invoice details screen)
+  - [x] Date, amount, remark display in compact card format
+  - [x] Edit payment with same dialog
+  - [x] Delete payment with swipe-to-delete gesture and confirmation
+- [x] Outstanding balance calculation (client-side, not stored in database)
+  - [x] Status calculation: paid (balance = 0), partial (balance > 0 and payments > 0), pending (no payments)
+  - [x] Show calculated status on invoice list with color-coded badges
+  - [x] Show on invoice view screen with real-time calculations
+  - [x] Visual indicators for payment status
+- [x] Auto-refresh invoice list
+  - [x] Implemented `_hasChanges` flag to track payment modifications
+  - [x] Used `PopScope` to return result when navigating back
+  - [x] Invoice list automatically refreshes when payments are added/edited/deleted
+  - [x] **Fixed status sync issue**: Updated `fetchInvoices()` to calculate status from payments dynamically instead of reading stale database values
+- [x] Reusable utilities created:
+  - [x] `utils/date_picker_theme.dart` - Consistent date picker theme across app
+  - [x] Date formatting standards: "EEE, MMM d" for display, "yyyy-MM-dd" for database
 
-**Database:** Uses `payments` table
+**UI/UX Features:**
+- [x] White background for all dialogs and screens (consistency across app)
+- [x] Compact payment card design with edit/delete actions
+- [x] Swipe-to-delete with confirmation dialog
+- [x] Amount pre-filled with balance due when adding payment
+- [x] Validation for payment amounts
 
-**Testing:** Can record payments, view history, track outstanding amounts
+**Critical Bug Fix:**
+- [x] Fixed data loss bug in invoice update (both mobile and web)
+- [x] Changed from unsafe delete+insert pattern to atomic PostgreSQL RPC function
+- [x] Created `database/create_update_invoice_function.sql` with transaction support
+- [x] Updated `mobile/lib/providers/invoice_provider.dart` to use RPC function
+- [x] Updated `web/src/app/(app)/invoices/new/invoice-form.tsx` to use RPC function
+
+**Database:** Uses `payments` table, reads from `invoices` and `invoice_items`
+
+**Testing:** ✅ Can record payments, view history, track outstanding amounts, auto-refresh invoice list
+
+**Note on Payment Method:** We intentionally did NOT add payment method dropdown because the web app doesn't have it. This maintains feature parity between web and mobile apps.
 
 ---
 
-### **Step 7: Party Report (Basic Mode)** 📊
+### ✅ **Step 7: Party Report (Basic Mode)** 📊 - COMPLETED
 **Why seventh?** Users need to see party-wise summaries.
 
-**What to build:**
-- [ ] Create Party Details screen (`screens/parties/party_details_screen.dart`)
-  - [ ] Party information card
-  - [ ] Summary cards:
-    - [ ] Total Billed (sum of all invoices)
-    - [ ] Total Received (sum of all payments)
-    - [ ] Current Balance (opening balance + billed - received)
-    - [ ] Number of invoices
-  - [ ] List of all invoices for this party
-    - [ ] Invoice number, date, amount, status
-    - [ ] Tap to view invoice details
-  - [ ] Payment history for this party
-- [ ] Weekly Mini Report feature
-  - [ ] Previous outstanding balance
-  - [ ] Current week's invoices with totals
-  - [ ] Grand total outstanding
+**What was built:**
+- [x] Create Party Details screen (`screens/parties/party_details_screen.dart`)
+  - [x] Party information card with gradient header
+  - [x] Summary cards (white background with borders):
+    - [x] Total Billed (sum of all invoices)
+    - [x] Total Received (sum of all payments)
+    - [x] Current Balance (opening balance + billed - received)
+    - [x] Number of invoices
+  - [x] List of all invoices for this party
+    - [x] Invoice number, date, amount, status
+    - [x] Tap to navigate to invoice details
+  - [x] Pull-to-refresh functionality
+- [x] Weekly Mini Report feature (enhanced from web)
+  - [x] Accessible from party list (tap on party)
+  - [x] Previous outstanding balance display
+  - [x] Current/last week's invoices list with details
+  - [x] Total This Week calculation
+  - [x] Grand Total Outstanding calculation
+  - [x] White card design with consistent styling
+  - [x] "More Details" button navigating to comprehensive party details screen
+
+**UI Improvements:**
+- [x] Clean white card layouts with subtle borders
+- [x] Responsive font sizes (14px for most text)
+- [x] Gradient header for party info section
+- [x] Visual hierarchy with proper spacing
+- [x] Mobile-optimized layout preventing overflow
+- [x] Standardized button styling (ElevatedButton with 12px border radius)
+
+**Button Styling Standardization (Step 7 Bonus):**
+- [x] Created comprehensive button styling guide at `/docs/mobile-button-styling-guide.md`
+- [x] Standardized all buttons across the app:
+  - [x] party_weekly_report_screen.dart - More Details button
+  - [x] parties_screen.dart - Save, Delete, Add First Party buttons
+  - [x] create_invoice_screen.dart - 6 FilledButtons and 1 OutlinedButton
+  - [x] add_edit_item_screen.dart - Remove and Add/Update Item buttons
+  - [x] view_invoice_screen.dart - Add Payment, Share, PDF, Delete buttons
+  - [x] add_payment_dialog.dart - Save button with loading state
+- [x] Standard button specs:
+  - Border Radius: 12px
+  - Font Size: 16px (14px for smaller buttons)
+  - Font Weight: 600 (semi-bold)
+  - Vertical Padding: 16px (full-width), 12px (dialog), 8px (compact)
+
+**Additional UI Refinements:**
+- [x] Added SR numbers to invoice items list (1., 2., 3., etc.)
+- [x] Made Add Payment button compact (no icon, smaller padding)
+- [x] Matched invoice date font size to created date (12px)
+- [x] Repositioned status badge below party name to prevent overflow
+- [x] Changed invoice list sorting to invoice_number (descending)
 
 **Database:** Aggregate queries on `invoices` and `payments`
 
-**Testing:** Can view party summaries and weekly reports
+**Testing:** ✅ Can view party summaries, weekly reports, and navigate to comprehensive details
 
 ---
 
@@ -406,11 +465,15 @@ After completing all 10 steps, users should be able to:
 
 ## 📌 **Current Status**
 
-**Completed:** Steps 0-5 (Authentication, Units, Parties, Items, Invoice Creation, Invoice Management)
-**Next Step:** Step 6 - Payment Management
+**Completed:** Steps 0-7 (Authentication, Units, Parties, Items, Invoice Creation, Invoice Management, Payment Management, Party Report + Button Standardization)
+**Next Step:** Step 8 - PDF Generation & Sharing (Basic Mode)
 **Mode:** Basic Mode First
-**Pending from Step 5:** Date/status filters, payment features (will be covered in Step 6)
-**Awaiting:** User approval to proceed with Step 6
+**Pending from Step 5:** Date/status filters (not critical for MVP)
+**Recent Additions:**
+- Comprehensive button styling guide created
+- All buttons standardized across 8 screens
+- Multiple UI refinements (SR numbers, compact buttons, proper spacing)
+**Awaiting:** User approval to proceed with Step 8
 
 ---
 

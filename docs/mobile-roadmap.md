@@ -203,22 +203,75 @@ This document outlines the development plan for the PlasticMart Mobile applicati
 - [x] **Restore Invoice:** From deleted tab
 - [x] **Permanent Delete:** Irreversible deletion with confirmation
 
-### **1.8 Payment Management (Basic Mode)**
-- [ ] **Record Payments:**
-  - Simple payment entry form
-  - Payment method selection (Cash, Bank, UPI, etc.)
-  - Partial payment support
-  - Payment date selection
-- [ ] **Payment History:**
-  - List payments per invoice
-  - Payment method indicators
-  - Date and amount display
-- [ ] **Outstanding Balance:**
-  - Visual indicators for pending amounts
-  - Quick payment shortcuts
-  - Balance summary per party
+### **1.8 Payment Management (Basic Mode)** ✅ COMPLETE
+- [x] **Record Payments:**
+  - Simple payment entry form with amount, date, remark
+  - ~~Payment method selection~~ (NOT implemented - matched web app exactly)
+  - Partial payment support (client-side status calculation)
+  - Payment date selection with consistent white background theme
+  - Auto-fill balance due when adding payment
+- [x] **Payment History:**
+  - List payments per invoice with compact card design
+  - Date, amount, and remark display
+  - Edit payment functionality
+  - Swipe-to-delete with confirmation
+- [x] **Outstanding Balance:**
+  - Visual indicators for payment status (paid/partial/pending)
+  - Client-side status calculation from payments
+  - Balance calculation displayed on invoice view
+  - Auto-refresh invoice list when payments change
+  - Fixed status sync: Invoice list now calculates status dynamically from payments
+- [x] **Reusable Utilities:**
+  - Created `utils/date_picker_theme.dart` for consistent date picker styling
+  - Date formatting standards established
+- [x] **Critical Bug Fix:**
+  - Fixed data loss bug in invoice updates (mobile and web)
+  - Implemented atomic PostgreSQL RPC function with transactions
 
-### **1.9 PDF & Sharing (Basic Mode)**
+### **1.9 Party Report (Basic Mode)** ✅ COMPLETE
+- [x] **Party Details Screen:**
+  - Comprehensive party information card with gradient header
+  - Summary cards (white background with subtle borders):
+    - Total Billed (aggregate of all invoices)
+    - Total Received (aggregate of all payments)
+    - Current Balance (opening balance + billed - received)
+    - Invoice Count with visual indicator
+  - Full invoice list for the party with status badges
+  - Pull-to-refresh functionality
+  - Navigation to invoice details on tap
+- [x] **Weekly Mini Report:**
+  - Accessible from party list (tap on party)
+  - Previous outstanding balance calculation
+  - Current/last week's invoices with full details
+  - Total This Week calculation
+  - Grand Total Outstanding display
+  - Clean white card design with consistent styling
+  - "More Details" button for comprehensive party details navigation
+- [x] **UI Excellence:**
+  - Mobile-optimized layout preventing text overflow
+  - Responsive font sizes (14px standard, 12px for metadata)
+  - Visual hierarchy with proper spacing (16-24px gaps)
+  - Color-coded status indicators
+  - Gradient headers for visual appeal
+- [x] **Button Styling Standardization (Major UX Improvement):**
+  - Created `/docs/mobile-button-styling-guide.md` - comprehensive styling reference
+  - Standardized all buttons across 8 screens:
+    - party_weekly_report_screen.dart
+    - parties_screen.dart
+    - create_invoice_screen.dart
+    - add_edit_item_screen.dart
+    - view_invoice_screen.dart
+    - add_payment_dialog.dart
+  - Standard specs: 12px border radius, 16px font, 600 weight, proper padding
+  - Replaced all FilledButton with ElevatedButton for consistency
+- [x] **Additional UI Refinements:**
+  - Added SR numbers (1., 2., 3.) to invoice items list
+  - Compact Add Payment button (removed icon, smaller padding: 16×8)
+  - Matched invoice date font size to created date (12px)
+  - Repositioned status badge below party name (prevents overflow)
+  - Changed invoice list sorting to invoice_number descending
+
+### **1.10 PDF & Sharing (Basic Mode)**
 - [ ] **PDF Generation:**
   - Mobile-optimized invoice templates
   - Company logo and details
