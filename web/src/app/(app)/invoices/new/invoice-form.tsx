@@ -321,9 +321,13 @@ export function InvoiceForm({ invoiceId }: { invoiceId?: string }) {
         .eq('id', invoiceId)
 
       if (!updateError) {
-        await supabase.from('invoice_items').delete().eq('invoice_id', invoiceId)
-        const itemsToInsert = items.map((item, idx) => ({ ...item, position: idx, invoice_id: parseInt(invoiceId, 10) }))
-        const { error: itemsError } = await supabase.from('invoice_items').insert(itemsToInsert)
+        // Use the atomic function to update invoice items
+        // This ensures both delete and insert happen in a transaction
+        const itemsToInsert = items.map((item, idx) => ({ ...item, position: idx }))
+        const { error: itemsError } = await supabase.rpc('update_invoice_items', {
+          p_invoice_id: parseInt(invoiceId, 10),
+          p_items: itemsToInsert
+        })
         error = itemsError
       } else {
         error = updateError
