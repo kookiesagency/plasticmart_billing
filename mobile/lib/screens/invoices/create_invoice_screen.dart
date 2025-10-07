@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 import '../../models/party.dart';
 import '../../models/item.dart';
 import '../../models/item_party_price.dart';
+import '../../models/invoice.dart';
 import '../../models/invoice_item.dart';
 import '../../providers/party_provider.dart';
 import '../../providers/item_provider.dart';
@@ -15,7 +16,12 @@ import '../parties/add_edit_party_screen.dart';
 import '../items/add_edit_item_screen.dart';
 
 class CreateInvoiceScreen extends StatefulWidget {
-  const CreateInvoiceScreen({Key? key}) : super(key: key);
+  final int? invoiceId; // If provided, screen is in edit mode
+
+  const CreateInvoiceScreen({
+    Key? key,
+    this.invoiceId,
+  }) : super(key: key);
 
   @override
   State<CreateInvoiceScreen> createState() => _CreateInvoiceScreenState();
@@ -76,6 +82,49 @@ class _CreateInvoiceScreenState extends State<CreateInvoiceScreen> {
       itemProvider.fetchItems(),
       unitProvider.fetchUnits(),
     ]);
+
+    // Load invoice data if in edit mode
+    if (widget.invoiceId != null) {
+      await _loadInvoiceData();
+    }
+  }
+
+  Future<void> _loadInvoiceData() async {
+    final invoiceProvider = Provider.of<InvoiceProvider>(context, listen: false);
+    final partyProvider = Provider.of<PartyProvider>(context, listen: false);
+
+    final result = await invoiceProvider.getInvoiceWithItems(widget.invoiceId!);
+
+    if (result != null && mounted) {
+      final invoice = result['invoice'] as Invoice;
+      final items = result['items'] as List<InvoiceItem>;
+
+      setState(() {
+        // Set selected party
+        _selectedParty = partyProvider.parties.firstWhere(
+          (p) => p.id == invoice.partyId,
+          orElse: () => Party(
+            id: invoice.partyId,
+            name: invoice.partyName ?? 'Unknown',
+            bundleRate: result['party_bundle_rate'] as double?,
+          ),
+        );
+
+        // Set invoice date
+        _selectedDate = DateTime.parse(invoice.invoiceDate);
+
+        // Set invoice items
+        _invoiceItems.clear();
+        _invoiceItems.addAll(items);
+
+        // Set bundle data
+        _bundleRate = invoice.bundleRate ?? 150.0;
+        _bundleQuantity = invoice.bundleQuantity ?? 1.0;
+        _bundleCharge = invoice.bundleCharge;
+        _bundleQtyController.text = _formatNumber(_bundleQuantity);
+        _bundleRateController.text = _formatNumber(_bundleRate);
+      });
+    }
   }
 
   Future<void> _loadBundleDefaults() async {
@@ -136,37 +185,79 @@ class _CreateInvoiceScreenState extends State<CreateInvoiceScreen> {
     setState(() => _isLoading = true);
 
     final invoiceProvider = Provider.of<InvoiceProvider>(context, listen: false);
-    final result = await invoiceProvider.createInvoice(
-      partyId: _selectedParty!.id!,
-      partyName: _selectedParty!.name,
-      invoiceDate: DateFormat('yyyy-MM-dd').format(_selectedDate),
-      items: _invoiceItems,
-      bundleCharge: _bundleCharge,
-      bundleRate: _bundleRate,
-      bundleQuantity: _bundleQuantity?.toInt(),
-    );
+
+    // Determine if we're creating or updating
+    final bool isEditMode = widget.invoiceId != null;
+
+    dynamic result;
+    if (isEditMode) {
+      // Update existing invoice
+      result = await invoiceProvider.updateInvoice(
+        id: widget.invoiceId!,
+        partyId: _selectedParty!.id!,
+        partyName: _selectedParty!.name,
+        invoiceDate: DateFormat('yyyy-MM-dd').format(_selectedDate),
+        items: _invoiceItems,
+        bundleCharge: _bundleCharge,
+        bundleRate: _bundleRate,
+        bundleQuantity: _bundleQuantity.toInt(),
+      );
+    } else {
+      // Create new invoice
+      result = await invoiceProvider.createInvoice(
+        partyId: _selectedParty!.id!,
+        partyName: _selectedParty!.name,
+        invoiceDate: DateFormat('yyyy-MM-dd').format(_selectedDate),
+        items: _invoiceItems,
+        bundleCharge: _bundleCharge,
+        bundleRate: _bundleRate,
+        bundleQuantity: _bundleQuantity.toInt(),
+      );
+    }
 
     setState(() => _isLoading = false);
 
     if (!mounted) return;
 
-    if (result?['success'] == true) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Bill ${result?['invoice_number'] ?? ''} created successfully'),
-          backgroundColor: Colors.green,
-          behavior: SnackBarBehavior.floating,
-        ),
-      );
-      Navigator.pop(context, true);
+    // Handle result based on mode
+    if (isEditMode) {
+      if (result == true) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Bill updated successfully'),
+            backgroundColor: Colors.green,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+        Navigator.pop(context, true);
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Failed to update bill'),
+            backgroundColor: Colors.red,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Failed to create bill: ${result?['error'] ?? 'Unknown error'}'),
-          backgroundColor: Colors.red,
-          behavior: SnackBarBehavior.floating,
-        ),
-      );
+      if (result?['success'] == true) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Bill ${result?['invoice_number'] ?? ''} created successfully'),
+            backgroundColor: Colors.green,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+        Navigator.pop(context, true);
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to create bill: ${result?['error'] ?? 'Unknown error'}'),
+            backgroundColor: Colors.red,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
     }
   }
 
@@ -179,7 +270,7 @@ class _CreateInvoiceScreenState extends State<CreateInvoiceScreen> {
       behavior: HitTestBehavior.opaque,
       child: Scaffold(
         appBar: AppBar(
-          title: const Text('Create Bill'),
+          title: Text(widget.invoiceId != null ? 'Edit Bill' : 'Create Bill'),
           backgroundColor: Colors.white,
           elevation: 0,
         ),

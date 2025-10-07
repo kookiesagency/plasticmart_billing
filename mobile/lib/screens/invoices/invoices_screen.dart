@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 import '../../models/invoice.dart';
 import '../../providers/invoice_provider.dart';
 import 'create_invoice_screen.dart';
+import 'view_invoice_screen.dart';
 
 class InvoicesScreen extends StatefulWidget {
   const InvoicesScreen({Key? key}) : super(key: key);
@@ -301,8 +302,16 @@ class _InvoicesScreenState extends State<InvoicesScreen> with SingleTickerProvid
                                 ),
                               ),
                               child: InkWell(
-                                onTap: _showDeleted ? null : () {
-                                  // TODO: Navigate to invoice details
+                                onTap: _showDeleted ? null : () async {
+                                  final result = await Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => ViewInvoiceScreen(
+                                        invoiceId: invoice.id!,
+                                      ),
+                                    ),
+                                  );
+                                  if (result == true) _loadData();
                                 },
                                 borderRadius: BorderRadius.circular(16),
                                 child: Padding(
