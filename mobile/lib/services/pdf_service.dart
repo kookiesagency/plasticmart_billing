@@ -21,7 +21,7 @@ class PdfService {
       0,
       (sum, item) => sum + (item.quantity * item.rate),
     );
-    final bundleCharge = invoice.bundleCharge != null ? invoice.bundleCharge! : 0;
+    final bundleCharge = invoice.bundleCharge != null ? invoice.bundleCharge!.toDouble() : 0.0;
     final totalAmount = subTotal + bundleCharge;
 
     pdf.addPage(
