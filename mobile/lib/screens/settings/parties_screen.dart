@@ -49,7 +49,7 @@ class _PartiesScreenState extends State<PartiesScreen> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        backgroundColor: const Color(0xFFF5F5F5),
+        backgroundColor: Colors.white,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         title: Text(party == null ? 'Add Party' : 'Edit Party'),
         content: SingleChildScrollView(
@@ -196,7 +196,7 @@ class _PartiesScreenState extends State<PartiesScreen> {
     final confirm = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        backgroundColor: const Color(0xFFF5F5F5),
+        backgroundColor: Colors.white,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         icon: const Icon(Icons.warning_amber_rounded, size: 48, color: Colors.orange),
         title: const Text('Delete Party'),

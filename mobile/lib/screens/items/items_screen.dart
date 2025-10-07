@@ -74,7 +74,7 @@ class _ItemsScreenState extends State<ItemsScreen> with SingleTickerProviderStat
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        backgroundColor: const Color(0xFFF5F5F5),
+        backgroundColor: Colors.white,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         title: const Text('Delete Item'),
         content: const Text('Are you sure you want to delete this item?'),
@@ -280,7 +280,7 @@ class _ItemsScreenState extends State<ItemsScreen> with SingleTickerProviderStat
                                   return await showDialog<bool>(
                                     context: context,
                                     builder: (context) => AlertDialog(
-                                      backgroundColor: const Color(0xFFF5F5F5),
+                                      backgroundColor: Colors.white,
                                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                                       title: const Text('Delete Item'),
                                       content: const Text('Are you sure you want to delete this item?'),

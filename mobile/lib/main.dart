@@ -42,6 +42,8 @@ class MyApp extends StatelessWidget {
           ),
           scaffoldBackgroundColor: Colors.white,
           useMaterial3: true,
+          splashColor: Colors.grey.shade100,
+          highlightColor: Colors.grey.shade50,
           appBarTheme: const AppBarTheme(
             backgroundColor: Colors.white,
             elevation: 0,

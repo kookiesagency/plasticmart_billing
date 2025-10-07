@@ -15,7 +15,7 @@ class ViewItemScreen extends StatelessWidget {
     final textTheme = Theme.of(context).textTheme;
 
     return Scaffold(
-      backgroundColor: Colors.grey.shade50,
+      backgroundColor: Colors.white,
       appBar: AppBar(
         title: const Text('Item Details'),
       ),
@@ -584,7 +584,7 @@ class ViewItemScreen extends StatelessWidget {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        backgroundColor: const Color(0xFFF5F5F5),
+        backgroundColor: Colors.white,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         title: const Text('Delete Item'),
         content: Text('Are you sure you want to delete "${item.name}"?'),

@@ -62,7 +62,7 @@ class _UnitsScreenState extends State<UnitsScreen> with SingleTickerProviderStat
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        backgroundColor: const Color(0xFFF5F5F5),
+        backgroundColor: Colors.white,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         title: Text(unit == null ? 'Add Unit' : 'Edit Unit'),
         content: Form(
@@ -269,7 +269,7 @@ class _UnitsScreenState extends State<UnitsScreen> with SingleTickerProviderStat
                                 return await showDialog<bool>(
                                   context: context,
                                   builder: (context) => AlertDialog(
-                                    backgroundColor: const Color(0xFFF5F5F5),
+                                    backgroundColor: Colors.white,
                                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                                     title: const Text('Delete Unit'),
                                     content: const Text('Are you sure you want to delete this unit?'),

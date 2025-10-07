@@ -112,7 +112,7 @@ class _PartiesScreenState extends State<PartiesScreen> with SingleTickerProvider
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        backgroundColor: const Color(0xFFF5F5F5),
+        backgroundColor: Colors.white,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         title: const Text('Permanently Delete Party'),
         content: const Text('This action is IRREVERSIBLE. This will permanently delete the party and all associated data. Are you sure?'),
@@ -271,7 +271,7 @@ class _PartiesScreenState extends State<PartiesScreen> with SingleTickerProvider
                                 return await showDialog<bool>(
                                   context: context,
                                   builder: (context) => AlertDialog(
-                                    backgroundColor: const Color(0xFFF5F5F5),
+                                    backgroundColor: Colors.white,
                                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                                     title: const Text('Delete Party'),
                                     content: const Text('Are you sure you want to delete this party?'),

@@ -335,7 +335,9 @@ class _CreateInvoiceScreenState extends State<CreateInvoiceScreen> {
                   style: FilledButton.styleFrom(
                     padding: const EdgeInsets.symmetric(vertical: 16),
                   ),
-                  child: Text(_currentStep == 2 ? 'Create Bill' : 'Continue'),
+                  child: Text(_currentStep == 2
+                    ? (widget.invoiceId != null ? 'Update Bill' : 'Create Bill')
+                    : 'Continue'),
                 ),
                 if (_currentStep > 0) ...[
                   const SizedBox(height: 12),
@@ -978,7 +980,7 @@ class _CreateInvoiceScreenState extends State<CreateInvoiceScreen> {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      backgroundColor: const Color(0xFFF5F5F5),
+      backgroundColor: Colors.white,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(12)),
       ),
@@ -1148,7 +1150,7 @@ class _CreateInvoiceScreenState extends State<CreateInvoiceScreen> {
         return StatefulBuilder(
           builder: (context, setDialogState) {
             return Dialog(
-              backgroundColor: const Color(0xFFF5F5F5),
+              backgroundColor: Colors.white,
               elevation: 0,
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
               child: Padding(
@@ -1336,7 +1338,7 @@ class _CreateInvoiceScreenState extends State<CreateInvoiceScreen> {
         return StatefulBuilder(
           builder: (context, setDialogState) {
             return Dialog(
-              backgroundColor: const Color(0xFFF5F5F5),
+              backgroundColor: Colors.white,
               elevation: 0,
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
               child: Padding(

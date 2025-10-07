@@ -105,7 +105,7 @@ class _AddEditItemScreenState extends State<AddEditItemScreen> {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      backgroundColor: const Color(0xFFF5F5F5),
+      backgroundColor: Colors.white,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(12)),
       ),
@@ -193,7 +193,7 @@ class _AddEditItemScreenState extends State<AddEditItemScreen> {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      backgroundColor: const Color(0xFFF5F5F5),
+      backgroundColor: Colors.white,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(12)),
       ),
@@ -297,7 +297,7 @@ class _AddEditItemScreenState extends State<AddEditItemScreen> {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      backgroundColor: const Color(0xFFF5F5F5),
+      backgroundColor: Colors.white,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(12)),
       ),
@@ -679,7 +679,7 @@ class _AddEditItemScreenState extends State<AddEditItemScreen> {
                     return await showDialog<bool>(
                       context: context,
                       builder: (context) => AlertDialog(
-                        backgroundColor: const Color(0xFFF5F5F5),
+                        backgroundColor: Colors.white,
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                         title: const Text('Remove Party Price'),
                         content: Text('Remove price for ${partyPrice.party.name}?'),

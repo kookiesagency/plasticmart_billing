@@ -60,58 +60,84 @@ This document outlines the development plan for the PlasticMart Mobile applicati
 - [x] Create home screen with adaptive tabs
 - [x] Set up project folder structure
 
-### **1.2 Authentication & Settings** ⏳ IN PROGRESS
-- [x] **App Settings:** Mode toggle (Basic/Advanced) implemented
-- [ ] **Simple Login:** Basic authentication flow with Supabase
-- [ ] **User Preferences:** Theme, language, offline settings
-- [ ] **Data Sync Settings:** Auto-sync intervals, offline behavior
-- [ ] **Unit Management:** Add/edit/delete measurement units (KG, PCS, DZ, etc.)
-  - Simple list with add/edit forms
-  - Default unit selection
-  - Soft delete with restore
-- [ ] **Default Bundle Rate:** Configure global bundle rate setting
-- [ ] **App Configuration:**
-  - Company name and details
-  - Invoice number prefix/format
-  - Default currency settings
-- [ ] **Security Settings:** Auto-logout, PIN protection (optional)
+### **1.2 Authentication & Settings** ✅ COMPLETE
+- [x] **App Settings:** Mode toggle (Basic/Advanced) with persistent storage
+- [x] **Simple Login/Authentication:**
+  - Splash screen with auto-login check
+  - Login screen with email/password
+  - Supabase authentication integration
+  - Session persistence
+- [x] **Settings Screen:**
+  - Consistent card-based UI design
+  - App mode toggle (Basic/Advanced)
+  - Default bundle rate configuration with dialog
+  - Units management access
+  - Clean, modern interface with proper spacing
+- [x] **Unit Management:**
+  - Add/edit/delete measurement units (KG, PCS, DOZ, etc.)
+  - Simple list with search functionality
+  - Active/Deleted tabs
+  - Soft delete with restore capability
+  - Swipe gestures (edit/delete)
+  - Duplicate name validation
 
-### **1.3 Party Management (Basic Mode)**
-- [ ] **Add New Party:**
-  - Simple form: Name, Phone Number, Bundle Rate (optional)
-  - Contact picker integration (import from phone)
+### **1.3 Party Management (Basic Mode)** ✅ COMPLETE
+- [x] **Add New Party:**
+  - Simple form: Name, Bundle Rate, Opening Balance (optional)
   - Large, touch-friendly buttons
-- [ ] **Party List:**
+  - Duplicate name validation
+- [x] **Party List:**
   - Card-based layout with search
-  - Swipe actions: Edit, Delete
+  - Swipe actions: Edit (right swipe), Delete (left swipe)
   - Pull-to-refresh functionality
-- [ ] **Edit Party:** Same simple form as add
-- [ ] **Delete Party:** Soft delete with restore option (swipe to restore)
-- [ ] **Permanent Delete:** Available in advanced mode only
+  - Invoice count badge ("X Bills") - bottom right
+  - Bundle rate display
+  - Created date display
+  - NEW badge for parties created within 24 hours
+  - Sort by newest first (created_at desc)
+  - Active/Deleted tabs
+- [x] **Edit Party:** Same simple form as add
+- [x] **Delete Party:** Soft delete with restore option
+- [x] **Permanent Delete:** Available in deleted tab with confirmation
+- [x] **Weekly Mini Report:** Tap party to view weekly invoice summary
+  - Previous outstanding balance
+  - Current/last week's invoices list
+  - Week total and grand total
+  - Mobile-optimized layout
 
-### **1.4 Item Management (Basic Mode)**
-- [ ] **Add New Item:**
-  - Simple form: Name, Rate, Unit, Purchase Rate (optional)
-  - Visual unit picker (KG, PCS, DZ, etc.)
-  - Photo support for items (optional)
-  - **Party-Specific Pricing:** Simple add/edit interface
-- [ ] **Items List:**
+### **1.4 Item Management (Basic Mode)** ✅ COMPLETE
+- [x] **Add New Item:**
+  - Simple form: Name, Default Rate, Unit, Purchase Rate (optional)
+  - Visual unit picker with search
+  - Purchase Party selector with search
+  - **Party-Specific Pricing:** Simple add/edit interface with dynamic forms
+  - Duplicate name validation (normalized: case-insensitive, ignores spaces)
+- [x] **Items List:**
   - Card-based layout with search
-  - Show: Name, Rate, Unit, Special Prices Count
-  - Swipe actions: Edit, Delete, Manage Prices
+  - Show: Name, Rate (PCS/DOZ conversion), Purchase Rate, Party-specific prices count
+  - Swipe actions: Edit (right swipe), Delete (left swipe)
   - Pull-to-refresh functionality
-- [ ] **Edit Item:** Same simple form as add with pricing management
-- [ ] **Party-Specific Pricing Management:**
-  - **Add Special Price:** Select party + enter rate
+  - Active/Deleted tabs
+  - Sort by created date (newest first)
+- [x] **View Item Details:**
+  - Header with gradient background
+  - Pricing section (PCS Rate, DOZ Rate, Purchase Rate)
+  - Purchase section (Rate, Party From)
+  - Party-specific prices list with full details
+  - Additional info (Unit, Created On)
+  - Actions (Edit, Delete buttons)
+- [x] **Edit Item:** Same form as add with all pricing management
+- [x] **Party-Specific Pricing Management:**
+  - **Add Special Price:** Select party + enter rate dynamically
   - **Edit Special Price:** Update existing party rates
-  - **Remove Special Price:** Delete party-specific rates
-  - **Visual Indicator:** Show items with special pricing
-  - **Quick Access:** Swipe action for price management
-- [ ] **Delete Item:** Soft delete with restore option
-- [ ] **Permanent Delete:** Available in advanced mode only
+  - **Remove Special Price:** Delete party-specific rates with confirmation
+  - **Visual Display:** Show party name and rate in view screen
+- [x] **Delete Item:** Soft delete with restore option
+- [x] **Permanent Delete:** Available in deleted tab with confirmation
+- [x] **Unit Conversion:** Auto-convert between PCS and DOZ (1 DOZ = 12 PCS)
 
-### **1.5 Invoice Creation (Basic Mode)**
-- [ ] **Step-by-Step Invoice Wizard:**
+### **1.5 Invoice Creation (Basic Mode)** ✅ COMPLETE
+- [x] **Step-by-Step Invoice Wizard:**
   - **Step 1:** Select Party
     - Search existing parties
     - Quick "Add New Party" button
@@ -124,46 +150,58 @@ This document outlines the development plan for the PlasticMart Mobile applicati
     - Show calculated totals
     - Bundle charge settings
     - Save invoice
-- [ ] **Real-time Calculations:** Sub-total, bundle charge, grand total
-- [ ] **Draft Invoices:** Save incomplete invoices
-- [ ] **Voice Input:** For quantities and rates (optional)
+- [x] **Real-time Calculations:** Sub-total, bundle charge, grand total
+- [ ] **Draft Invoices:** Save incomplete invoices (PENDING - Will implement on web first)
+- [ ] **Voice Input:** For quantities and rates (optional - SKIPPED)
 
-### **1.6 Party-Specific Pricing UX (Basic Mode)**
-- [ ] **Simple Pricing Interface:**
-  - **From Item Screen:** Tap "Manage Prices" button or swipe action
-  - **Visual Indicators:** Badge showing "X special prices" on item cards
+### **1.6 Party-Specific Pricing UX (Basic Mode)** ✅ COMPLETE
+- [x] **Simple Pricing Interface:**
+  - **From Item Screen:** Manage prices in add/edit item screen
+  - **Visual Indicators:** Party-specific prices shown in item view screen
   - **Add Special Price Flow:**
-    - Step 1: Select party from searchable list
-    - Step 2: Enter special rate with number pad
-    - Step 3: Save with confirmation
-  - **Price List View:** Simple list showing Party Name → Special Rate
-  - **Quick Actions:** Edit or delete prices with swipe gestures
-- [ ] **Automatic Rate Application:**
+    - Select party from searchable list
+    - Enter special rate dynamically
+    - Save with confirmation
+  - **Price List View:** Shows Party Name → Special Rate in item detail view
+  - **Quick Actions:** Edit or delete prices with confirmation dialogs
+- [x] **Automatic Rate Application:**
   - When creating invoices, special rates auto-apply
-  - Visual indicator showing "Special Rate Applied"
   - Fallback to default rate if no special price exists
-- [ ] **Mobile-Optimized UI:**
+- [x] **Mobile-Optimized UI:**
   - Large touch targets for easy interaction
   - Clear visual hierarchy (Default Rate vs Special Rates)
-  - Quick search and filter for parties
+  - Search and filter for parties when adding special prices
   - Confirmation dialogs for price changes
 
-### **1.7 Invoice Management (Basic Mode)**
-- [ ] **Invoice List:**
+### **1.7 Invoice Management (Basic Mode)** ✅ MOSTLY COMPLETE
+- [x] **Invoice List:**
   - Card-based layout showing: Party, Date, Total, Status
-  - Search and filter by party/date/amount
-  - Status indicators (Paid/Pending/Partial)
+  - Search and filter by party name/invoice number
+  - Status indicators (Paid/Pending/Partial) with color coding
   - Pull-to-refresh functionality
-  - Infinite scroll for large datasets
+  - Active/Deleted tabs
+  - OFFLINE badge display
+  - Swipe-to-delete with confirmation
+- [x] **View Invoice Details Screen:** (`view_invoice_screen.dart`)
+  - Party information with status badge
+  - Invoice number and date
+  - Created date with timestamp
+  - Items list with quantities, rates, and totals
+  - Sub-total (calculated from items)
+  - Bundle quantity display
+  - Bundle charge display
+  - Grand total calculation
+  - Clean dropdown menu with Edit/Delete actions
 - [ ] **Invoice Actions:**
-  - View detailed invoice screen
-  - Download PDF (mobile-optimized)
-  - Share via WhatsApp/Email/SMS
-  - Print integration (if available)
-- [ ] **Invoice Status Updates:** Mark as paid/pending/partial
-- [ ] **Edit Invoice:** Modify existing invoices (Basic: limited fields)
-- [ ] **Delete Invoice:** Soft delete with restore option
-- [ ] **Duplicate Invoice:** Create copy of existing invoice
+  - [x] View detailed invoice screen ✅
+  - [ ] Download PDF (mobile-optimized) - PENDING (Step 8)
+  - [ ] Share via WhatsApp/Email/SMS - PENDING (Step 8)
+  - [ ] Print integration (if available) - PENDING (Step 8)
+- [ ] **Invoice Status Updates:** Mark as paid/pending/partial - PENDING (Step 6 - via payment recording)
+- [x] **Edit Invoice:** Modify existing invoices (all fields editable)
+- [x] **Delete Invoice:** Soft delete with restore option
+- [x] **Restore Invoice:** From deleted tab
+- [x] **Permanent Delete:** Irreversible deletion with confirmation
 
 ### **1.8 Payment Management (Basic Mode)**
 - [ ] **Record Payments:**

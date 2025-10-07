@@ -19,21 +19,21 @@ This document provides a step-by-step implementation order for building the Plas
 
 ## 🚧 **Phase 1: Basic Mode MVP - Implementation Order**
 
-### **Step 0: Authentication Foundation** 🔐
+### ✅ **Step 0: Authentication Foundation** 🔐 - COMPLETED
 **Why first?** Essential security layer - users need to login before accessing the app.
 
-#### **Step 0.1: Splash Screen**
+#### ✅ **Step 0.1: Splash Screen** - COMPLETED
 **What to build:**
-- [ ] Create `screens/auth/splash_screen.dart`
-- [ ] Design splash screen with:
-  - [ ] PlasticMart logo/branding
-  - [ ] App name
-  - [ ] Loading indicator
-  - [ ] Version number (optional)
-- [ ] Auto-navigate after 2-3 seconds:
-  - [ ] If user is logged in → Navigate to HomeScreen
-  - [ ] If not logged in → Navigate to LoginScreen
-- [ ] Check authentication state using Supabase
+- [x] Create `screens/auth/splash_screen.dart`
+- [x] Design splash screen with:
+  - [x] PlasticMart logo/branding
+  - [x] App name
+  - [x] Loading indicator
+  - [x] Version number (optional)
+- [x] Auto-navigate after 2-3 seconds:
+  - [x] If user is logged in → Navigate to HomeScreen
+  - [x] If not logged in → Navigate to LoginScreen
+- [x] Check authentication state using Supabase
 
 **Dependencies:** None (uses existing Supabase config)
 
@@ -41,24 +41,24 @@ This document provides a step-by-step implementation order for building the Plas
 
 ---
 
-#### **Step 0.2: Login Screen**
+#### ✅ **Step 0.2: Login Screen** - COMPLETED
 **What to build:**
-- [ ] Create `screens/auth/login_screen.dart`
-- [ ] Create `providers/auth_provider.dart` for authentication state
-- [ ] Design simple login form:
-  - [ ] Email input field
-  - [ ] Password input field
-  - [ ] "Login" button
-  - [ ] Show/hide password toggle
-  - [ ] Error message display
-  - [ ] Loading state during authentication
-- [ ] Implement Supabase email/password authentication
-- [ ] Store auth session persistently
-- [ ] Navigate to HomeScreen on successful login
-- [ ] Handle login errors gracefully
+- [x] Create `screens/auth/login_screen.dart`
+- [x] Create `providers/auth_provider.dart` for authentication state
+- [x] Design simple login form:
+  - [x] Email input field
+  - [x] Password input field
+  - [x] "Login" button
+  - [x] Show/hide password toggle
+  - [x] Error message display
+  - [x] Loading state during authentication
+- [x] Implement Supabase email/password authentication
+- [x] Store auth session persistently
+- [x] Navigate to HomeScreen on successful login
+- [x] Handle login errors gracefully
 
 **Optional features:**
-- [ ] "Forgot Password" link
+- [x] "Forgot Password" link
 - [ ] "Remember Me" checkbox
 - [ ] Sign up option (if needed)
 
@@ -68,19 +68,19 @@ This document provides a step-by-step implementation order for building the Plas
 
 ---
 
-### **Step 1: Unit Management (Settings)** 📦
+### ✅ **Step 1: Unit Management (Settings)** 📦 - COMPLETED
 **Why next?** Units are foundational - needed for items and invoices.
 
 **What to build:**
-- [ ] Create `models/unit.dart` model
-- [ ] Create `services/unit_service.dart` for Supabase operations
-- [ ] Create `screens/settings/units_screen.dart`
-- [ ] Add "Units" option in Settings screen
-- [ ] Build Units list with card UI
-- [ ] Add dialog for creating new unit
-- [ ] Edit unit functionality
-- [ ] Soft delete units (mark as deleted)
-- [ ] Set default unit
+- [x] Create `models/unit.dart` model
+- [x] Create `services/unit_service.dart` for Supabase operations
+- [x] Create `screens/settings/units_screen.dart`
+- [x] Add "Units" option in Settings screen
+- [x] Build Units list with card UI
+- [x] Add dialog for creating new unit
+- [x] Edit unit functionality
+- [x] Soft delete units (mark as deleted)
+- [x] Set default unit
 
 **Database:** Uses existing `units` table
 
@@ -88,25 +88,25 @@ This document provides a step-by-step implementation order for building the Plas
 
 ---
 
-### **Step 2: Party Management (Basic Mode)** 👥
+### ✅ **Step 2: Party Management (Basic Mode)** 👥 - COMPLETED
 **Why second?** Parties are needed before creating invoices.
 
 **What to build:**
-- [ ] Create `models/party.dart` model
-- [ ] Create `services/party_service.dart` for Supabase operations
-- [ ] Create `providers/party_provider.dart` for state management
-- [ ] Build Party List screen (`screens/parties/parties_screen.dart`)
-  - [ ] Card-based layout
-  - [ ] Search functionality
-  - [ ] Pull-to-refresh
-- [ ] Create Add Party dialog/screen
-  - [ ] Name field (required)
-  - [ ] Phone number field (optional)
-  - [ ] Bundle rate field (optional)
-  - [ ] Opening balance field (optional)
-- [ ] Edit party functionality
-- [ ] Soft delete party (swipe to delete)
-- [ ] Restore deleted party (swipe to restore)
+- [x] Create `models/party.dart` model
+- [x] Create `services/party_service.dart` for Supabase operations
+- [x] Create `providers/party_provider.dart` for state management
+- [x] Build Party List screen (`screens/parties/parties_screen.dart`)
+  - [x] Card-based layout
+  - [x] Search functionality
+  - [x] Pull-to-refresh
+- [x] Create Add Party dialog/screen
+  - [x] Name field (required)
+  - [x] Phone number field (optional)
+  - [x] Bundle rate field (optional)
+  - [x] Opening balance field (optional)
+- [x] Edit party functionality
+- [x] Soft delete party (swipe to delete)
+- [x] Restore deleted party (swipe to restore)
 
 **Database:** Uses existing `parties` table
 
@@ -114,31 +114,31 @@ This document provides a step-by-step implementation order for building the Plas
 
 ---
 
-### **Step 3: Item Management (Basic Mode)** 📦
+### ✅ **Step 3: Item Management (Basic Mode)** 📦 - COMPLETED
 **Why third?** Items are needed for creating invoice line items.
 
 **What to build:**
-- [ ] Create `models/item.dart` model
-- [ ] Create `services/item_service.dart` for Supabase operations
-- [ ] Create `providers/item_provider.dart` for state management
-- [ ] Build Item List screen (`screens/items/items_screen.dart`)
-  - [ ] Card-based layout showing name, rate, unit
-  - [ ] Search functionality
-  - [ ] Pull-to-refresh
-- [ ] Create Add Item dialog/screen
-  - [ ] Name field (required)
-  - [ ] Rate field (required)
-  - [ ] Unit dropdown from units list (required)
-  - [ ] Purchase rate field (optional)
-  - [ ] Purchase party dropdown (optional)
-- [ ] Edit item functionality
-- [ ] Soft delete item (swipe to delete)
-- [ ] **Party-Specific Pricing** (Simple Version)
-  - [ ] "Manage Prices" button on item card
-  - [ ] List of party-specific prices
-  - [ ] Add special price: select party + enter rate
-  - [ ] Edit special price
-  - [ ] Remove special price
+- [x] Create `models/item.dart` model
+- [x] Create `services/item_service.dart` for Supabase operations
+- [x] Create `providers/item_provider.dart` for state management
+- [x] Build Item List screen (`screens/items/items_screen.dart`)
+  - [x] Card-based layout showing name, rate, unit
+  - [x] Search functionality
+  - [x] Pull-to-refresh
+- [x] Create Add Item dialog/screen
+  - [x] Name field (required)
+  - [x] Rate field (required)
+  - [x] Unit dropdown from units list (required)
+  - [x] Purchase rate field (optional)
+  - [x] Purchase party dropdown (optional)
+- [x] Edit item functionality
+- [x] Soft delete item (swipe to delete)
+- [x] **Party-Specific Pricing** (Simple Version)
+  - [x] "Manage Prices" button on item card
+  - [x] List of party-specific prices
+  - [x] Add special price: select party + enter rate
+  - [x] Edit special price
+  - [x] Remove special price
 
 **Database:** Uses existing `items` and `party_item_prices` tables
 
@@ -146,49 +146,55 @@ This document provides a step-by-step implementation order for building the Plas
 
 ---
 
-### **Step 4: Invoice Creation (Basic Mode - Step-by-Step Wizard)** 📄
+### ✅ **Step 4: Invoice Creation (Basic Mode - Step-by-Step Wizard)** 📄 - COMPLETED
 **Why fourth?** Core feature that ties everything together.
 
 **What to build:**
-- [ ] Create `models/invoice.dart` and `models/invoice_item.dart` models
-- [ ] Create `services/invoice_service.dart` for Supabase operations
-- [ ] Create `providers/invoice_provider.dart` for state management
-- [ ] Build Create Invoice Wizard (`screens/invoices/create_invoice_screen.dart`)
+- [x] Create `models/invoice.dart` and `models/invoice_item.dart` models
+- [x] Create `services/invoice_service.dart` for Supabase operations
+- [x] Create `providers/invoice_provider.dart` for state management
+- [x] Build Create Invoice Wizard (`screens/invoices/create_invoice_screen.dart`)
 
 **Step 1: Select Party**
-- [ ] Searchable party list
-- [ ] Quick "Add New Party" button
-- [ ] Display selected party info (name, bundle rate)
+- [x] Searchable party list
+- [x] Quick "Add New Party" button
+- [x] Display selected party info (name, bundle rate)
 
 **Step 2: Add Items**
-- [ ] Search and select items
-- [ ] For each item:
-  - [ ] Quantity input with number pad
-  - [ ] Unit dropdown (defaults to item's unit)
-  - [ ] Rate (auto-populated from party-specific price or default)
-  - [ ] Editable rate field
-  - [ ] Amount calculation (Qty × Rate)
-- [ ] Quick "Add New Item" button
-- [ ] Remove item button
-- [ ] Smart unit conversion when changing units
+- [x] Search and select items
+- [x] For each item:
+  - [x] Quantity input with number pad
+  - [x] Unit dropdown (defaults to item's unit)
+  - [x] Rate (auto-populated from party-specific price or default)
+  - [x] Editable rate field
+  - [x] Amount calculation (Qty × Rate)
+- [x] Quick "Add New Item" button
+- [x] Remove item button
+- [x] Smart unit conversion when changing units
 
 **Step 3: Review & Confirm**
-- [ ] Show invoice summary:
-  - [ ] Party name
-  - [ ] Invoice date (editable)
-  - [ ] List of items with quantities and amounts
-  - [ ] Sub-total calculation
-  - [ ] Bundle charge (from party's bundle rate)
-  - [ ] Grand total (Sub-total + Bundle charge)
-- [ ] Payment status dropdown (Paid/Pending/Partial)
-- [ ] Amount received field (conditional on payment status)
-- [ ] Save invoice button
+- [x] Show invoice summary:
+  - [x] Party name
+  - [x] Invoice date (editable)
+  - [x] List of items with quantities and amounts
+  - [x] Sub-total calculation
+  - [x] Bundle charge (from party's bundle rate or default)
+  - [x] Grand total (Sub-total + Bundle charge)
+- [x] Payment status dropdown (Paid/Pending/Partial)
+- [x] Amount received field (conditional on payment status)
+- [x] Save invoice button
 
 **Features:**
-- [ ] Real-time calculations for totals
-- [ ] Draft invoice saving (in-progress invoices)
-- [ ] Auto-generate invoice number (YYYY-YY/XXX format)
-- [ ] Mark invoice as offline if needed
+- [x] Real-time calculations for totals
+- [x] Smart number formatting (integers without decimals)
+- [ ] Draft invoice saving (in-progress invoices) - PENDING (Will implement on web first)
+- [x] Auto-generate invoice number (YYYY-YY/XXX format)
+- [ ] Mark invoice as offline if needed - PENDING
+
+**Recent Improvements:**
+- [x] Fixed bundle rate loading from party-specific or default settings
+- [x] Added smart number formatting across all steps
+- [x] Improved bundle rate fallback logic (handles null and 0 values)
 
 **Database:** Uses `invoices`, `invoice_items`, and `payments` tables
 
@@ -196,41 +202,50 @@ This document provides a step-by-step implementation order for building the Plas
 
 ---
 
-### **Step 5: Invoice Management (Basic Mode)** 📋
+### ✅ **Step 5: Invoice Management (Basic Mode)** 📋 - MOSTLY COMPLETED
 **Why fifth?** Users need to view, edit, and manage created invoices.
 
 **What to build:**
-- [ ] Build Invoice List screen (update existing `screens/invoices/invoices_screen.dart`)
-  - [ ] Card-based layout showing:
-    - [ ] Invoice number
-    - [ ] Party name
-    - [ ] Invoice date
-    - [ ] Total amount
-    - [ ] Payment status badge (Paid/Pending/Partial)
-    - [ ] OFFLINE badge if applicable
-  - [ ] Search by party name or invoice number
-  - [ ] Filter by date range
-  - [ ] Filter by payment status
-  - [ ] Pull-to-refresh
-  - [ ] Infinite scroll for large datasets
-- [ ] View Invoice Details screen
-  - [ ] Party information
-  - [ ] Invoice number and date
-  - [ ] List of items with quantities and rates
-  - [ ] Sub-total, bundle charge, grand total
-  - [ ] Payment status and amount received
-  - [ ] Payment history
-- [ ] Invoice Actions
-  - [ ] Edit invoice (navigate to edit screen)
-  - [ ] Duplicate invoice (create copy with new date)
-  - [ ] Update payment status
-  - [ ] Record additional payments
-  - [ ] Soft delete invoice
-  - [ ] Restore deleted invoice
+- [x] Build Invoice List screen (updated existing `screens/invoices/invoices_screen.dart`)
+  - [x] Card-based layout showing:
+    - [x] Invoice number
+    - [x] Party name
+    - [x] Invoice date
+    - [x] Total amount
+    - [x] Payment status badge (Paid/Pending/Partial)
+    - [x] OFFLINE badge if applicable
+  - [x] Search by party name or invoice number
+  - [ ] Filter by date range (PENDING - Not critical for MVP)
+  - [ ] Filter by payment status (PENDING - Not critical for MVP)
+  - [x] Pull-to-refresh
+  - [x] Infinite scroll for large datasets (not needed yet)
+- [x] View Invoice Details screen (`screens/invoices/view_invoice_screen.dart` - NEW FILE)
+  - [x] Party information with status badge
+  - [x] Invoice number and date
+  - [x] Created date with timestamp
+  - [x] List of items with quantities and rates
+  - [x] Sub-total (calculated from items), bundle quantity, bundle charge, grand total
+  - [x] Payment status and amount received
+  - [ ] Payment history (PENDING - Step 6 feature)
+- [x] Invoice Actions
+  - [x] Edit invoice (navigate to edit screen)
+  - [x] ~~Duplicate invoice~~ (Removed - not needed, doesn't exist on web)
+  - [ ] Update payment status (PENDING - Step 6 feature)
+  - [ ] Record additional payments (PENDING - Step 6 feature)
+  - [x] Soft delete invoice
+  - [x] Restore deleted invoice
+  - [x] Permanently delete invoice (from deleted tab)
+- [x] Share and PDF buttons (UI placeholders added, implementation in Step 8)
+
+**UI Improvements:**
+- [x] Clean dropdown menu with white background, border, light shadow
+- [x] Light ripple effect on all clickable items (global theme)
+- [x] Smart number formatting (integers without decimals)
+- [x] Edit button shows "Update Bill" when editing, "Create Bill" when creating
 
 **Database:** Read/update operations on `invoices`, `invoice_items`, `payments`
 
-**Testing:** Can view, search, filter, edit, and manage invoices
+**Testing:** Can view, search, edit, delete, and manage invoices
 
 ---
 
@@ -391,11 +406,11 @@ After completing all 10 steps, users should be able to:
 
 ## 📌 **Current Status**
 
-**Completed:** Phase 1.1 (Project Setup)
-**Next Step:** Step 0.1 - Splash Screen
-**Then:** Step 0.2 - Login Screen
+**Completed:** Steps 0-5 (Authentication, Units, Parties, Items, Invoice Creation, Invoice Management)
+**Next Step:** Step 6 - Payment Management
 **Mode:** Basic Mode First
-**Awaiting:** Approval to start Step 0 (Authentication Foundation)
+**Pending from Step 5:** Date/status filters, payment features (will be covered in Step 6)
+**Awaiting:** User approval to proceed with Step 6
 
 ---
 
