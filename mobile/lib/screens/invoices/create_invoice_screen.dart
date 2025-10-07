@@ -30,10 +30,9 @@ class _CreateInvoiceScreenState extends State<CreateInvoiceScreen> {
   double _bundleRate = 150.0;
   double _bundleQuantity = 1.0;
   bool _isLoading = false;
-  bool _bundleDefaultsLoaded = false;
   String _partySearchQuery = '';
-  final _bundleQtyController = TextEditingController(text: '1');
-  final _bundleRateController = TextEditingController(text: '150');
+  final _bundleQtyController = TextEditingController();
+  final _bundleRateController = TextEditingController();
   final _appSettingsService = AppSettingsService();
 
   // Helper to format quantity without unnecessary decimals
@@ -42,6 +41,15 @@ class _CreateInvoiceScreenState extends State<CreateInvoiceScreen> {
       return quantity.toInt().toString();
     }
     return quantity.toString();
+  }
+
+  // Helper to format numbers (rates, totals) without unnecessary decimals
+  String _formatNumber(double number) {
+    if (number == number.toInt()) {
+      return number.toInt().toString();
+    }
+    // Show 2 decimal places if has decimals
+    return number.toStringAsFixed(2);
   }
 
   @override
@@ -73,14 +81,16 @@ class _CreateInvoiceScreenState extends State<CreateInvoiceScreen> {
   Future<void> _loadBundleDefaults() async {
     // Get bundle rate: party-specific > default from settings
     double defaultRate = await _appSettingsService.getDefaultBundleRate();
-    double bundleRate = _selectedParty?.bundleRate ?? defaultRate;
+    double? partyRate = _selectedParty?.bundleRate;
+    // Use party rate if it exists and is not 0, otherwise use default
+    double bundleRate = (partyRate != null && partyRate > 0) ? partyRate : defaultRate;
 
     setState(() {
       _bundleRate = bundleRate;
       _bundleQuantity = 1.0;
       _bundleCharge = bundleRate * 1.0;
       _bundleQtyController.text = '1';
-      _bundleRateController.text = bundleRate.toStringAsFixed(0);
+      _bundleRateController.text = _formatNumber(bundleRate);
     });
   }
 
@@ -176,7 +186,7 @@ class _CreateInvoiceScreenState extends State<CreateInvoiceScreen> {
         body: Stepper(
         type: StepperType.horizontal,
         currentStep: _currentStep,
-        onStepContinue: () {
+        onStepContinue: () async {
           if (_currentStep == 0 && _selectedParty == null) {
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(
@@ -198,6 +208,10 @@ class _CreateInvoiceScreenState extends State<CreateInvoiceScreen> {
             return;
           }
           if (_currentStep < 2) {
+            // Load bundle defaults when moving from step 1 to step 2
+            if (_currentStep == 1) {
+              await _loadBundleDefaults();
+            }
             setState(() => _currentStep++);
           } else {
             _saveInvoice();
@@ -432,10 +446,10 @@ class _CreateInvoiceScreenState extends State<CreateInvoiceScreen> {
                                           fontSize: 16,
                                         ),
                                       ),
-                                      if (party.bundleRate != null) ...[
+                                      if (party.bundleRate != null && party.bundleRate! > 0) ...[
                                         const SizedBox(height: 4),
                                         Text(
-                                          'Bundle Rate: ₹${party.bundleRate!.toStringAsFixed(2)}',
+                                          'Bundle Rate: ₹${_formatNumber(party.bundleRate!)}',
                                           style: TextStyle(
                                             fontSize: 13,
                                             color: Colors.grey.shade600,
@@ -578,7 +592,7 @@ class _CreateInvoiceScreenState extends State<CreateInvoiceScreen> {
                                         ),
                                         const SizedBox(height: 4),
                                         Text(
-                                          'Qty: ${_formatQuantity(invoiceItem.quantity)} ${invoiceItem.itemUnit ?? ''} × ₹${invoiceItem.rate.toStringAsFixed(2)}',
+                                          'Qty: ${_formatQuantity(invoiceItem.quantity)} ${invoiceItem.itemUnit ?? ''} × ₹${_formatNumber(invoiceItem.rate)}',
                                           style: TextStyle(
                                             color: Colors.grey.shade700,
                                             fontSize: 13,
@@ -591,7 +605,7 @@ class _CreateInvoiceScreenState extends State<CreateInvoiceScreen> {
                                     crossAxisAlignment: CrossAxisAlignment.end,
                                     children: [
                                       Text(
-                                        '₹${invoiceItem.total.toStringAsFixed(2)}',
+                                        '₹${_formatNumber(invoiceItem.total)}',
                                         style: TextStyle(
                                           fontWeight: FontWeight.bold,
                                           fontSize: 16,
@@ -710,7 +724,7 @@ class _CreateInvoiceScreenState extends State<CreateInvoiceScreen> {
                           ),
                           const SizedBox(height: 4),
                           Text(
-                            'Qty: ${_formatQuantity(invoiceItem.quantity)} ${invoiceItem.itemUnit ?? ''} × ₹${invoiceItem.rate.toStringAsFixed(2)}',
+                            'Qty: ${_formatQuantity(invoiceItem.quantity)} ${invoiceItem.itemUnit ?? ''} × ₹${_formatNumber(invoiceItem.rate)}',
                             style: TextStyle(
                               color: Colors.grey.shade700,
                               fontSize: 13,
@@ -720,7 +734,7 @@ class _CreateInvoiceScreenState extends State<CreateInvoiceScreen> {
                       ),
                     ),
                     Text(
-                      '₹${invoiceItem.total.toStringAsFixed(2)}',
+                      '₹${_formatNumber(invoiceItem.total)}',
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
                         fontSize: 16,
@@ -748,7 +762,7 @@ class _CreateInvoiceScreenState extends State<CreateInvoiceScreen> {
                 children: [
                   const Text('Sub-Total', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
                   Text(
-                    '₹${_subTotal.toStringAsFixed(2)}',
+                    '₹${_formatNumber(_subTotal)}',
                     style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
                   ),
                 ],
@@ -836,7 +850,7 @@ class _CreateInvoiceScreenState extends State<CreateInvoiceScreen> {
                 children: [
                   const Text('Total Bundle Charge', style: TextStyle(fontSize: 15)),
                   Text(
-                    '${_bundleCharge.toStringAsFixed(0)}',
+                    '₹${_formatNumber(_bundleCharge)}',
                     style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
                   ),
                 ],
@@ -850,7 +864,7 @@ class _CreateInvoiceScreenState extends State<CreateInvoiceScreen> {
                     style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                   ),
                   Text(
-                    '₹${_grandTotal.toStringAsFixed(2)}',
+                    '₹${_formatNumber(_grandTotal)}',
                     style: TextStyle(
                       fontSize: 20,
                       fontWeight: FontWeight.bold,
@@ -981,7 +995,7 @@ class _CreateInvoiceScreenState extends State<CreateInvoiceScreen> {
                                             ),
                                             const SizedBox(height: 4),
                                             Text(
-                                              'Rate: ₹${item.defaultRate.toStringAsFixed(2)}${item.unit?.name != null ? ' per ${item.unit!.name}' : ''}',
+                                              'Rate: ₹${_formatNumber(item.defaultRate)}${item.unit?.name != null ? ' per ${item.unit!.name}' : ''}',
                                               style: TextStyle(
                                                 fontSize: 13,
                                                 color: Colors.grey.shade600,
@@ -1032,7 +1046,7 @@ class _CreateInvoiceScreenState extends State<CreateInvoiceScreen> {
     final originalUnit = selectedUnit;
 
     final quantityController = TextEditingController();
-    final rateController = TextEditingController(text: rate.toStringAsFixed(2));
+    final rateController = TextEditingController(text: _formatNumber(rate));
 
     bool hasError = false;
     String errorMessage = '';
@@ -1116,7 +1130,7 @@ class _CreateInvoiceScreenState extends State<CreateInvoiceScreen> {
                                   // Convert rate from original unit to new unit
                                   final convertedRate = convertRate(originalRate, originalUnit, unit.name);
                                   rate = convertedRate;
-                                  rateController.text = convertedRate.toStringAsFixed(2);
+                                  rateController.text = _formatNumber(convertedRate);
                                 }
                                 setDialogState(() {
                                   selectedUnit = unit.name;
@@ -1223,7 +1237,7 @@ class _CreateInvoiceScreenState extends State<CreateInvoiceScreen> {
     final originalUnit = selectedUnit;
 
     final quantityController = TextEditingController(text: quantity.toString());
-    final rateController = TextEditingController(text: rate.toStringAsFixed(2));
+    final rateController = TextEditingController(text: _formatNumber(rate));
 
     showDialog(
       context: context,
@@ -1286,7 +1300,7 @@ class _CreateInvoiceScreenState extends State<CreateInvoiceScreen> {
                                   // Convert rate from original unit to new unit
                                   final convertedRate = convertRate(originalRate, originalUnit, unit.name);
                                   rate = convertedRate;
-                                  rateController.text = convertedRate.toStringAsFixed(2);
+                                  rateController.text = _formatNumber(convertedRate);
                                 }
                                 setDialogState(() {
                                   selectedUnit = unit.name;
