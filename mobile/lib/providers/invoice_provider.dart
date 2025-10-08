@@ -466,7 +466,6 @@ class InvoiceProvider with ChangeNotifier {
         'bundle_charge': 0, // No bundle for offline bill
         'status': 'pending',
         'is_offline': true, // Mark as offline bill
-        if (notes != null && notes.isNotEmpty) 'notes': notes,
       };
 
       final invoiceResponse = await _supabase
@@ -484,7 +483,7 @@ class InvoiceProvider with ChangeNotifier {
           'amount': amountReceived,
           'payment_date': invoiceDate,
           'payment_method': 'cash',
-          'notes': 'Offline bill payment',
+          'notes': notes != null && notes.isNotEmpty ? notes : 'Offline bill payment',
         });
       }
 
