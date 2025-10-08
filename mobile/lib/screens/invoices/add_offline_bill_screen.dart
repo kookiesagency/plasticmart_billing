@@ -53,32 +53,9 @@ class _AddOfflineBillScreenState extends State<AddOfflineBillScreen> {
     if (result != null && mounted) {
       final invoice = result['invoice'] as Invoice;
 
-      // Calculate amount received from payments
-      final payments = await SupabaseConfig.client
-          .from('payments')
-          .select('amount')
-          .eq('invoice_id', widget.invoiceId!);
-
-      final totalPaid = (payments as List).fold<double>(
-        0,
-        (sum, payment) => sum + ((payment['amount'] as num?)?.toDouble() ?? 0),
-      );
-
-      // Determine payment status
-      String status = 'Pending';
-      if (totalPaid >= invoice.totalAmount!) {
-        status = 'Paid';
-      } else if (totalPaid > 0) {
-        status = 'Partial';
-      }
-
       setState(() {
         _totalAmountController.text = invoice.totalAmount!.toString();
         _selectedDate = DateTime.parse(invoice.invoiceDate);
-        _paymentStatus = status;
-        if (status == 'Partial') {
-          _amountReceivedController.text = totalPaid.toString();
-        }
         // Find and set the party
         final partyProvider = Provider.of<PartyProvider>(context, listen: false);
         _selectedParty = partyProvider.parties.firstWhere(
@@ -183,27 +160,8 @@ class _AddOfflineBillScreenState extends State<AddOfflineBillScreen> {
 
     final invoiceProvider = Provider.of<InvoiceProvider>(context, listen: false);
 
-    // Calculate amount received based on payment status
-    double amountReceived = 0;
-    if (_paymentStatus == 'Paid') {
-      amountReceived = amount;
-    } else if (_paymentStatus == 'Partial') {
-      amountReceived = double.tryParse(_amountReceivedController.text) ?? 0;
-      if (amountReceived <= 0 || amountReceived >= amount) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Partial payment must be greater than 0 and less than total amount'),
-            backgroundColor: Colors.red,
-            behavior: SnackBarBehavior.floating,
-          ),
-        );
-        return;
-      }
-    }
-    // For 'Pending', amountReceived = 0
-
     if (_isEditMode) {
-      // Update existing offline invoice
+      // Update existing offline invoice (only party, amount, date - payments managed separately)
       try {
         // Update invoice
         await SupabaseConfig.client.from('invoices').update({
@@ -212,24 +170,6 @@ class _AddOfflineBillScreenState extends State<AddOfflineBillScreen> {
           'invoice_date': DateFormat('yyyy-MM-dd').format(_selectedDate),
           'total_amount': amount,
         }).eq('id', widget.invoiceId!);
-
-        // Delete existing payments
-        await SupabaseConfig.client
-            .from('payments')
-            .delete()
-            .eq('invoice_id', widget.invoiceId!);
-
-        // Add new payment if amount received > 0
-        if (amountReceived > 0) {
-          await SupabaseConfig.client.from('payments').insert({
-            'invoice_id': widget.invoiceId!,
-            'amount': amountReceived,
-            'payment_date': DateFormat('yyyy-MM-dd').format(_selectedDate),
-            'remark': _notesController.text.trim().isEmpty
-                ? 'Quick entry payment'
-                : _notesController.text.trim(),
-          });
-        }
 
         // Refresh invoices
         await invoiceProvider.fetchInvoices();
@@ -260,6 +200,26 @@ class _AddOfflineBillScreenState extends State<AddOfflineBillScreen> {
         );
       }
     } else {
+      // Calculate amount received based on payment status
+      double amountReceived = 0;
+      if (_paymentStatus == 'Paid') {
+        amountReceived = amount;
+      } else if (_paymentStatus == 'Partial') {
+        amountReceived = double.tryParse(_amountReceivedController.text) ?? 0;
+        if (amountReceived <= 0 || amountReceived >= amount) {
+          setState(() => _isLoading = false);
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Partial payment must be greater than 0 and less than total amount'),
+              backgroundColor: Colors.red,
+              behavior: SnackBarBehavior.floating,
+            ),
+          );
+          return;
+        }
+      }
+      // For 'Pending', amountReceived = 0
+
       // Create new offline invoice
       final result = await invoiceProvider.createQuickInvoice(
         partyId: _selectedParty!.id!,
@@ -406,81 +366,85 @@ class _AddOfflineBillScreenState extends State<AddOfflineBillScreen> {
                         ),
                       ),
                     ),
-                    const SizedBox(height: 16),
 
-                    // Payment Status
-                    InkWell(
-                      onTap: _showPaymentStatusSheet,
-                      borderRadius: BorderRadius.circular(12),
-                      child: InputDecorator(
-                        decoration: InputDecoration(
-                          labelText: 'Payment Status',
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-                          prefixIcon: const Icon(Icons.payment),
-                          suffixIcon: const Icon(Icons.arrow_drop_down),
-                        ),
-                        child: Text(
-                          _paymentStatus,
-                          style: const TextStyle(fontSize: 16),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 16),
+                    // Hide payment and notes fields in edit mode
+                    if (!_isEditMode) ...[
+                      const SizedBox(height: 16),
 
-                    // Amount Received (only show for Partial)
-                    if (_paymentStatus == 'Partial') ...[
-                      TextFormField(
-                        controller: _amountReceivedController,
-                        decoration: InputDecoration(
-                          labelText: 'Amount Received',
-                          hintText: 'Enter amount received',
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
+                      // Payment Status
+                      InkWell(
+                        onTap: _showPaymentStatusSheet,
+                        borderRadius: BorderRadius.circular(12),
+                        child: InputDecorator(
+                          decoration: InputDecoration(
+                            labelText: 'Payment Status',
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                            prefixIcon: const Icon(Icons.payment),
+                            suffixIcon: const Icon(Icons.arrow_drop_down),
                           ),
-                          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-                          prefixIcon: const Icon(Icons.currency_rupee),
+                          child: Text(
+                            _paymentStatus,
+                            style: const TextStyle(fontSize: 16),
+                          ),
                         ),
-                        keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                        inputFormatters: [
-                          FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d*')),
-                        ],
-                        validator: (value) {
-                          if (_paymentStatus == 'Partial') {
-                            if (value == null || value.isEmpty) {
-                              return 'Please enter amount received';
-                            }
-                            final received = double.tryParse(value);
-                            if (received == null || received <= 0) {
-                              return 'Amount must be greater than 0';
-                            }
-                          }
-                          return null;
-                        },
-                        textInputAction: TextInputAction.next,
                       ),
                       const SizedBox(height: 16),
-                    ],
 
-                    // Notes (Optional)
-                    TextFormField(
-                      controller: _notesController,
-                      decoration: InputDecoration(
-                        labelText: 'Notes (Optional)',
-                        hintText: 'Add any additional notes...',
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
+                      // Amount Received (only show for Partial)
+                      if (_paymentStatus == 'Partial') ...[
+                        TextFormField(
+                          controller: _amountReceivedController,
+                          decoration: InputDecoration(
+                            labelText: 'Amount Received',
+                            hintText: 'Enter amount received',
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                            prefixIcon: const Icon(Icons.currency_rupee),
+                          ),
+                          keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                          inputFormatters: [
+                            FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d*')),
+                          ],
+                          validator: (value) {
+                            if (_paymentStatus == 'Partial') {
+                              if (value == null || value.isEmpty) {
+                                return 'Please enter amount received';
+                              }
+                              final received = double.tryParse(value);
+                              if (received == null || received <= 0) {
+                                return 'Amount must be greater than 0';
+                              }
+                            }
+                            return null;
+                          },
+                          textInputAction: TextInputAction.next,
                         ),
-                        contentPadding: const EdgeInsets.all(16),
-                        alignLabelWithHint: true,
+                        const SizedBox(height: 16),
+                      ],
+
+                      // Notes (Optional)
+                      TextFormField(
+                        controller: _notesController,
+                        decoration: InputDecoration(
+                          labelText: 'Notes (Optional)',
+                          hintText: 'Add any additional notes...',
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          contentPadding: const EdgeInsets.all(16),
+                          alignLabelWithHint: true,
+                        ),
+                        maxLines: 3,
+                        textAlignVertical: TextAlignVertical.top,
+                        textCapitalization: TextCapitalization.sentences,
+                        textInputAction: TextInputAction.done,
                       ),
-                      maxLines: 3,
-                      textAlignVertical: TextAlignVertical.top,
-                      textCapitalization: TextCapitalization.sentences,
-                      textInputAction: TextInputAction.done,
-                    ),
+                    ],
                   ],
                 ),
               ),
