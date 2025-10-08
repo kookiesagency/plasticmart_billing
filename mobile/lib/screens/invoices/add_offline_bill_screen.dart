@@ -18,7 +18,6 @@ class _AddOfflineBillScreenState extends State<AddOfflineBillScreen> {
   final _formKey = GlobalKey<FormState>();
   final _totalAmountController = TextEditingController();
   final _amountReceivedController = TextEditingController();
-  final _notesController = TextEditingController();
 
   Party? _selectedParty;
   DateTime _selectedDate = DateTime.now();
@@ -37,7 +36,6 @@ class _AddOfflineBillScreenState extends State<AddOfflineBillScreen> {
   void dispose() {
     _totalAmountController.dispose();
     _amountReceivedController.dispose();
-    _notesController.dispose();
     super.dispose();
   }
 
@@ -140,7 +138,6 @@ class _AddOfflineBillScreenState extends State<AddOfflineBillScreen> {
       invoiceDate: DateFormat('yyyy-MM-dd').format(_selectedDate),
       totalAmount: amount,
       amountReceived: amountReceived,
-      notes: _notesController.text.trim().isEmpty ? null : _notesController.text.trim(),
     );
 
     setState(() => _isLoading = false);
@@ -335,24 +332,6 @@ class _AddOfflineBillScreenState extends State<AddOfflineBillScreen> {
                       ),
                       const SizedBox(height: 16),
                     ],
-
-                    // Notes (Optional)
-                    TextFormField(
-                      controller: _notesController,
-                      decoration: InputDecoration(
-                        labelText: 'Notes (Optional)',
-                        hintText: 'Add any additional notes...',
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        contentPadding: const EdgeInsets.all(16),
-                        alignLabelWithHint: true,
-                      ),
-                      maxLines: 3,
-                      textAlignVertical: TextAlignVertical.top,
-                      textCapitalization: TextCapitalization.sentences,
-                      textInputAction: TextInputAction.done,
-                    ),
                   ],
                 ),
               ),
