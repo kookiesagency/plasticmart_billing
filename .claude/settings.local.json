@@ -7,7 +7,8 @@
       "Bash(flutter:*)",
       "Bash($HOME/development/flutter/bin/flutter --version)",
       "Bash(lsof:*)",
-      "Bash(psql:*)"
+      "Bash(psql:*)",
+      "Bash(git merge mobile -m \"$(cat <<''EOF''\nmerge: integrate mobile offline invoice fixes into web\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>\nEOF\n)\")"
     ],
     "deny": [],
     "ask": []
