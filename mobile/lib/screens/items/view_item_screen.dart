@@ -282,7 +282,7 @@ class ViewItemScreen extends StatelessWidget {
                             ),
                           ),
                           icon: const Icon(
-                            Icons.delete_outline,
+                            Icons.delete_outlined,
                             size: 20,
                             color: Colors.white,
                           ),

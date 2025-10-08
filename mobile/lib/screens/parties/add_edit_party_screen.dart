@@ -154,7 +154,7 @@ class _AddEditPartyScreenState extends State<AddEditPartyScreen> {
                   borderRadius: BorderRadius.circular(12),
                 ),
                 contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-                prefixIcon: const Icon(Icons.account_balance_wallet),
+                prefixIcon: const Icon(Icons.account_balance_wallet_outlined),
               ),
               keyboardType: const TextInputType.numberWithOptions(decimal: true, signed: true),
               validator: (value) {

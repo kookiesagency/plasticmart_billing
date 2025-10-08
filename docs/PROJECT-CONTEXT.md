@@ -16,42 +16,110 @@
 
 ## 📱 Current Development Focus
 
-### **Web App Status**: ✅ Core features complete
+### **Web App Status**: ✅ Core features complete + Offline Invoice Support
 - ✅ Invoice creation with drag-and-drop reordering
 - ✅ Item management with inline editing (double-click)
 - ✅ Party-specific pricing system
 - ✅ Smart item filtering in invoice form
 - ✅ Create item directly from invoice workflow
+- ✅ Offline invoice quick entry with limited fields
+- ✅ OFFLINE badge display on invoice lists
+- ✅ Hide items/bundle sections for offline invoices
+- ✅ Payment management with `remark` field
 
-### **Mobile App Status**: ✅ Foundation Complete (Flutter)
+### **Mobile App Status**: ✅ Basic Mode MVP Nearly Complete (Flutter)
 - ✅ Flutter SDK 3.27.1 installed globally at ~/development/flutter
 - ✅ Separate mobile/ folder with clean Flutter project structure
 - ✅ Basic/Advanced Mode toggle with persistent settings
 - ✅ Supabase integration with same credentials as web
 - ✅ Provider state management configured
-- ✅ Home screen with adaptive bottom navigation (3 tabs Basic, 4 tabs Advanced)
-- 📋 Ready for next phase: Full CRUD operations and UI implementation
+- ✅ Bottom navigation (3 tabs: Home, Invoices, Settings)
+- ✅ **Complete Feature Set** (Steps 0-9):
+  - ✅ Authentication (Login with Splash Screen)
+  - ✅ Unit Management (Settings)
+  - ✅ Party Management (CRUD with search, delete/restore)
+  - ✅ Item Management (with party-specific pricing)
+  - ✅ Invoice Creation (step-by-step wizard)
+  - ✅ Invoice Management (view, edit, delete, restore)
+  - ✅ Payment Management (add, edit, delete payments)
+  - ✅ Party Reports (weekly reports, comprehensive details)
+  - ✅ PDF Generation & Sharing (invoice PDFs with WhatsApp share)
+  - ✅ Offline Bill Entry (quick invoice creation)
+- ✅ **UI/UX Polish**:
+  - ✅ Consistent outline/flat icons across all screens
+  - ✅ Unified card design (white bg, grey borders, 16px radius)
+  - ✅ Standardized button styling (12px radius, consistent padding)
+  - ✅ OFFLINE badge for offline invoices
+- 📋 **Next Phase**: Home Screen Dashboard (business metrics & quick actions)
 
 ---
 
 ## 🔧 Recent Technical Work
 
-### **Invoice Form Enhancements** (`src/app/(app)/invoices/new/invoice-form.tsx`)
-- **Smart Item Filtering**: Hide already-added items from dropdown
-- **Contextual Messaging**: "Item already added" vs "Create new item"
-- **Full CreateItemDialog**: Party-specific pricing within invoice form
-- **Fixed Database Error**: Removed non-existent `subTotal` column from save
-- **Button Styling**: Black button (`bg-slate-900`) instead of red
+### **Mobile UI/UX Standardization** (December 2025)
 
-### **Items Table** (`src/app/(app)/items/items-columns.tsx`)
-- **Inline Editing**: Double-click any field to edit (name, rates)
-- **Real-time Updates**: Instant Supabase sync with toast notifications
-- **Type Safety**: Proper TypeScript types throughout
+**Icon Consistency Across All Screens:**
+- Converted all icons to outline/flat versions for consistent design language
+- Updated 14 files across auth, invoices, parties, items, and settings screens
+- Standardized icon naming: `_outline` → `person_outline`, `_outlined` → all others
+- Icons updated: person, phone, email, location, calendar, payment, check_circle, access_time, receipt_long, account_balance_wallet, description, business, straighten, delete, people
+
+**Units Screen Redesign:**
+- Removed green avatar box for cleaner, simpler layout
+- Card design now matches invoice/party/item list screens
+- Unit name at top (bold 16px) with "Created on [date]" below (grey 12px)
+- Consistent white cards with grey borders (16px radius)
+- Edit/Restore icons aligned right with zero padding
+
+**Files Modified:**
+- `mobile/lib/screens/settings/units_screen.dart`
+- `mobile/lib/screens/settings/parties_screen.dart`
+- `mobile/lib/screens/invoices/*` (5 files)
+- `mobile/lib/screens/parties/*` (3 files)
+- `mobile/lib/screens/items/*` (3 files)
+- `mobile/lib/screens/auth/login_screen.dart`
+
+### **Offline Invoice Improvements** (Mobile & Web, December 2025)
+
+**Mobile App (`mobile/lib/`):**
+- OFFLINE badge display on invoice list and view screens
+- Hide Items/Bundle sections for offline invoices in view screen
+- Edit support with limited fields (Party, Amount, Date only)
+- Badge sizing and positioning consistency (9px font, 6px padding)
+- Conditional spacing before Payment History (only for offline)
+
+**Web App (`web/src/app/(app)/invoices/`):**
+- Quick entry dialog: hide payment fields in edit mode
+- Database schema fix: use `remark` field instead of `notes` for payments
+- OFFLINE badge already implemented in invoice columns
+- Items section hidden for offline invoices in detail view
+- Consistent edit behavior between mobile and web
+
+**Database Changes:**
+- Confirmed `remark` column in payments table (not `notes`)
+- No `payment_method` field needed (removed from code)
+
+**Git Sync:**
+- All changes committed and pushed across `mobile`, `web`, and `main` branches
+- Feature parity achieved between mobile and web platforms
+
+### **Previous Work** (Historical Context)
+
+**Invoice Form Enhancements** (`src/app/(app)/invoices/new/invoice-form.tsx`)
+- Smart Item Filtering: Hide already-added items from dropdown
+- Contextual Messaging: "Item already added" vs "Create new item"
+- Full CreateItemDialog: Party-specific pricing within invoice form
+- Fixed Database Error: Removed non-existent `subTotal` column from save
+
+**Items Table** (`src/app/(app)/items/items-columns.tsx`)
+- Inline Editing: Double-click any field to edit (name, rates)
+- Real-time Updates: Instant Supabase sync with toast notifications
 
 ### **Git Branches**
-- **Current**: `feature/new-features`
-- **Main**: Updated with latest changes
-- **Recent Commits**: Item filtering, inline editing, mobile planning
+- **Current**: `mobile` branch (active development)
+- **Main**: Production-ready code with all latest merges
+- **Web**: Web-specific features (synced with mobile)
+- **Recent Commits**: Icon standardization, offline invoice fixes, units redesign
 
 ---
 
@@ -91,12 +159,12 @@ plasticmart/
 
 ## 📋 Next Steps Priority
 
-### **Current Status**: ✅ Flutter Mobile Foundation Complete
-**Web app functional, Flutter mobile app ready for feature development!**
+### **Current Status**: ✅ Mobile App Basic Mode MVP Nearly Complete!
+**Steps 0-9 complete, UI polished, ready for Home Screen Dashboard!**
 
 ### **Development Workflow** 🔄
 **Phase-by-Phase Approach:**
-1. Build one feature at a time from mobile-roadmap.md
+1. Build one feature at a time from mobile-implementation-order.md
 2. Test the feature after completion
 3. Get approval before moving to next task
 4. This ensures quality and allows feedback at each step
@@ -116,52 +184,62 @@ plasticmart/
 
 **Branch Strategy:**
 - **`web`** branch: All web app development work
-- **`mobile`** branch: All mobile app development work
+- **`mobile`** branch: All mobile app development work (current)
 - **`main`** branch: Production-ready merged code
 - Work on feature branches, merge to main when complete and tested
 
-### **Immediate Options for Next Session**:
+### **Next Immediate Task: Home Screen Dashboard** 🏠
 
-1. **📱 Implement Invoices Screen** (Recommended First)
-   - Create invoice list UI
-   - Fetch invoices from Supabase
-   - Implement invoice detail view
-   - Add create invoice navigation
+**Step 11 - Priority 1 Features:**
+1. **📊 Financial Summary Cards** (Top Priority)
+   - Today's Revenue card
+   - This Week's Revenue card
+   - This Month's Revenue card
+   - Total Outstanding card (pending + partial payments)
 
-2. **👥 Implement Parties Screen**
-   - Party list with search
-   - Add/Edit party forms
-   - Party detail view
-   - Supabase CRUD operations
+2. **💳 Payment Status Cards**
+   - Paid Invoices count (green)
+   - Pending Invoices count (red)
+   - Partial Payments count (orange)
+   - Tappable cards navigating to filtered lists
 
-3. **📦 Implement Items Screen (Advanced Mode)**
-   - Item list with search
-   - Add/Edit item forms
-   - Party-specific pricing UI
-   - Supabase CRUD operations
+3. **📋 Recent Activity Section**
+   - Recent Invoices list (last 10)
+   - Party name, amount, date, status badge
+   - Tap to view invoice details
+   - "View All" button → Invoices tab
 
-4. **📄 Enhanced Invoice Creation**
-   - Full invoice creation form
-   - Party and item selection
-   - Calculations (bundle charge, totals)
-   - Save to Supabase
+4. **⚡ Quick Actions Row**
+   - Create Invoice button
+   - Offline Bill button (reuse existing)
+   - Add Party button
+   - Consistent styling (12px radius)
 
-5. **🔐 Authentication**
-   - Login screen
-   - Supabase auth integration
-   - Protected routes
+**Implementation Plan:**
+- Start with financial summary cards (2x2 grid layout)
+- Add payment status cards (row or grid)
+- Implement recent invoices list with tap navigation
+- Add quick action buttons at top
+- Use aggregate Supabase queries for data
+- Real-time updates with Provider state management
+
+**Reference Files:**
+- `mobile/lib/screens/home_screen.dart` - Currently shows placeholder, needs full dashboard
+- `mobile/lib/providers/invoice_provider.dart` - Fetch and calculate metrics
+- `docs/mobile-implementation-order.md` - Step 11 detailed specifications
 
 ### **Web App Status**: ✅ Complete
 - All core features working
 - Database schema established
+- Offline invoice support added
 - Ready as reference for mobile implementation
 
-### **Mobile App Development Path** (from mobile-roadmap.md):
-- [x] **Phase 1.1**: Project Setup & Basic/Advanced Mode Toggle
-- [ ] **Phase 1.2**: Invoice List & Detail Views
-- [ ] **Phase 1.3**: Party Management
-- [ ] **Phase 1.4**: Item Management (Advanced Mode)
-- [ ] **Phase 1.5**: Full Invoice Creation Flow
+### **Mobile App Development Path** (from mobile-implementation-order.md):
+- [x] **Steps 0-9**: Authentication → Offline Bill Entry (All Complete!)
+- [x] **UI/UX Polish**: Icon standardization, consistent design
+- [ ] **Step 11**: Home Screen Dashboard (Next - In Planning)
+- [ ] **Step 10**: Settings (Theme toggle deferred)
+- [ ] **Phase 2**: Advanced Mode features (after Basic Mode complete)
 
 ---
 

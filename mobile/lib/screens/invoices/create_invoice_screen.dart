@@ -451,7 +451,7 @@ class _CreateInvoiceScreenState extends State<CreateInvoiceScreen> {
               },
               child: Row(
                 children: [
-                  Icon(Icons.calendar_today, size: 20, color: Colors.grey.shade600),
+                  Icon(Icons.calendar_today_outlined, size: 20, color: Colors.grey.shade600),
                   const SizedBox(width: 12),
                   const Text(
                     'Bill Date:',

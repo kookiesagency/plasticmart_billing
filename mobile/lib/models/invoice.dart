@@ -9,6 +9,7 @@ class Invoice {
   final double? bundleQuantity;
   final double? subTotal;
   final double? totalAmount;
+  final double? totalPaid; // Total amount paid from payments
   final String status; // pending, paid, partial
   final bool? isOffline;
   final DateTime? createdAt;
@@ -26,6 +27,7 @@ class Invoice {
     this.bundleQuantity,
     this.subTotal,
     this.totalAmount,
+    this.totalPaid,
     this.status = 'pending',
     this.isOffline,
     this.createdAt,
@@ -54,6 +56,9 @@ class Invoice {
           : null,
       totalAmount: json['total_amount'] != null
           ? (json['total_amount'] as num).toDouble()
+          : null,
+      totalPaid: json['total_paid'] != null
+          ? (json['total_paid'] as num).toDouble()
           : null,
       status: json['status'] as String? ?? 'pending',
       isOffline: json['is_offline'] as bool?,
@@ -95,6 +100,7 @@ class Invoice {
     double? bundleQuantity,
     double? subTotal,
     double? totalAmount,
+    double? totalPaid,
     String? status,
     bool? isOffline,
     DateTime? createdAt,
@@ -112,6 +118,7 @@ class Invoice {
       bundleQuantity: bundleQuantity ?? this.bundleQuantity,
       subTotal: subTotal ?? this.subTotal,
       totalAmount: totalAmount ?? this.totalAmount,
+      totalPaid: totalPaid ?? this.totalPaid,
       status: status ?? this.status,
       isOffline: isOffline ?? this.isOffline,
       createdAt: createdAt ?? this.createdAt,

@@ -358,7 +358,7 @@ class _AddOfflineBillScreenState extends State<AddOfflineBillScreen> {
                             borderRadius: BorderRadius.circular(12),
                           ),
                           contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-                          prefixIcon: const Icon(Icons.calendar_today),
+                          prefixIcon: const Icon(Icons.calendar_today_outlined),
                         ),
                         child: Text(
                           DateFormat('dd/MM/yyyy').format(_selectedDate),
@@ -382,7 +382,7 @@ class _AddOfflineBillScreenState extends State<AddOfflineBillScreen> {
                               borderRadius: BorderRadius.circular(12),
                             ),
                             contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-                            prefixIcon: const Icon(Icons.payment),
+                            prefixIcon: const Icon(Icons.payment_outlined),
                             suffixIcon: const Icon(Icons.arrow_drop_down),
                           ),
                           child: Text(
@@ -729,7 +729,7 @@ class PaymentStatusBottomSheet extends StatelessWidget {
                       const Spacer(),
                       if (isSelected)
                         Icon(
-                          Icons.check_circle,
+                          Icons.check_circle_outline,
                           color: Theme.of(context).colorScheme.primary,
                         ),
                     ],
