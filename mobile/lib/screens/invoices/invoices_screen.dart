@@ -359,7 +359,7 @@ class _InvoicesScreenState extends State<InvoicesScreen> with SingleTickerProvid
                                                 ],
                                                 Container(
                                                   padding: const EdgeInsets.symmetric(
-                                                    horizontal: 8,
+                                                    horizontal: 6,
                                                     vertical: 2,
                                                   ),
                                                   decoration: BoxDecoration(
@@ -370,8 +370,9 @@ class _InvoicesScreenState extends State<InvoicesScreen> with SingleTickerProvid
                                                     _getStatusText(invoice.status),
                                                     style: TextStyle(
                                                       color: _getStatusColor(invoice.status),
-                                                      fontSize: 11,
+                                                      fontSize: 9,
                                                       fontWeight: FontWeight.bold,
+                                                      letterSpacing: 0.5,
                                                     ),
                                                   ),
                                                 ),
