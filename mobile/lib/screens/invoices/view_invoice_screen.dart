@@ -415,7 +415,9 @@ class _ViewInvoiceScreenState extends State<ViewInvoiceScreen> {
                         ),
                         const SizedBox(height: 16),
                       ],
-                      const SizedBox(height: 16),
+
+                      // Add spacing only for offline invoices (regular invoices already have spacing from items section)
+                      if (_invoice!.isOffline == true) const SizedBox(height: 16),
 
                       // Payment History Card
                       Container(
