@@ -577,7 +577,7 @@ class _ViewInvoiceScreenState extends State<ViewInvoiceScreen> {
                       Row(
                         children: [
                           Expanded(
-                            child: OutlinedButton.icon(
+                            child: OutlinedButton(
                               onPressed: () async {
                                 if (_invoice == null) return;
 
@@ -597,8 +597,6 @@ class _ViewInvoiceScreenState extends State<ViewInvoiceScreen> {
                                   }
                                 }
                               },
-                              icon: const Icon(Icons.share),
-                              label: const Text('Share', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
                               style: OutlinedButton.styleFrom(
                                 padding: const EdgeInsets.symmetric(vertical: 16),
                                 shape: RoundedRectangleBorder(
@@ -606,11 +604,12 @@ class _ViewInvoiceScreenState extends State<ViewInvoiceScreen> {
                                 ),
                                 side: BorderSide(color: Theme.of(context).colorScheme.primary),
                               ),
+                              child: const Text('Share', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
                             ),
                           ),
                           const SizedBox(width: 12),
                           Expanded(
-                            child: ElevatedButton.icon(
+                            child: ElevatedButton(
                               onPressed: () async {
                                 if (_invoice == null) return;
 
@@ -630,8 +629,6 @@ class _ViewInvoiceScreenState extends State<ViewInvoiceScreen> {
                                   }
                                 }
                               },
-                              icon: const Icon(Icons.picture_as_pdf),
-                              label: const Text('PDF', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: Theme.of(context).colorScheme.primary,
                                 foregroundColor: Colors.white,
@@ -640,6 +637,7 @@ class _ViewInvoiceScreenState extends State<ViewInvoiceScreen> {
                                   borderRadius: BorderRadius.circular(12),
                                 ),
                               ),
+                              child: const Text('PDF', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
                             ),
                           ),
                         ],
