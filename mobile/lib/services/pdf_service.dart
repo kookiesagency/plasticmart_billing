@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:ui';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';
@@ -28,34 +29,53 @@ class PdfService {
     final bundleCharge = invoice.bundleCharge != null ? invoice.bundleCharge!.toDouble() : 0.0;
     final totalAmount = subTotal + bundleCharge;
 
+    // Calculate 50% of available width (after margins)
+    final contentWidth = (PdfPageFormat.a4.width - 40) * 0.5; // 40 = margins (20 on each side)
+
     pdf.addPage(
       pw.MultiPage(
         pageFormat: PdfPageFormat.a4,
-        margin: const pw.EdgeInsets.all(32),
+        margin: const pw.EdgeInsets.all(20),
         theme: pw.ThemeData.withFont(
           base: font,
           bold: fontBold,
         ),
         build: (pw.Context context) {
           return [
-            // Header
-            _buildHeader(invoice),
-            pw.SizedBox(height: 24),
+            // Header - constrained to 50% width
+            pw.Container(
+              width: contentWidth,
+              child: _buildHeader(invoice),
+            ),
+            pw.SizedBox(height: 8),
 
-            // Invoice Info
-            _buildInvoiceInfo(invoice),
-            pw.SizedBox(height: 24),
+            // Invoice Info - constrained to 50% width
+            pw.Container(
+              width: contentWidth,
+              child: _buildInvoiceInfo(invoice),
+            ),
+            pw.SizedBox(height: 8),
 
-            // Items Table
-            _buildItemsTable(items),
-            pw.SizedBox(height: 16),
+            // Items Table - constrained to 50% width
+            pw.Container(
+              width: contentWidth,
+              child: _buildItemsTable(items),
+            ),
+            pw.SizedBox(height: 8),
 
-            // Totals
-            _buildTotals(subTotal, bundleCharge, totalAmount, invoice),
+            // Totals - constrained to 50% width
+            pw.Container(
+              width: contentWidth,
+              child: _buildTotals(subTotal, bundleCharge, totalAmount, invoice),
+            ),
+
+            // Footer - added at the end instead of in footer callback
+            pw.SizedBox(height: 40),
+            pw.Container(
+              width: contentWidth,
+              child: _buildFooter(),
+            ),
           ];
-        },
-        footer: (pw.Context context) {
-          return _buildFooter();
         },
       ),
     );
@@ -65,84 +85,99 @@ class PdfService {
 
   /// Build PDF header with invoice title (matching web format)
   pw.Widget _buildHeader(Invoice invoice) {
-    return pw.Column(
-      crossAxisAlignment: pw.CrossAxisAlignment.center,
-      children: [
-        pw.Text(
-          'CASH MEMO',
-          style: pw.TextStyle(
-            fontSize: 20,
-            fontWeight: pw.FontWeight.bold,
-            decoration: pw.TextDecoration.underline,
-          ),
+    return pw.Center(
+      child: pw.Text(
+        'CASH MEMO',
+        style: pw.TextStyle(
+          fontSize: 16,
+          fontWeight: pw.FontWeight.bold,
+          decoration: pw.TextDecoration.underline,
         ),
-      ],
+      ),
     );
   }
 
   /// Build invoice information section (matching web format)
   pw.Widget _buildInvoiceInfo(Invoice invoice) {
-    return pw.Row(
-      mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+    return pw.Table(
+      columnWidths: {
+        0: const pw.FlexColumnWidth(1), // 50% - Bill To
+        1: const pw.FlexColumnWidth(1), // 50% - Invoice # and Date
+      },
       children: [
-        // Bill To (left side)
-        pw.Row(
+        pw.TableRow(
           children: [
-            pw.Text(
-              'Bill To: ',
-              style: pw.TextStyle(
-                fontSize: 12,
-                fontWeight: pw.FontWeight.bold,
+            // Left column - Bill To
+            pw.Padding(
+              padding: const pw.EdgeInsets.all(2),
+              child: pw.RichText(
+                text: pw.TextSpan(
+                  children: [
+                    pw.TextSpan(
+                      text: 'Bill To: ',
+                      style: pw.TextStyle(
+                        fontSize: 10,
+                        fontWeight: pw.FontWeight.bold,
+                      ),
+                    ),
+                    pw.TextSpan(
+                      text: invoice.partyName ?? 'Unknown Party',
+                      style: pw.TextStyle(
+                        fontSize: 10,
+                        fontWeight: pw.FontWeight.bold,
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
-            pw.Text(
-              invoice.partyName ?? 'Unknown Party',
-              style: pw.TextStyle(
-                fontSize: 12,
-                fontWeight: pw.FontWeight.bold,
+            // Right column - Invoice # and Date
+            pw.Padding(
+              padding: const pw.EdgeInsets.all(2),
+              child: pw.Column(
+                crossAxisAlignment: pw.CrossAxisAlignment.end,
+                children: [
+                  pw.RichText(
+                    text: pw.TextSpan(
+                      children: [
+                        pw.TextSpan(
+                          text: 'Invoice #: ',
+                          style: pw.TextStyle(
+                            fontSize: 10,
+                            fontWeight: pw.FontWeight.bold,
+                          ),
+                        ),
+                        pw.TextSpan(
+                          text: invoice.invoiceNumber ?? 'N/A',
+                          style: const pw.TextStyle(
+                            fontSize: 10,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  pw.SizedBox(height: 1),
+                  pw.RichText(
+                    text: pw.TextSpan(
+                      children: [
+                        pw.TextSpan(
+                          text: 'Date: ',
+                          style: pw.TextStyle(
+                            fontSize: 10,
+                            fontWeight: pw.FontWeight.bold,
+                          ),
+                        ),
+                        pw.TextSpan(
+                          text: _formatDate(invoice.invoiceDate),
+                          style: const pw.TextStyle(
+                            fontSize: 10,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
               ),
-            ),
-          ],
-        ),
-
-        // Invoice Number and Date (right side)
-        pw.Column(
-          crossAxisAlignment: pw.CrossAxisAlignment.end,
-          children: [
-            pw.Row(
-              children: [
-                pw.Text(
-                  'Invoice #: ',
-                  style: pw.TextStyle(
-                    fontSize: 12,
-                    fontWeight: pw.FontWeight.bold,
-                  ),
-                ),
-                pw.Text(
-                  invoice.invoiceNumber ?? 'N/A',
-                  style: const pw.TextStyle(
-                    fontSize: 12,
-                  ),
-                ),
-              ],
-            ),
-            pw.SizedBox(height: 4),
-            pw.Row(
-              children: [
-                pw.Text(
-                  'Date: ',
-                  style: pw.TextStyle(
-                    fontSize: 12,
-                    fontWeight: pw.FontWeight.bold,
-                  ),
-                ),
-                pw.Text(
-                  _formatDate(invoice.invoiceDate),
-                  style: const pw.TextStyle(
-                    fontSize: 12,
-                  ),
-                ),
-              ],
             ),
           ],
         ),
@@ -153,38 +188,34 @@ class PdfService {
   /// Build items table (matching web format)
   pw.Widget _buildItemsTable(List<InvoiceItem> items) {
     return pw.Table(
-      border: pw.TableBorder.symmetric(
-        inside: const pw.BorderSide(color: PdfColors.black, width: 0.5),
-        outside: const pw.BorderSide(color: PdfColors.black, width: 1),
-      ),
       columnWidths: {
-        0: const pw.FlexColumnWidth(1), // SR. NO
-        1: const pw.FlexColumnWidth(4), // ITEM
-        2: const pw.FlexColumnWidth(1), // QTY
-        3: const pw.FlexColumnWidth(1), // UNIT
-        4: const pw.FlexColumnWidth(1.5), // RATE
-        5: const pw.FlexColumnWidth(1.5), // AMOUNT
+        0: const pw.FlexColumnWidth(10), // SR. NO - 10%
+        1: const pw.FlexColumnWidth(40), // ITEM - 40%
+        2: const pw.FlexColumnWidth(10), // QTY - 10%
+        3: const pw.FlexColumnWidth(10), // UNIT - 10%
+        4: const pw.FlexColumnWidth(15), // RATE - 15%
+        5: const pw.FlexColumnWidth(15), // AMOUNT - 15%
       },
       children: [
-        // Header
+        // Header - with top and bottom border only
         pw.TableRow(
           decoration: const pw.BoxDecoration(
             border: pw.Border(
-              top: pw.BorderSide(color: PdfColors.black, width: 1),
-              bottom: pw.BorderSide(color: PdfColors.black, width: 1),
+              top: pw.BorderSide(color: PdfColors.grey800, width: 1),
+              bottom: pw.BorderSide(color: PdfColors.grey800, width: 1),
             ),
           ),
           children: [
             _buildTableCell('SR. NO', isHeader: true, align: pw.TextAlign.center),
-            _buildTableCell('ITEM', isHeader: true),
-            _buildTableCell('QTY', isHeader: true),
-            _buildTableCell('UNIT', isHeader: true),
-            _buildTableCell('RATE', isHeader: true),
-            _buildTableCell('AMOUNT', isHeader: true),
+            _buildTableCell('ITEM', isHeader: true, align: pw.TextAlign.left),
+            _buildTableCell('QTY', isHeader: true, align: pw.TextAlign.left),
+            _buildTableCell('UNIT', isHeader: true, align: pw.TextAlign.left),
+            _buildTableCell('RATE', isHeader: true, align: pw.TextAlign.left),
+            _buildTableCell('AMOUNT', isHeader: true, align: pw.TextAlign.left),
           ],
         ),
 
-        // Items
+        // Items - with bottom border only
         ...items.asMap().entries.map((entry) {
           final index = entry.key;
           final item = entry.value;
@@ -198,11 +229,11 @@ class PdfService {
             ),
             children: [
               _buildTableCell('${index + 1}', align: pw.TextAlign.center),
-              _buildTableCell(item.itemName ?? 'Unknown Item'),
-              _buildTableCell(_formatNumber(item.quantity)),
-              _buildTableCell(item.itemUnit ?? 'N/A'),
-              _buildTableCell('₹${_formatNumber(item.rate)}'),
-              _buildTableCell('₹${_formatNumber(amount)}'),
+              _buildTableCell(item.itemName ?? 'Unknown Item', align: pw.TextAlign.left),
+              _buildTableCell(_formatNumber(item.quantity), align: pw.TextAlign.left),
+              _buildTableCell(item.itemUnit ?? 'N/A', align: pw.TextAlign.left),
+              _buildTableCell('₹${_formatNumber(item.rate)}', align: pw.TextAlign.left),
+              _buildTableCell('₹${_formatNumber(amount)}', align: pw.TextAlign.left),
             ],
           );
         }),
@@ -217,13 +248,12 @@ class PdfService {
     pw.TextAlign align = pw.TextAlign.left,
   }) {
     return pw.Padding(
-      padding: const pw.EdgeInsets.all(8),
+      padding: const pw.EdgeInsets.symmetric(horizontal: 4, vertical: 3),
       child: pw.Text(
         text,
         style: pw.TextStyle(
-          fontSize: isHeader ? 10 : 12,
+          fontSize: 10,
           fontWeight: isHeader ? pw.FontWeight.bold : pw.FontWeight.normal,
-          color: isHeader ? PdfColors.grey800 : PdfColors.black,
         ),
         textAlign: align,
       ),
@@ -239,32 +269,32 @@ class PdfService {
   ) {
     return pw.Table(
       columnWidths: {
-        0: const pw.FlexColumnWidth(1),
-        1: const pw.FlexColumnWidth(1),
-        2: const pw.FlexColumnWidth(1),
+        0: const pw.FlexColumnWidth(2), // 50% - empty space
+        1: const pw.FlexColumnWidth(1), // 25% - label
+        2: const pw.FlexColumnWidth(1), // 25% - value
       },
       children: [
         // Subtotal
         pw.TableRow(
           children: [
-            pw.Container(),
+            pw.Container(), // Empty left column
             pw.Padding(
-              padding: const pw.EdgeInsets.all(8),
+              padding: const pw.EdgeInsets.symmetric(horizontal: 4, vertical: 2),
               child: pw.Text(
                 'Subtotal:',
                 style: pw.TextStyle(
-                  fontSize: 12,
+                  fontSize: 10,
                   fontWeight: pw.FontWeight.bold,
                 ),
               ),
             ),
             pw.Padding(
-              padding: const pw.EdgeInsets.all(8),
+              padding: const pw.EdgeInsets.symmetric(horizontal: 4, vertical: 2),
               child: pw.Text(
                 '₹${_formatNumber(subTotal)}',
                 textAlign: pw.TextAlign.right,
                 style: const pw.TextStyle(
-                  fontSize: 12,
+                  fontSize: 10,
                 ),
               ),
             ),
@@ -273,24 +303,24 @@ class PdfService {
         // Bundle
         pw.TableRow(
           children: [
-            pw.Container(),
+            pw.Container(), // Empty left column
             pw.Padding(
-              padding: const pw.EdgeInsets.all(8),
+              padding: const pw.EdgeInsets.symmetric(horizontal: 4, vertical: 2),
               child: pw.Text(
-                'Bundle (${invoice.bundleQuantity ?? 0}):',
+                'Bundle (${_formatNumber((invoice.bundleQuantity ?? 0).toDouble())}):',
                 style: pw.TextStyle(
-                  fontSize: 12,
+                  fontSize: 10,
                   fontWeight: pw.FontWeight.bold,
                 ),
               ),
             ),
             pw.Padding(
-              padding: const pw.EdgeInsets.all(8),
+              padding: const pw.EdgeInsets.symmetric(horizontal: 4, vertical: 2),
               child: pw.Text(
                 '₹${_formatNumber(bundleCharge)}',
                 textAlign: pw.TextAlign.right,
                 style: const pw.TextStyle(
-                  fontSize: 12,
+                  fontSize: 10,
                 ),
               ),
             ),
@@ -298,30 +328,35 @@ class PdfService {
         ),
         // Total with border
         pw.TableRow(
-          decoration: const pw.BoxDecoration(
-            border: pw.Border(
-              top: pw.BorderSide(color: PdfColors.black, width: 2),
-            ),
-          ),
           children: [
-            pw.Container(),
-            pw.Padding(
-              padding: const pw.EdgeInsets.all(8),
+            pw.Container(), // Empty left column
+            pw.Container(
+              decoration: const pw.BoxDecoration(
+                border: pw.Border(
+                  top: pw.BorderSide(color: PdfColors.black, width: 2),
+                ),
+              ),
+              padding: const pw.EdgeInsets.symmetric(horizontal: 4, vertical: 3),
               child: pw.Text(
                 'Total:',
                 style: pw.TextStyle(
-                  fontSize: 16,
+                  fontSize: 12,
                   fontWeight: pw.FontWeight.bold,
                 ),
               ),
             ),
-            pw.Padding(
-              padding: const pw.EdgeInsets.all(8),
+            pw.Container(
+              decoration: const pw.BoxDecoration(
+                border: pw.Border(
+                  top: pw.BorderSide(color: PdfColors.black, width: 2),
+                ),
+              ),
+              padding: const pw.EdgeInsets.symmetric(horizontal: 4, vertical: 3),
               child: pw.Text(
                 '₹${_formatNumber(totalAmount)}',
                 textAlign: pw.TextAlign.right,
                 style: pw.TextStyle(
-                  fontSize: 16,
+                  fontSize: 12,
                   fontWeight: pw.FontWeight.bold,
                 ),
               ),
@@ -334,28 +369,38 @@ class PdfService {
 
   /// Build footer (matching web format)
   pw.Widget _buildFooter() {
-    return pw.Column(
-      children: [
-        pw.Divider(color: PdfColors.grey600),
-        pw.SizedBox(height: 8),
-        pw.Text(
-          'This is a computer-generated cash memo.',
-          textAlign: pw.TextAlign.center,
-          style: const pw.TextStyle(
-            fontSize: 10,
-            color: PdfColors.grey600,
-          ),
+    return pw.Container(
+      decoration: const pw.BoxDecoration(
+        border: pw.Border(
+          top: pw.BorderSide(color: PdfColors.grey400, width: 0.5),
         ),
-        pw.SizedBox(height: 4),
-        pw.Text(
-          'Thank you for your business!',
-          textAlign: pw.TextAlign.center,
-          style: const pw.TextStyle(
-            fontSize: 10,
-            color: PdfColors.grey600,
+      ),
+      padding: const pw.EdgeInsets.only(top: 12),
+      child: pw.Column(
+        crossAxisAlignment: pw.CrossAxisAlignment.center,
+        children: [
+          pw.Center(
+            child: pw.Text(
+              'This is a computer-generated cash memo.',
+              textAlign: pw.TextAlign.center,
+              style: const pw.TextStyle(
+                fontSize: 9, // text-xs in Tailwind is 12px
+                color: PdfColors.grey600,
+              ),
+            ),
           ),
-        ),
-      ],
+          pw.Center(
+            child: pw.Text(
+              'Thank you for your business!',
+              textAlign: pw.TextAlign.center,
+              style: const pw.TextStyle(
+                fontSize: 9,
+                color: PdfColors.grey600,
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -365,8 +410,16 @@ class PdfService {
     required List<InvoiceItem> items,
   }) async {
     final pdf = await generateInvoicePdf(invoice: invoice, items: items);
+
+    // Format filename: "{invoice_number} {party_name} {invoice_date}.pdf"
+    final invoiceNumber = invoice.invoiceNumber ?? 'N/A';
+    final partyName = invoice.partyName ?? 'Unknown';
+    final invoiceDate = invoice.invoiceDate != null ? _formatDate(invoice.invoiceDate) : 'Unknown Date';
+    final fileName = '$invoiceNumber $partyName $invoiceDate';
+
     await Printing.layoutPdf(
       onLayout: (PdfPageFormat format) async => pdf.save(),
+      name: fileName,
     );
   }
 
@@ -380,7 +433,13 @@ class PdfService {
       final bytes = await pdf.save();
 
       final directory = await getApplicationDocumentsDirectory();
-      final fileName = 'Invoice_${invoice.invoiceNumber ?? DateTime.now().millisecondsSinceEpoch}.pdf';
+      // Format filename: "{invoice_number} {party_name} {invoice_date}.pdf"
+      final invoiceNumber = invoice.invoiceNumber ?? 'N/A';
+      final partyName = invoice.partyName ?? 'Unknown';
+      final invoiceDate = invoice.invoiceDate != null ? _formatDate(invoice.invoiceDate) : 'Unknown Date';
+      // Sanitize filename - replace invalid characters with underscore
+      final sanitizedFileName = '$invoiceNumber $partyName $invoiceDate'.replaceAll(RegExp(r'[/\\:*?"<>|]'), '_');
+      final fileName = '$sanitizedFileName.pdf';
       final file = File('${directory.path}/$fileName');
 
       await file.writeAsBytes(bytes);
@@ -395,23 +454,39 @@ class PdfService {
   Future<void> sharePdf({
     required Invoice invoice,
     required List<InvoiceItem> items,
+    Rect? sharePositionOrigin,
   }) async {
     try {
+      print('Starting PDF generation for sharing...');
       final pdf = await generateInvoicePdf(invoice: invoice, items: items);
+      print('PDF generated, saving bytes...');
       final bytes = await pdf.save();
+      print('PDF bytes saved: ${bytes.length} bytes');
 
       final directory = await getTemporaryDirectory();
-      final fileName = 'Invoice_${invoice.invoiceNumber ?? DateTime.now().millisecondsSinceEpoch}.pdf';
+      // Format filename: "{invoice_number} {party_name} {invoice_date}.pdf"
+      final invoiceNumber = invoice.invoiceNumber ?? 'N/A';
+      final partyName = invoice.partyName ?? 'Unknown';
+      final invoiceDate = invoice.invoiceDate != null ? _formatDate(invoice.invoiceDate) : 'Unknown Date';
+      // Sanitize filename - replace invalid characters with underscore
+      final sanitizedFileName = '$invoiceNumber $partyName $invoiceDate'.replaceAll(RegExp(r'[/\\:*?"<>|]'), '_');
+      final fileName = '$sanitizedFileName.pdf';
       final file = File('${directory.path}/$fileName');
+      print('Temp file path: ${file.path}');
 
       await file.writeAsBytes(bytes);
+      print('File written to disk');
 
-      await Share.shareXFiles(
+      print('Sharing file...');
+      final result = await Share.shareXFiles(
         [XFile(file.path)],
-        text: 'Invoice #${invoice.invoiceNumber ?? 'N/A'} for ${invoice.partyName ?? 'Party'}',
+        sharePositionOrigin: sharePositionOrigin,
       );
-    } catch (e) {
+      print('Share completed: $result');
+    } catch (e, stackTrace) {
       print('Error sharing PDF: $e');
+      print('Stack trace: $stackTrace');
+      rethrow;
     }
   }
 

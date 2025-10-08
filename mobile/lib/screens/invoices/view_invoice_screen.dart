@@ -577,34 +577,45 @@ class _ViewInvoiceScreenState extends State<ViewInvoiceScreen> {
                       Row(
                         children: [
                           Expanded(
-                            child: OutlinedButton(
-                              onPressed: () async {
-                                if (_invoice == null) return;
+                            child: Builder(
+                              builder: (BuildContext buttonContext) {
+                                return OutlinedButton(
+                                  onPressed: () async {
+                                    if (_invoice == null) return;
 
-                                try {
-                                  await _pdfService.sharePdf(
-                                    invoice: _invoice!,
-                                    items: _items,
-                                  );
-                                } catch (e) {
-                                  if (mounted) {
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      SnackBar(
-                                        content: Text('Failed to share PDF: $e'),
-                                        backgroundColor: Colors.red,
-                                      ),
-                                    );
-                                  }
-                                }
+                                    try {
+                                      // Get button position for iPad share dialog
+                                      final box = buttonContext.findRenderObject() as RenderBox?;
+                                      final sharePositionOrigin = box != null
+                                          ? box.localToGlobal(Offset.zero) & box.size
+                                          : null;
+
+                                      await _pdfService.sharePdf(
+                                        invoice: _invoice!,
+                                        items: _items,
+                                        sharePositionOrigin: sharePositionOrigin,
+                                      );
+                                    } catch (e) {
+                                      if (mounted) {
+                                        ScaffoldMessenger.of(context).showSnackBar(
+                                          SnackBar(
+                                            content: Text('Failed to share PDF: $e'),
+                                            backgroundColor: Colors.red,
+                                          ),
+                                        );
+                                      }
+                                    }
+                                  },
+                                  style: OutlinedButton.styleFrom(
+                                    padding: const EdgeInsets.symmetric(vertical: 16),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
+                                    side: BorderSide(color: Theme.of(context).colorScheme.primary),
+                                  ),
+                                  child: const Text('Share', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+                                );
                               },
-                              style: OutlinedButton.styleFrom(
-                                padding: const EdgeInsets.symmetric(vertical: 16),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                                side: BorderSide(color: Theme.of(context).colorScheme.primary),
-                              ),
-                              child: const Text('Share', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
                             ),
                           ),
                           const SizedBox(width: 12),
