@@ -3,12 +3,19 @@ import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 import '../../models/party.dart';
+import '../../models/invoice.dart';
 import '../../providers/party_provider.dart';
 import '../../providers/invoice_provider.dart';
 import '../../utils/date_picker_theme.dart';
+import '../../config/supabase_config.dart';
 
 class AddOfflineBillScreen extends StatefulWidget {
-  const AddOfflineBillScreen({Key? key}) : super(key: key);
+  final int? invoiceId;
+
+  const AddOfflineBillScreen({
+    Key? key,
+    this.invoiceId,
+  }) : super(key: key);
 
   @override
   State<AddOfflineBillScreen> createState() => _AddOfflineBillScreenState();
@@ -24,13 +31,74 @@ class _AddOfflineBillScreenState extends State<AddOfflineBillScreen> {
   DateTime _selectedDate = DateTime.now();
   String _paymentStatus = 'Pending';
   bool _isLoading = false;
+  bool get _isEditMode => widget.invoiceId != null;
 
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _loadParties();
+      if (_isEditMode) {
+        _loadInvoiceData();
+      }
     });
+  }
+
+  Future<void> _loadInvoiceData() async {
+    setState(() => _isLoading = true);
+
+    final invoiceProvider = Provider.of<InvoiceProvider>(context, listen: false);
+    final result = await invoiceProvider.getInvoiceWithItems(widget.invoiceId!);
+
+    if (result != null && mounted) {
+      final invoice = result['invoice'] as Invoice;
+
+      // Calculate amount received from payments
+      final payments = await SupabaseConfig.client
+          .from('payments')
+          .select('amount')
+          .eq('invoice_id', widget.invoiceId!);
+
+      final totalPaid = (payments as List).fold<double>(
+        0,
+        (sum, payment) => sum + ((payment['amount'] as num?)?.toDouble() ?? 0),
+      );
+
+      // Determine payment status
+      String status = 'Pending';
+      if (totalPaid >= invoice.totalAmount!) {
+        status = 'Paid';
+      } else if (totalPaid > 0) {
+        status = 'Partial';
+      }
+
+      setState(() {
+        _totalAmountController.text = invoice.totalAmount!.toString();
+        _selectedDate = DateTime.parse(invoice.invoiceDate);
+        _paymentStatus = status;
+        if (status == 'Partial') {
+          _amountReceivedController.text = totalPaid.toString();
+        }
+        // Find and set the party
+        final partyProvider = Provider.of<PartyProvider>(context, listen: false);
+        _selectedParty = partyProvider.parties.firstWhere(
+          (p) => p.id == invoice.partyId,
+          orElse: () => Party(id: invoice.partyId, name: invoice.partyName ?? ''),
+        );
+        _isLoading = false;
+      });
+    } else {
+      setState(() => _isLoading = false);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Failed to load bill details'),
+            backgroundColor: Colors.red,
+          ),
+        );
+        Navigator.pop(context);
+      }
+    }
   }
 
   @override
@@ -134,36 +202,96 @@ class _AddOfflineBillScreenState extends State<AddOfflineBillScreen> {
     }
     // For 'Pending', amountReceived = 0
 
-    final result = await invoiceProvider.createQuickInvoice(
-      partyId: _selectedParty!.id!,
-      partyName: _selectedParty!.name,
-      invoiceDate: DateFormat('yyyy-MM-dd').format(_selectedDate),
-      totalAmount: amount,
-      amountReceived: amountReceived,
-      notes: _notesController.text.trim().isEmpty ? null : _notesController.text.trim(),
-    );
+    if (_isEditMode) {
+      // Update existing offline invoice
+      try {
+        // Update invoice
+        await SupabaseConfig.client.from('invoices').update({
+          'party_id': _selectedParty!.id!,
+          'party_name': _selectedParty!.name,
+          'invoice_date': DateFormat('yyyy-MM-dd').format(_selectedDate),
+          'total_amount': amount,
+        }).eq('id', widget.invoiceId!);
 
-    setState(() => _isLoading = false);
+        // Delete existing payments
+        await SupabaseConfig.client
+            .from('payments')
+            .delete()
+            .eq('invoice_id', widget.invoiceId!);
 
-    if (!mounted) return;
+        // Add new payment if amount received > 0
+        if (amountReceived > 0) {
+          await SupabaseConfig.client.from('payments').insert({
+            'invoice_id': widget.invoiceId!,
+            'amount': amountReceived,
+            'payment_date': DateFormat('yyyy-MM-dd').format(_selectedDate),
+            'remark': _notesController.text.trim().isEmpty
+                ? 'Quick entry payment'
+                : _notesController.text.trim(),
+          });
+        }
 
-    if (result?['success'] == true) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Bill ${result?['invoice_number'] ?? ''} created successfully'),
-          backgroundColor: Colors.green,
-          behavior: SnackBarBehavior.floating,
-        ),
-      );
-      Navigator.pop(context, true);
+        // Refresh invoices
+        await invoiceProvider.fetchInvoices();
+
+        setState(() => _isLoading = false);
+
+        if (!mounted) return;
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Offline bill updated successfully'),
+            backgroundColor: Colors.green,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+        Navigator.pop(context, true);
+      } catch (e) {
+        setState(() => _isLoading = false);
+
+        if (!mounted) return;
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to update bill: ${e.toString()}'),
+            backgroundColor: Colors.red,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Failed to create bill: ${result?['error'] ?? 'Unknown error'}'),
-          backgroundColor: Colors.red,
-          behavior: SnackBarBehavior.floating,
-        ),
+      // Create new offline invoice
+      final result = await invoiceProvider.createQuickInvoice(
+        partyId: _selectedParty!.id!,
+        partyName: _selectedParty!.name,
+        invoiceDate: DateFormat('yyyy-MM-dd').format(_selectedDate),
+        totalAmount: amount,
+        amountReceived: amountReceived,
+        notes: _notesController.text.trim().isEmpty ? null : _notesController.text.trim(),
       );
+
+      setState(() => _isLoading = false);
+
+      if (!mounted) return;
+
+      if (result?['success'] == true) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Bill ${result?['invoice_number'] ?? ''} created successfully'),
+            backgroundColor: Colors.green,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+        Navigator.pop(context, true);
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to create bill: ${result?['error'] ?? 'Unknown error'}'),
+            backgroundColor: Colors.red,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
     }
   }
 
@@ -172,7 +300,7 @@ class _AddOfflineBillScreenState extends State<AddOfflineBillScreen> {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
-        title: const Text('Add Offline Bill'),
+        title: Text(_isEditMode ? 'Edit Offline Bill' : 'Add Offline Bill'),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () => Navigator.pop(context),
@@ -382,9 +510,9 @@ class _AddOfflineBillScreenState extends State<AddOfflineBillScreen> {
                             valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
                           ),
                         )
-                      : const Text(
-                          'Create Bill',
-                          style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                      : Text(
+                          _isEditMode ? 'Update Bill' : 'Create Bill',
+                          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
                         ),
                 ),
               ),

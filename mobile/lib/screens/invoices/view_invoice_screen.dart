@@ -9,6 +9,7 @@ import '../../services/payment_service.dart';
 import '../../services/pdf_service.dart';
 import 'create_invoice_screen.dart';
 import 'add_payment_dialog.dart';
+import 'add_offline_bill_screen.dart';
 
 class ViewInvoiceScreen extends StatefulWidget {
   final int invoiceId;
@@ -147,16 +148,32 @@ class _ViewInvoiceScreenState extends State<ViewInvoiceScreen> {
             onSelected: (value) async {
               switch (value) {
                 case 'edit':
-                  final result = await Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => CreateInvoiceScreen(
-                        invoiceId: widget.invoiceId,
+                  // For offline invoices, navigate to offline bill edit screen
+                  if (_invoice?.isOffline == true) {
+                    final result = await Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => AddOfflineBillScreen(
+                          invoiceId: widget.invoiceId,
+                        ),
                       ),
-                    ),
-                  );
-                  if (result == true) {
-                    _loadInvoiceData();
+                    );
+                    if (result == true) {
+                      _loadInvoiceData();
+                      setState(() => _hasChanges = true);
+                    }
+                  } else {
+                    final result = await Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => CreateInvoiceScreen(
+                          invoiceId: widget.invoiceId,
+                        ),
+                      ),
+                    );
+                    if (result == true) {
+                      _loadInvoiceData();
+                    }
                   }
                   break;
                 case 'delete':
