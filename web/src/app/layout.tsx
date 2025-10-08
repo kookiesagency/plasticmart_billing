@@ -30,6 +30,7 @@ export default function RootLayout({
           "min-h-screen bg-background font-sans antialiased",
           geist.variable
         )}
+        suppressHydrationWarning
       >
         {children}
         <TooltipProvider>

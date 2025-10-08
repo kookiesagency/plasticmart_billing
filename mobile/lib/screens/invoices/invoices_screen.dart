@@ -213,7 +213,7 @@ class _InvoicesScreenState extends State<InvoicesScreen> with SingleTickerProvid
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           Icon(
-                            _showDeleted ? Icons.delete_outline : Icons.receipt_outlined,
+                            _showDeleted ? Icons.delete_outlined : Icons.receipt_outlined,
                             size: 64,
                             color: Colors.grey,
                           ),

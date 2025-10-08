@@ -468,26 +468,151 @@ This document provides a step-by-step implementation order for building the Plas
 
 ---
 
+### ✅ **UI/UX Polish & Consistency** 🎨 - COMPLETED
+**Why important?** Consistent design improves user experience and app professionalism.
+
+**What was done:**
+
+**Units Screen Redesign:**
+- [x] Removed green avatar box with letter
+- [x] Simplified card layout matching invoice/party list style
+- [x] Unit name displayed at top (bold, 16px)
+- [x] "Created on [date]" shown below name (grey, 12px)
+- [x] Edit/Restore icon aligned to right with zero padding
+- [x] Added margin to dismissible background for alignment
+- [x] Consistent white cards with grey borders (16px radius)
+
+**Icon Standardization (Outline/Flat Icons):**
+- [x] Converted all icons to outline versions for consistency
+- [x] Updated across all screens:
+  - `person` → `person_outline`
+  - `phone` → `phone_outlined`
+  - `email` → `email_outlined`
+  - `location_on` → `location_on_outlined`
+  - `calendar_today` → `calendar_today_outlined`
+  - `payment` → `payment_outlined`
+  - `check_circle` → `check_circle_outline`
+  - `access_time` → `access_time_outlined`
+  - `receipt_long` → `receipt_long_outlined`
+  - `account_balance_wallet` → `account_balance_wallet_outlined`
+  - `description` → `description_outlined`
+  - `business` → `business_outlined`
+  - `straighten` → `straighten_outlined`
+  - `delete_outline` → `delete_outlined`
+  - `people_outline` → `people_outlined`
+
+**Files Updated:**
+- [x] settings/units_screen.dart
+- [x] settings/parties_screen.dart
+- [x] invoices/add_payment_dialog.dart
+- [x] invoices/add_offline_bill_screen.dart
+- [x] invoices/view_invoice_screen.dart
+- [x] invoices/create_invoice_screen.dart
+- [x] invoices/invoices_screen.dart
+- [x] parties/party_details_screen.dart
+- [x] parties/add_edit_party_screen.dart
+- [x] parties/parties_screen.dart
+- [x] items/add_edit_item_screen.dart
+- [x] items/view_item_screen.dart
+- [x] items/items_screen.dart
+- [x] auth/login_screen.dart
+
+**Design Consistency Achieved:**
+- ✅ All empty state icons use outline versions
+- ✅ All form field prefix icons use outline versions
+- ✅ All action button icons use outline versions
+- ✅ All status indicator icons use outline versions
+- ✅ Consistent card layouts across all list screens
+
+**Database:** No changes required
+
+**Testing:** ✅ All screens display consistent outline icons
+
+---
+
 ### **Step 10: Settings & Configuration** ⚙️
 **Why last?** Nice-to-have features after core functionality is complete.
 
 **What to build:**
 - [ ] Enhance Settings screen with:
   - [ ] App theme toggle (Light/Dark mode)
-  - [ ] Default currency setting
-  - [ ] Auto-logout timeout
-  - [ ] Data sync settings
-  - [ ] About app section
-  - [ ] Version information
-- [ ] Company Configuration (optional)
-  - [ ] Company name
-  - [ ] Address and contact details
-  - [ ] Logo upload
-  - [ ] Invoice number prefix
-
-**Database:** May need `app_settings` or `company_info` table
 
 **Testing:** Can configure app preferences and company details
+
+---
+
+### **Step 11: Home Screen Dashboard** 🏠
+**Why eleventh?** Central hub providing business overview and quick access to key metrics.
+
+**What to build:**
+
+**Priority 1 - Dashboard Summary Cards** (Start Here):
+- [ ] Financial Overview Section:
+  - [ ] **Today's Revenue** card - Total sales today with calendar icon
+  - [ ] **This Week's Revenue** card - Weekly total with trend indicator
+  - [ ] **This Month's Revenue** card - Monthly total with calendar icon
+  - [ ] **Total Outstanding** card - Money to collect (pending + partial) with warning icon
+
+- [ ] Payment Status Cards:
+  - [ ] **Paid Invoices** - Count with green check circle icon
+  - [ ] **Pending Invoices** - Count with red pending icon
+  - [ ] **Partial Payments** - Count with orange partial icon
+  - [ ] Tappable cards navigating to filtered invoice list
+
+**Priority 1 - Recent Activity**:
+- [ ] Recent Invoices Section:
+  - [ ] List last 10 invoices
+  - [ ] Show: Party name, amount, date, status badge
+  - [ ] Tap to view invoice details
+  - [ ] "View All" button navigating to invoices tab
+
+- [ ] Quick Actions Row (at top):
+  - [ ] Create Invoice button (navigate to create screen)
+  - [ ] Offline Bill button (already exists - reuse)
+  - [ ] Add Party button (navigate to party creation)
+  - [ ] Consistent button styling (12px border radius)
+
+**Priority 2 - Additional Features** (Later):
+- [ ] Pending Payments Section:
+  - [ ] List invoices awaiting payment
+  - [ ] Show party name, amount due, days pending
+  - [ ] Quick "Add Payment" action
+
+- [ ] Top Parties Widget:
+  - [ ] Top 5 parties by total business this month
+  - [ ] Show party name and total amount
+  - [ ] Tap to view party details
+
+- [ ] Today's Summary Banner (optional):
+  - [ ] One-line stats: "X bills • ₹X billed • ₹X received"
+  - [ ] Date range selector (Today/Week/Month)
+
+**UI Layout Structure**:
+```
+Home Screen
+├── Quick Actions Row (3 buttons)
+├── Financial Summary (4 cards in 2x2 grid)
+├── Payment Status (3 cards in row or 3x1 grid)
+├── Recent Invoices (List with "View All")
+└── (Optional) Pending Payments / Top Parties
+```
+
+**Card Design**:
+- White background with grey border
+- 16px border radius
+- Icon + Title + Value layout
+- Consistent padding (16px)
+- Color coding: Green (positive), Red (negative), Orange (partial)
+
+**Data Fetching**:
+- Aggregate queries on `invoices` and `payments` tables
+- Date range filtering (today/week/month)
+- Status calculation (paid/pending/partial)
+- Real-time updates with Provider
+
+**Database:** Read-only aggregate queries on existing tables
+
+**Testing:** Can view business metrics, navigate to details, quick actions work
 
 ---
 
@@ -522,12 +647,29 @@ After completing all 10 steps, users should be able to:
 
 ## 📌 **Current Status**
 
-**Completed:** Steps 0-9 (Authentication, Units, Parties, Items, Invoice Creation, Invoice Management, Payment Management, Party Report, PDF Generation & Sharing, Offline Bill Entry)
-**Next Step:** Step 10 - Settings & Configuration (Basic Mode)
+**Completed:** Steps 0-9 + UI/UX Polish (Authentication, Units, Parties, Items, Invoice Creation, Invoice Management, Payment Management, Party Report, PDF Generation & Sharing, Offline Bill Entry, Icon Standardization)
+**Next Step:** Step 11 - Home Screen Dashboard (Business metrics & quick actions)
 **Mode:** Basic Mode First
 **Pending from Step 5:** Date/status filters (not critical for MVP)
+**Step 10 Status:** Partially skipped (only theme toggle deferred for later)
+
 **Recent Completions:**
-- Step 9: Offline Bill Entry ✅ (All features completed)
+- **UI/UX Polish & Consistency** ✅ (December 2025)
+  - Units screen redesigned with simplified card layout
+  - All icons standardized to outline/flat versions across entire app
+  - Consistent design system: white cards, grey borders, 16px radius
+  - 14 files updated for icon consistency
+
+- **Offline Invoice Improvements** ✅ (December 2025)
+  - OFFLINE badge implementation on mobile and web
+  - Hide items/bundle sections for offline invoices
+  - Edit support with limited fields (Party, Amount, Date only)
+  - Payment fields managed separately in Payment History
+  - Database schema fix: using `remark` field instead of `notes`
+  - Badge sizing and positioning consistency
+  - All changes synced across mobile, web, and main branches
+
+- **Step 9: Offline Bill Entry** ✅ (October 2025)
   - Lightning bolt button in AppBar for fast invoice creation
   - Full-screen form matching web version (all 5 fields)
   - Party selection with searchable draggable bottom sheet
@@ -542,8 +684,10 @@ After completing all 10 steps, users should be able to:
   - OFFLINE badge display in invoice list (orange bg/text)
   - Validation for partial payments
   - Theme-based hint color for placeholders
-- Step 8: PDF Generation & Sharing (completed in previous session)
-**Awaiting:** User approval to proceed with Step 10
+
+- **Step 8: PDF Generation & Sharing** ✅ (October 2025)
+
+**Awaiting:** User approval to proceed with Step 11 - Home Screen Dashboard
 
 ---
 

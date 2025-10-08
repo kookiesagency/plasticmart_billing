@@ -192,7 +192,7 @@ class _AddPaymentDialogState extends State<AddPaymentDialog> {
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
                       ),
-                      suffixIcon: const Icon(Icons.calendar_today),
+                      suffixIcon: const Icon(Icons.calendar_today_outlined),
                     ),
                     child: Text(
                       _formatDateForDisplay(_selectedDate),

@@ -79,6 +79,7 @@ class InvoiceProvider with ChangeNotifier {
         invoiceData['party_name'] = partyName;
         invoiceData['sub_total'] = subTotal;
         invoiceData['total_amount'] = totalAmount;
+        invoiceData['total_paid'] = totalPaid;
         invoiceData['status'] = calculatedStatus; // Override with calculated status
 
         return Invoice.fromJson(invoiceData);
@@ -151,6 +152,7 @@ class InvoiceProvider with ChangeNotifier {
         invoiceData['party_name'] = partyName;
         invoiceData['sub_total'] = subTotal;
         invoiceData['total_amount'] = totalAmount;
+        invoiceData['total_paid'] = totalPaid;
         invoiceData['status'] = calculatedStatus; // Override with calculated status
 
         return Invoice.fromJson(invoiceData);
@@ -411,6 +413,7 @@ class InvoiceProvider with ChangeNotifier {
         invoiceData['party_name'] = partyName;
         invoiceData['sub_total'] = subTotal;
         invoiceData['total_amount'] = totalAmount;
+        invoiceData['total_paid'] = totalPaid;
         invoiceData['status'] = calculatedStatus;
 
         return Invoice.fromJson(invoiceData);

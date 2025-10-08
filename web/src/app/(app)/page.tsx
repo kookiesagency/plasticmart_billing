@@ -88,7 +88,7 @@ export default function Dashboard() {
     const now = new Date()
     let fromDate: Date | undefined;
 
-    if (value === 'week') fromDate = startOfWeek(now)
+    if (value === 'week') fromDate = startOfWeek(now, { weekStartsOn: 1 }) // Monday
     else if (value === 'month') fromDate = startOfMonth(now)
     else if (value === 'year') fromDate = startOfYear(now)
     else {
