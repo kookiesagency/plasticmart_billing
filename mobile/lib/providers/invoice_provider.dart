@@ -37,13 +37,21 @@ class InvoiceProvider with ChangeNotifier {
         // Extract party name
         final partyName = json['parties'] != null ? json['parties']['name'] as String? : null;
 
-        // Calculate totals from invoice_items
+        // Check if this is an offline invoice
+        final isOffline = json['is_offline'] == true;
+
+        // Calculate totals from invoice_items (or use database total for offline)
         final items = json['invoice_items'] as List? ?? [];
         final subTotal = items.fold<double>(
           0,
           (sum, item) => sum + ((item['quantity'] as num) * (item['rate'] as num)).toDouble(),
         );
-        final totalAmount = subTotal + ((json['bundle_charge'] as num?)?.toDouble() ?? 0);
+
+        // For offline invoices, use the total_amount from database
+        // For regular invoices, calculate from items
+        final totalAmount = isOffline
+            ? ((json['total_amount'] as num?)?.toDouble() ?? 0)
+            : subTotal + ((json['bundle_charge'] as num?)?.toDouble() ?? 0);
 
         // Calculate total paid from payments
         final payments = json['payments'] as List? ?? [];
@@ -103,12 +111,20 @@ class InvoiceProvider with ChangeNotifier {
       _deletedInvoices = (response as List).map((json) {
         final partyName = json['parties'] != null ? json['parties']['name'] as String? : null;
 
+        // Check if this is an offline invoice
+        final isOffline = json['is_offline'] == true;
+
         final items = json['invoice_items'] as List? ?? [];
         final subTotal = items.fold<double>(
           0,
           (sum, item) => sum + ((item['quantity'] as num) * (item['rate'] as num)).toDouble(),
         );
-        final totalAmount = subTotal + ((json['bundle_charge'] as num?)?.toDouble() ?? 0);
+
+        // For offline invoices, use the total_amount from database
+        // For regular invoices, calculate from items
+        final totalAmount = isOffline
+            ? ((json['total_amount'] as num?)?.toDouble() ?? 0)
+            : subTotal + ((json['bundle_charge'] as num?)?.toDouble() ?? 0);
 
         // Calculate total paid from payments
         final payments = json['payments'] as List? ?? [];
@@ -355,12 +371,20 @@ class InvoiceProvider with ChangeNotifier {
       final invoices = (response as List).map((json) {
         final partyName = json['parties'] != null ? json['parties']['name'] as String? : null;
 
+        // Check if this is an offline invoice
+        final isOffline = json['is_offline'] == true;
+
         final items = json['invoice_items'] as List? ?? [];
         final subTotal = items.fold<double>(
           0,
           (sum, item) => sum + ((item['quantity'] as num) * (item['rate'] as num)).toDouble(),
         );
-        final totalAmount = subTotal + ((json['bundle_charge'] as num?)?.toDouble() ?? 0);
+
+        // For offline invoices, use the total_amount from database
+        // For regular invoices, calculate from items
+        final totalAmount = isOffline
+            ? ((json['total_amount'] as num?)?.toDouble() ?? 0)
+            : subTotal + ((json['bundle_charge'] as num?)?.toDouble() ?? 0);
 
         // Calculate total paid from payments
         final payments = json['payments'] as List? ?? [];

@@ -91,7 +91,11 @@ class _ViewInvoiceScreenState extends State<ViewInvoiceScreen> {
 
   // Calculate balance due
   double get _balanceDue {
-    final grandTotal = _calculatedSubTotal + (_invoice?.bundleCharge ?? 0);
+    // For offline invoices, use the total_amount from database
+    // For regular invoices, calculate from items
+    final grandTotal = (_invoice?.isOffline == true)
+        ? (_invoice?.totalAmount ?? 0)
+        : _calculatedSubTotal + (_invoice?.bundleCharge ?? 0);
     return grandTotal - _totalPaid;
   }
 
@@ -252,6 +256,28 @@ class _ViewInvoiceScreenState extends State<ViewInvoiceScreen> {
                                         ),
                                       ),
                                     ),
+                                    if (_invoice!.isOffline == true) ...[
+                                      const SizedBox(width: 8),
+                                      Container(
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 8,
+                                          vertical: 4,
+                                        ),
+                                        decoration: BoxDecoration(
+                                          color: const Color(0xFFFFF7ED), // bg-orange-100
+                                          borderRadius: BorderRadius.circular(6),
+                                        ),
+                                        child: const Text(
+                                          'OFFLINE',
+                                          style: TextStyle(
+                                            color: Color(0xFFC2410C), // text-orange-700
+                                            fontSize: 10,
+                                            fontWeight: FontWeight.bold,
+                                            letterSpacing: 0.5,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
                                   ],
                                 ),
                               ],
@@ -289,86 +315,89 @@ class _ViewInvoiceScreenState extends State<ViewInvoiceScreen> {
                           ],
                         ),
                       ),
-                      const SizedBox(height: 16),
+                      // Hide Items section for offline invoices
+                      if (_invoice!.isOffline != true) ...[
+                        const SizedBox(height: 16),
 
-                      // Items Card
-                      Container(
-                        padding: const EdgeInsets.all(16),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(16),
-                          border: Border.all(color: Colors.grey.shade200),
-                        ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const Text(
-                              'Items',
-                              style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
+                        // Items Card
+                        Container(
+                          padding: const EdgeInsets.all(16),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(16),
+                            border: Border.all(color: Colors.grey.shade200),
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Text(
+                                'Items',
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                ),
                               ),
-                            ),
-                            const SizedBox(height: 16),
-                            ..._items.asMap().entries.map((entry) {
-                              final index = entry.key;
-                              final item = entry.value;
-                              return Padding(
-                                  padding: const EdgeInsets.only(bottom: 12),
-                                  child: Row(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        '${index + 1}. ',
-                                        style: TextStyle(
-                                          fontWeight: FontWeight.w500,
-                                          fontSize: 14,
-                                          color: Colors.grey.shade700,
-                                        ),
-                                      ),
-                                      Expanded(
-                                        flex: 3,
-                                        child: Column(
-                                          crossAxisAlignment: CrossAxisAlignment.start,
-                                          children: [
-                                            Text(
-                                              item.itemName ?? 'Unknown Item',
-                                              style: const TextStyle(
-                                                fontWeight: FontWeight.w500,
-                                                fontSize: 14,
-                                              ),
-                                            ),
-                                            const SizedBox(height: 2),
-                                            Text(
-                                              '${_formatNumber(item.quantity)} ${item.itemUnit ?? ''} × ₹${_formatNumber(item.rate)}',
-                                              style: TextStyle(
-                                                color: Colors.grey.shade600,
-                                                fontSize: 12,
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                      Expanded(
-                                        flex: 1,
-                                        child: Text(
-                                          '₹${_formatNumber(item.total)}',
-                                          textAlign: TextAlign.right,
+                              const SizedBox(height: 16),
+                              ..._items.asMap().entries.map((entry) {
+                                final index = entry.key;
+                                final item = entry.value;
+                                return Padding(
+                                    padding: const EdgeInsets.only(bottom: 12),
+                                    child: Row(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          '${index + 1}. ',
                                           style: TextStyle(
-                                            fontWeight: FontWeight.w600,
+                                            fontWeight: FontWeight.w500,
                                             fontSize: 14,
-                                            color: colorScheme.primary,
+                                            color: Colors.grey.shade700,
                                           ),
                                         ),
-                                      ),
-                                    ],
-                                  ),
-                                );
-                            }),
-                          ],
+                                        Expanded(
+                                          flex: 3,
+                                          child: Column(
+                                            crossAxisAlignment: CrossAxisAlignment.start,
+                                            children: [
+                                              Text(
+                                                item.itemName ?? 'Unknown Item',
+                                                style: const TextStyle(
+                                                  fontWeight: FontWeight.w500,
+                                                  fontSize: 14,
+                                                ),
+                                              ),
+                                              const SizedBox(height: 2),
+                                              Text(
+                                                '${_formatNumber(item.quantity)} ${item.itemUnit ?? ''} × ₹${_formatNumber(item.rate)}',
+                                                style: TextStyle(
+                                                  color: Colors.grey.shade600,
+                                                  fontSize: 12,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                        Expanded(
+                                          flex: 1,
+                                          child: Text(
+                                            '₹${_formatNumber(item.total)}',
+                                            textAlign: TextAlign.right,
+                                            style: TextStyle(
+                                              fontWeight: FontWeight.w600,
+                                              fontSize: 14,
+                                              color: colorScheme.primary,
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  );
+                              }),
+                            ],
+                          ),
                         ),
-                      ),
-                      const SizedBox(height: 16),
+                        const SizedBox(height: 16),
+                      ],
 
                       // Payment History Card
                       Container(
@@ -533,27 +562,30 @@ class _ViewInvoiceScreenState extends State<ViewInvoiceScreen> {
                         ),
                         child: Column(
                           children: [
-                            _buildSummaryRow(
-                              'Sub Total',
-                              '₹${_formatNumber(_calculatedSubTotal)}',
-                              false,
-                            ),
-                            const SizedBox(height: 8),
-                            _buildSummaryRow(
-                              'Bundle Qty',
-                              _formatNumber(_invoice!.bundleQuantity ?? 1),
-                              false,
-                            ),
-                            const SizedBox(height: 8),
-                            _buildSummaryRow(
-                              'Bundle Charge',
-                              '₹${_formatNumber(_invoice!.bundleCharge)}',
-                              false,
-                            ),
-                            const Divider(height: 24),
+                            // Hide sub-total, bundle details for offline invoices
+                            if (_invoice!.isOffline != true) ...[
+                              _buildSummaryRow(
+                                'Sub Total',
+                                '₹${_formatNumber(_calculatedSubTotal)}',
+                                false,
+                              ),
+                              const SizedBox(height: 8),
+                              _buildSummaryRow(
+                                'Bundle Qty',
+                                _formatNumber(_invoice!.bundleQuantity ?? 1),
+                                false,
+                              ),
+                              const SizedBox(height: 8),
+                              _buildSummaryRow(
+                                'Bundle Charge',
+                                '₹${_formatNumber(_invoice!.bundleCharge)}',
+                                false,
+                              ),
+                              const Divider(height: 24),
+                            ],
                             _buildSummaryRow(
                               'Grand Total',
-                              '₹${_formatNumber(_calculatedSubTotal + _invoice!.bundleCharge)}',
+                              '₹${_formatNumber((_invoice!.isOffline == true) ? (_invoice!.totalAmount ?? 0) : (_calculatedSubTotal + _invoice!.bundleCharge))}',
                               true,
                             ),
                             const Divider(height: 24),
