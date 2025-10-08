@@ -324,19 +324,18 @@ class _InvoicesScreenState extends State<InvoicesScreen> with SingleTickerProvid
                                         crossAxisAlignment: CrossAxisAlignment.start,
                                         children: [
                                           Expanded(
-                                            child: Row(
+                                            child: Text(
+                                              invoice.partyName ?? 'Unknown Party',
+                                              style: const TextStyle(
+                                                fontWeight: FontWeight.w600,
+                                                fontSize: 16,
+                                              ),
+                                            ),
+                                          ),
+                                          if (!_showDeleted) ...[
+                                            Row(
                                               children: [
-                                                Flexible(
-                                                  child: Text(
-                                                    invoice.partyName ?? 'Unknown Party',
-                                                    style: const TextStyle(
-                                                      fontWeight: FontWeight.w600,
-                                                      fontSize: 16,
-                                                    ),
-                                                  ),
-                                                ),
                                                 if (invoice.isOffline == true) ...[
-                                                  const SizedBox(width: 6),
                                                   Container(
                                                     padding: const EdgeInsets.symmetric(
                                                       horizontal: 6,
@@ -356,28 +355,27 @@ class _InvoicesScreenState extends State<InvoicesScreen> with SingleTickerProvid
                                                       ),
                                                     ),
                                                   ),
+                                                  const SizedBox(width: 6),
                                                 ],
-                                              ],
-                                            ),
-                                          ),
-                                          if (!_showDeleted) ...[
-                                            Container(
-                                              padding: const EdgeInsets.symmetric(
-                                                horizontal: 8,
-                                                vertical: 2,
-                                              ),
-                                              decoration: BoxDecoration(
-                                                color: _getStatusColor(invoice.status).withOpacity(0.1),
-                                                borderRadius: BorderRadius.circular(4),
-                                              ),
-                                              child: Text(
-                                                _getStatusText(invoice.status),
-                                                style: TextStyle(
-                                                  color: _getStatusColor(invoice.status),
-                                                  fontSize: 11,
-                                                  fontWeight: FontWeight.bold,
+                                                Container(
+                                                  padding: const EdgeInsets.symmetric(
+                                                    horizontal: 8,
+                                                    vertical: 2,
+                                                  ),
+                                                  decoration: BoxDecoration(
+                                                    color: _getStatusColor(invoice.status).withOpacity(0.1),
+                                                    borderRadius: BorderRadius.circular(4),
+                                                  ),
+                                                  child: Text(
+                                                    _getStatusText(invoice.status),
+                                                    style: TextStyle(
+                                                      color: _getStatusColor(invoice.status),
+                                                      fontSize: 11,
+                                                      fontWeight: FontWeight.bold,
+                                                    ),
+                                                  ),
                                                 ),
-                                              ),
+                                              ],
                                             ),
                                           ],
                                         ],
