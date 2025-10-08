@@ -16,6 +16,10 @@ class PdfService {
   }) async {
     final pdf = pw.Document();
 
+    // Load font that supports Rupee symbol
+    final font = await PdfGoogleFonts.notoSansRegular();
+    final fontBold = await PdfGoogleFonts.notoSansBold();
+
     // Calculate totals
     final subTotal = items.fold<double>(
       0,
@@ -28,6 +32,10 @@ class PdfService {
       pw.MultiPage(
         pageFormat: PdfPageFormat.a4,
         margin: const pw.EdgeInsets.all(32),
+        theme: pw.ThemeData.withFont(
+          base: font,
+          bold: fontBold,
+        ),
         build: (pw.Context context) {
           return [
             // Header
