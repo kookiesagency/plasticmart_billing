@@ -196,7 +196,7 @@ export function QuickEntryDialog({ isOpen, onClose, onSuccess, invoiceId, editDa
               invoice_id: invoiceId,
               amount: amountReceived,
               payment_date: values.invoice_date,
-              notes: values.notes || 'Quick entry payment',
+              remark: values.notes || 'Quick entry payment',
             })
 
           if (paymentError) {
@@ -247,7 +247,7 @@ export function QuickEntryDialog({ isOpen, onClose, onSuccess, invoiceId, editDa
             invoice_id: newInvoice.id,
             amount: amountReceived,
             payment_date: values.invoice_date,
-            notes: values.notes || 'Quick entry payment',
+            remark: values.notes || 'Quick entry payment',
           })
 
         if (paymentError) {
@@ -402,107 +402,112 @@ export function QuickEntryDialog({ isOpen, onClose, onSuccess, invoiceId, editDa
               )}
             />
 
-            <FormField
-              control={form.control}
-              name="payment_status"
-              render={({ field }) => {
-                const [open, setOpen] = useState(false)
-                return (
-                  <FormItem className="flex flex-col">
-                    <FormLabel>Payment Status *</FormLabel>
-                    <Popover open={open} onOpenChange={setOpen}>
-                      <PopoverTrigger asChild>
+            {/* Hide payment and notes fields in edit mode - managed separately in Payment History */}
+            {!isEditMode && (
+              <>
+                <FormField
+                  control={form.control}
+                  name="payment_status"
+                  render={({ field }) => {
+                    const [open, setOpen] = useState(false)
+                    return (
+                      <FormItem className="flex flex-col">
+                        <FormLabel>Payment Status *</FormLabel>
+                        <Popover open={open} onOpenChange={setOpen}>
+                          <PopoverTrigger asChild>
+                            <FormControl>
+                              <Button
+                                variant="outline"
+                                role="combobox"
+                                className={cn(
+                                  "justify-between",
+                                  !field.value && "text-muted-foreground"
+                                )}
+                              >
+                                {field.value || "Select payment status"}
+                                <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                              </Button>
+                            </FormControl>
+                          </PopoverTrigger>
+                          <PopoverContent className="w-[400px] p-0" align="start">
+                            <Command>
+                              <CommandInput placeholder="Search payment status..." />
+                              <CommandList>
+                                <CommandEmpty>No payment status found.</CommandEmpty>
+                                <CommandGroup>
+                                  {['Paid', 'Pending', 'Partial'].map((status) => (
+                                    <CommandItem
+                                      value={status}
+                                      key={status}
+                                      onSelect={() => {
+                                        form.setValue("payment_status", status as 'Paid' | 'Pending' | 'Partial')
+                                        setOpen(false)
+                                      }}
+                                    >
+                                      <Check
+                                        className={cn(
+                                          "mr-2 h-4 w-4",
+                                          status === field.value
+                                            ? "opacity-100"
+                                            : "opacity-0"
+                                        )}
+                                      />
+                                      {status}
+                                    </CommandItem>
+                                  ))}
+                                </CommandGroup>
+                              </CommandList>
+                            </Command>
+                          </PopoverContent>
+                        </Popover>
+                        <FormMessage />
+                      </FormItem>
+                    )
+                  }}
+                />
+
+                {paymentStatus === 'Partial' && (
+                  <FormField
+                    control={form.control}
+                    name="amount_received"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Amount Received *</FormLabel>
                         <FormControl>
-                          <Button
-                            variant="outline"
-                            role="combobox"
-                            className={cn(
-                              "justify-between",
-                              !field.value && "text-muted-foreground"
-                            )}
-                          >
-                            {field.value || "Select payment status"}
-                            <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                          </Button>
+                          <Input
+                            type="number"
+                            step="0.01"
+                            placeholder="Enter amount received"
+                            {...field}
+                            onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)}
+                          />
                         </FormControl>
-                      </PopoverTrigger>
-                      <PopoverContent className="w-[400px] p-0" align="start">
-                        <Command>
-                          <CommandInput placeholder="Search payment status..." />
-                          <CommandList>
-                            <CommandEmpty>No payment status found.</CommandEmpty>
-                            <CommandGroup>
-                              {['Paid', 'Pending', 'Partial'].map((status) => (
-                                <CommandItem
-                                  value={status}
-                                  key={status}
-                                  onSelect={() => {
-                                    form.setValue("payment_status", status as 'Paid' | 'Pending' | 'Partial')
-                                    setOpen(false)
-                                  }}
-                                >
-                                  <Check
-                                    className={cn(
-                                      "mr-2 h-4 w-4",
-                                      status === field.value
-                                        ? "opacity-100"
-                                        : "opacity-0"
-                                    )}
-                                  />
-                                  {status}
-                                </CommandItem>
-                              ))}
-                            </CommandGroup>
-                          </CommandList>
-                        </Command>
-                      </PopoverContent>
-                    </Popover>
-                    <FormMessage />
-                  </FormItem>
-                )
-              }}
-            />
-
-            {paymentStatus === 'Partial' && (
-              <FormField
-                control={form.control}
-                name="amount_received"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Amount Received *</FormLabel>
-                    <FormControl>
-                      <Input
-                        type="number"
-                        step="0.01"
-                        placeholder="Enter amount received"
-                        {...field}
-                        onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
                 )}
-              />
-            )}
 
-            <FormField
-              control={form.control}
-              name="notes"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Notes (Optional)</FormLabel>
-                  <FormControl>
-                    <Textarea
-                      placeholder="Add any additional notes..."
-                      className="resize-none"
-                      rows={3}
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+                <FormField
+                  control={form.control}
+                  name="notes"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Notes (Optional)</FormLabel>
+                      <FormControl>
+                        <Textarea
+                          placeholder="Add any additional notes..."
+                          className="resize-none"
+                          rows={3}
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </>
+            )}
 
             <DialogFooter>
               <Button type="button" variant="outline" onClick={onClose} disabled={loading}>
