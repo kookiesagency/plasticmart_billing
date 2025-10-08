@@ -360,48 +360,111 @@ This document provides a step-by-step implementation order for building the Plas
 
 ---
 
-### **Step 8: PDF Generation & Sharing (Basic Mode)** 🖨️
+### ✅ **Step 8: PDF Generation & Sharing (Basic Mode)** 🖨️ - COMPLETED
 **Why eighth?** Essential for professional invoice sharing.
 
-**What to build:**
-- [ ] Add `pdf` package to pubspec.yaml
-- [ ] Create `services/pdf_service.dart`
-- [ ] Create PDF template for invoices
-  - [ ] Company logo and details
-  - [ ] Invoice number and date
-  - [ ] Party details (billed to)
-  - [ ] Items table with quantities, rates, amounts
-  - [ ] Sub-total,bundle qty, bundle charge, grand total
-  - [ ] Payment status and amount received
-- [ ] PDF Actions (from invoice details screen)
-  - [ ] Download PDF to device
-  - [ ] Share via WhatsApp
-**Dependencies:** `pdf`, `printing`, `share_plus`
+**What was built:**
+- [x] Add `pdf` package to pubspec.yaml
+- [x] Create `services/pdf_service.dart`
+- [x] Create PDF template for invoices (matching web format)
+  - [x] Invoice header ("CASH MEMO" title with underline)
+  - [x] Invoice number and date (top-right alignment)
+  - [x] Party details (Bill To section)
+  - [x] Items table with SR. NO, quantities, units, rates, amounts
+  - [x] Sub-total, bundle quantity, bundle charge, grand total
+  - [x] Footer with computer-generated message
+- [x] PDF Actions (from invoice details screen)
+  - [x] Preview PDF with native viewer
+  - [x] Download PDF to device
+  - [x] Share via WhatsApp and other apps
+- [x] Smart filename formatting: "{invoice_number} {party_name} {invoice_date}.pdf"
+- [x] Proper filename sanitization (replace invalid characters)
 
-**Testing:** Can generate, preview, download, and share invoice PDFs
+**Key Features Implemented:**
+- [x] Google Fonts integration for proper Rupee symbol (₹) rendering
+- [x] Multi-page PDF support for invoices with many items
+- [x] 50% width layout optimization (compact, professional look)
+- [x] Smart number formatting (integers without decimals)
+- [x] Share position origin support for iPad/tablet popup positioning
+- [x] Error handling for PDF generation and sharing
+- [x] Debug logging for troubleshooting
+
+**Recent Improvements:**
+- [x] Optimized PDF layout to 50% width for compact printing
+- [x] Added Google Fonts (Noto Sans) for consistent Rupee symbol rendering
+- [x] Enabled multi-page support using `pw.MultiPage` for long invoices
+- [x] Removed icons from Share and PDF buttons for clean UI
+
+**Dependencies:** `pdf`, `printing`, `share_plus`, `path_provider`
+
+**Database:** Read-only operations on `invoices` and `invoice_items` tables
+
+**Testing:** ✅ Can generate, preview, download, and share invoice PDFs with proper formatting
 
 ---
 
-### **Step 9: Offline Bill Entry (Quick Entry Dialog)** ⚡
+### ✅ **Step 9: Offline Bill Entry** ⚡ - COMPLETED
 **Why ninth?** Quick way to add invoices that were sent manually.
 
-**What to build:**
-- [ ] Create Quick Entry dialog (`screens/invoices/quick_entry_dialog.dart`)
-- [ ] Add "Quick Entry" button in Invoice List screen
-- [ ] Quick Entry Form:
-  - [ ] Party dropdown (searchable)
-  - [ ] Total amount field
-  - [ ] Invoice date picker
-  - [ ] Payment status dropdown (Paid/Pending/Partial)
-  - [ ] Amount received field (conditional)
-  - [ ] Notes field (optional)
-- [ ] Mark invoice as `is_offline = true`
-- [ ] Auto-create payment record based on status
-- [ ] Show OFFLINE badge in invoice list
+**What was built:**
+- [x] Create Offline Bill screen (`screens/invoices/add_offline_bill_screen.dart`)
+- [x] Add "Offline Bill" button (lightning bolt icon ⚡) in Home screen AppBar
+- [x] Party Selection Bottom Sheet (matches item selection design):
+  - [x] Draggable bottom sheet with rounded top corners
+  - [x] Searchable party list with real-time filtering
+  - [x] Clean white cards for each party
+  - [x] Party name as title, phone as subtitle
+  - [x] Consistent design with item selection bottom sheet
+  - [x] Swipe down to dismiss functionality
+  - [x] Placeholder text matches theme hint color
+- [x] Complete Offline Bill Form (matching web version):
+  - [x] Party selection with bottom sheet picker
+  - [x] Total Amount input field with rupee icon
+  - [x] Invoice Date picker with calendar icon
+  - [x] Payment Status selection with bottom sheet (Paid/Pending/Partial)
+  - [x] Amount Received field (shows only when Partial is selected)
+  - [x] Notes field (Optional, multiline, top-aligned)
+  - [x] All fields use consistent bordered input style (12px border radius)
+  - [x] Icons for each field (person, rupee, calendar, payment)
+- [x] Payment Status Bottom Sheet:
+  - [x] Color-coded status indicators (red for Pending, orange for Partial, green for Paid)
+  - [x] Visual selection with check icon
+  - [x] Consistent design with party selection bottom sheet
+- [x] Mark invoice as `is_offline = true`
+- [x] Show OFFLINE badge in invoice list (orange background with dark orange text)
+- [x] Auto-create payment record based on payment status
+- [x] Validation for partial payments (must be > 0 and < total amount)
 
-**Database:** Creates entries in `invoices` and `payments` tables
+**Key Features:**
+- [x] Full-screen dedicated interface matching web version
+- [x] All 5 fields from web: Party, Amount, Date, Payment Status, Notes
+- [x] Bottom sheet for party selection (matches item selection design)
+- [x] Bottom sheet for payment status (consistent UI pattern)
+- [x] Draggable bottom sheets with smooth animations
+- [x] Date picker with calendar icon
+- [x] Conditional Amount Received field for partial payments
+- [x] Auto-create payment based on status (Paid/Partial)
+- [x] Search parties by name with instant results
+- [x] Visual feedback with icons and colors
+- [x] Fixed bottom button with full width
+- [x] Back arrow navigation (consistent with other screens)
 
-**Testing:** Can quickly add offline bills with payment information
+**UI/UX Enhancements:**
+- [x] Consistent bordered input style (12px border radius, matching other screens)
+- [x] Icon for each field (person, rupee, calendar, payment)
+- [x] Grey borders and proper padding (16px horizontal, 16px vertical)
+- [x] Multiline notes field with top alignment
+- [x] Consistent bottom sheet design across all pickers
+- [x] Clean white cards for parties with borders
+- [x] Phone numbers displayed in party list
+- [x] Swipe-to-dismiss bottom sheets
+- [x] Theme-based hint color for placeholders
+- [x] Color-coded payment status options with circular indicators
+- [x] Selected status highlighted with check icon
+
+**Database:** Creates entries in `invoices` and `payments` tables based on payment status
+
+**Testing:** ✅ Can create offline bills with all fields matching web version functionality, including partial payments
 
 ---
 
@@ -459,15 +522,28 @@ After completing all 10 steps, users should be able to:
 
 ## 📌 **Current Status**
 
-**Completed:** Steps 0-7 (Authentication, Units, Parties, Items, Invoice Creation, Invoice Management, Payment Management, Party Report + Button Standardization)
-**Next Step:** Step 8 - PDF Generation & Sharing (Basic Mode)
+**Completed:** Steps 0-9 (Authentication, Units, Parties, Items, Invoice Creation, Invoice Management, Payment Management, Party Report, PDF Generation & Sharing, Offline Bill Entry)
+**Next Step:** Step 10 - Settings & Configuration (Basic Mode)
 **Mode:** Basic Mode First
 **Pending from Step 5:** Date/status filters (not critical for MVP)
-**Recent Additions:**
-- Comprehensive button styling guide created
-- All buttons standardized across 8 screens
-- Multiple UI refinements (SR numbers, compact buttons, proper spacing)
-**Awaiting:** User approval to proceed with Step 8
+**Recent Completions:**
+- Step 9: Offline Bill Entry ✅ (All features completed)
+  - Lightning bolt button in AppBar for fast invoice creation
+  - Full-screen form matching web version (all 5 fields)
+  - Party selection with searchable draggable bottom sheet
+  - Total Amount input with rupee icon
+  - Invoice Date picker with calendar icon
+  - Payment Status bottom sheet with color-coded indicators (Paid/Pending/Partial)
+  - Amount Received field (conditional - shows only for Partial status)
+  - Notes field (optional, multiline, top-aligned)
+  - Consistent bordered input style matching other screens (12px border radius)
+  - Auto-create payment record based on payment status
+  - Auto-marks invoice as offline (`is_offline = true`)
+  - OFFLINE badge display in invoice list (orange bg/text)
+  - Validation for partial payments
+  - Theme-based hint color for placeholders
+- Step 8: PDF Generation & Sharing (completed in previous session)
+**Awaiting:** User approval to proceed with Step 10
 
 ---
 

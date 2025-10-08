@@ -442,4 +442,64 @@ class InvoiceProvider with ChangeNotifier {
       return null;
     }
   }
+
+  /// Create a quick invoice (simplified invoice without line items)
+  Future<Map<String, dynamic>?> createQuickInvoice({
+    required int partyId,
+    required String partyName,
+    required String invoiceDate,
+    required double totalAmount,
+    required double amountReceived,
+    String? notes,
+  }) async {
+    _isLoading = true;
+    _errorMessage = null;
+    notifyListeners();
+
+    try {
+      // Create invoice with total_amount directly
+      final invoiceData = <String, dynamic>{
+        'party_id': partyId,
+        'party_name': partyName,
+        'invoice_date': invoiceDate,
+        'total_amount': totalAmount,
+        'bundle_charge': 0, // No bundle for offline bill
+        'status': 'pending',
+        'is_offline': true, // Mark as offline bill
+        if (notes != null && notes.isNotEmpty) 'notes': notes,
+      };
+
+      final invoiceResponse = await _supabase
+          .from('invoices')
+          .insert(invoiceData)
+          .select()
+          .single();
+
+      final invoiceId = invoiceResponse['id'] as int;
+
+      // Add payment if amount received > 0
+      if (amountReceived > 0) {
+        await _supabase.from('payments').insert({
+          'invoice_id': invoiceId,
+          'amount': amountReceived,
+          'payment_date': invoiceDate,
+          'payment_method': 'cash',
+          'notes': 'Offline bill payment',
+        });
+      }
+
+      await fetchInvoices();
+
+      return {
+        'success': true,
+        'invoice_id': invoiceId,
+        'invoice_number': invoiceResponse['invoice_number'],
+      };
+    } catch (e) {
+      _errorMessage = e.toString();
+      _isLoading = false;
+      notifyListeners();
+      return {'success': false, 'error': e.toString()};
+    }
+  }
 }

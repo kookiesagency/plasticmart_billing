@@ -20,10 +20,11 @@ class DatePickerTheme {
             borderRadius: BorderRadius.all(Radius.circular(8)),
           ),
         ),
-        dividerColor: Colors.grey,
-        dividerTheme: const DividerThemeData(
-          color: Colors.grey,
+        dividerColor: Colors.grey.shade100,
+        dividerTheme: DividerThemeData(
+          color: Colors.grey.shade100,
           thickness: 1,
+          space: 1,
         ),
       ),
       child: child!,

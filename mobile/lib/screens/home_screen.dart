@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import '../providers/app_mode_provider.dart';
 import 'invoices/invoices_screen.dart';
 import 'invoices/create_invoice_screen.dart';
+import 'invoices/add_offline_bill_screen.dart';
 import 'items/items_screen.dart';
 import 'items/add_edit_item_screen.dart';
 import 'parties/parties_screen.dart';
@@ -55,6 +56,21 @@ class _HomeScreenState extends State<HomeScreen> {
         title: Text(_screenTitles[_selectedIndex]),
         actions: _selectedIndex == 0 // Invoices tab
             ? [
+                IconButton(
+                  onPressed: () async {
+                    final result = await Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const AddOfflineBillScreen(),
+                      ),
+                    );
+                    if (result == true && mounted) {
+                      // Refresh the invoice list (handled by InvoicesScreen)
+                    }
+                  },
+                  icon: const Icon(Icons.bolt),
+                  tooltip: 'Offline Bill',
+                ),
                 IconButton(
                   onPressed: () {
                     Navigator.push(
