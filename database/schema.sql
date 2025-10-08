@@ -1,110 +1,102 @@
--- =================================================================
---  Phase 1: Core Tables
--- =================================================================
+-- WARNING: This schema is for context only and is not meant to be run.
+-- Table order and constraints may not be valid for execution.
 
--- Table for managing measurement units (e.g., PCS, DZ, KG)
-CREATE TABLE units (
-    id SERIAL PRIMARY KEY,
-    name TEXT NOT NULL,
-    abbreviation TEXT NOT NULL,
-    created_at TIMESTAMPTZ DEFAULT NOW()
+CREATE TABLE public.activity_logs (
+  id bigint GENERATED ALWAYS AS IDENTITY NOT NULL,
+  created_at timestamp with time zone NOT NULL DEFAULT now(),
+  user_email text,
+  action text NOT NULL,
+  target_table text,
+  target_id text,
+  details jsonb,
+  deleted_at timestamp with time zone,
+  CONSTRAINT activity_logs_pkey PRIMARY KEY (id)
 );
-
--- Table for managing parties (clients)
-CREATE TABLE parties (
-    id SERIAL PRIMARY KEY,
-    name TEXT NOT NULL,
-    contact_details JSONB, -- Can store phone, email, address etc.
-    bundle_rate NUMERIC(10, 2), -- Party-specific bundle rate
-    created_at TIMESTAMPTZ DEFAULT NOW()
+CREATE TABLE public.app_settings (
+  key text NOT NULL,
+  value text NOT NULL,
+  CONSTRAINT app_settings_pkey PRIMARY KEY (key)
 );
-
--- Table for managing items/products
-CREATE TABLE items (
-    id SERIAL PRIMARY KEY,
-    name TEXT NOT NULL,
-    default_rate NUMERIC(10, 2) NOT NULL,
-    unit_id INT REFERENCES units(id) ON DELETE SET NULL,
-    created_at TIMESTAMPTZ DEFAULT NOW()
+CREATE TABLE public.invoice_items (
+  id integer NOT NULL DEFAULT nextval('invoice_items_id_seq'::regclass),
+  invoice_id integer NOT NULL,
+  item_id integer,
+  quantity integer NOT NULL,
+  rate numeric NOT NULL,
+  created_at timestamp with time zone DEFAULT now(),
+  item_name text NOT NULL,
+  item_unit text NOT NULL,
+  position integer NOT NULL,
+  original_rate numeric,
+  original_unit character varying,
+  CONSTRAINT invoice_items_pkey PRIMARY KEY (id),
+  CONSTRAINT invoice_items_invoice_id_fkey FOREIGN KEY (invoice_id) REFERENCES public.invoices(id),
+  CONSTRAINT invoice_items_item_id_fkey FOREIGN KEY (item_id) REFERENCES public.items(id)
 );
-
--- Junction table for party-specific item prices
-CREATE TABLE item_party_prices (
-    item_id INT REFERENCES items(id) ON DELETE CASCADE,
-    party_id INT REFERENCES parties(id) ON DELETE CASCADE,
-    price NUMERIC(10, 2) NOT NULL,
-    PRIMARY KEY (item_id, party_id),
-    created_at TIMESTAMPTZ DEFAULT NOW()
+CREATE TABLE public.invoices (
+  id integer NOT NULL DEFAULT nextval('invoices_id_seq'::regclass),
+  party_id integer,
+  invoice_date date NOT NULL,
+  bundle_charge numeric DEFAULT 0,
+  status text DEFAULT 'pending'::text,
+  created_at timestamp with time zone DEFAULT now(),
+  bundle_rate numeric DEFAULT 0,
+  bundle_quantity integer DEFAULT 0,
+  total_amount numeric,
+  deleted_at timestamp with time zone,
+  public_id uuid NOT NULL DEFAULT gen_random_uuid() UNIQUE,
+  updated_at timestamp with time zone DEFAULT now(),
+  party_name text NOT NULL,
+  invoice_number character varying NOT NULL UNIQUE,
+  is_offline boolean NOT NULL DEFAULT false,
+  CONSTRAINT invoices_pkey PRIMARY KEY (id),
+  CONSTRAINT invoices_party_id_fkey FOREIGN KEY (party_id) REFERENCES public.parties(id)
 );
-
--- =================================================================
---  Phase 2: Invoice & Payment Tables
--- =================================================================
-
--- Table for invoices
-CREATE TABLE invoices (
-    id SERIAL PRIMARY KEY,
-    party_id INT NOT NULL REFERENCES parties(id) ON DELETE RESTRICT,
-    invoice_date DATE NOT NULL,
-    bundle_charge NUMERIC(10, 2) DEFAULT 0,
-    status TEXT DEFAULT 'pending', -- e.g., pending, paid, partial
-    created_at TIMESTAMPTZ DEFAULT NOW()
+CREATE TABLE public.item_party_prices (
+  item_id integer NOT NULL,
+  party_id integer NOT NULL,
+  price numeric NOT NULL,
+  created_at timestamp with time zone DEFAULT now(),
+  CONSTRAINT item_party_prices_pkey PRIMARY KEY (item_id, party_id),
+  CONSTRAINT item_party_prices_item_id_fkey FOREIGN KEY (item_id) REFERENCES public.items(id),
+  CONSTRAINT item_party_prices_party_id_fkey FOREIGN KEY (party_id) REFERENCES public.parties(id)
 );
-
--- Table for individual line items on an invoice
-CREATE TABLE invoice_items (
-    id SERIAL PRIMARY KEY,
-    invoice_id INT NOT NULL REFERENCES invoices(id) ON DELETE CASCADE,
-    item_id INT NOT NULL REFERENCES items(id) ON DELETE RESTRICT,
-    quantity INT NOT NULL,
-    rate NUMERIC(10, 2) NOT NULL, -- Price at the time of invoice creation
-    created_at TIMESTAMPTZ DEFAULT NOW()
+CREATE TABLE public.items (
+  id integer NOT NULL DEFAULT nextval('items_id_seq'::regclass),
+  name text NOT NULL,
+  default_rate numeric NOT NULL,
+  unit_id integer,
+  created_at timestamp with time zone DEFAULT now(),
+  deleted_at timestamp with time zone,
+  purchase_rate numeric,
+  purchase_party_id integer,
+  CONSTRAINT items_pkey PRIMARY KEY (id),
+  CONSTRAINT items_unit_id_fkey FOREIGN KEY (unit_id) REFERENCES public.units(id),
+  CONSTRAINT fk_items_purchase_party FOREIGN KEY (purchase_party_id) REFERENCES public.parties(id)
 );
-
--- Table for recording payments against invoices
-CREATE TABLE payments (
-    id SERIAL PRIMARY KEY,
-    invoice_id INT NOT NULL REFERENCES invoices(id) ON DELETE CASCADE,
-    amount NUMERIC(10, 2) NOT NULL,
-    payment_date DATE NOT NULL,
-    created_at TIMESTAMPTZ DEFAULT NOW()
+CREATE TABLE public.parties (
+  id integer NOT NULL DEFAULT nextval('parties_id_seq'::regclass),
+  name text NOT NULL,
+  bundle_rate numeric,
+  created_at timestamp with time zone DEFAULT now(),
+  deleted_at timestamp with time zone,
+  opening_balance numeric NOT NULL DEFAULT 0,
+  CONSTRAINT parties_pkey PRIMARY KEY (id)
 );
-
--- =================================================================
---  Phase 3: Settings Table
--- =================================================================
-
--- Key-value table for global application settings
-CREATE TABLE app_settings (
-    key TEXT PRIMARY KEY,
-    value TEXT NOT NULL
+CREATE TABLE public.payments (
+  id integer NOT NULL DEFAULT nextval('payments_id_seq'::regclass),
+  invoice_id integer NOT NULL,
+  amount numeric NOT NULL,
+  payment_date date NOT NULL,
+  created_at timestamp with time zone DEFAULT now(),
+  remark text,
+  CONSTRAINT payments_pkey PRIMARY KEY (id),
+  CONSTRAINT payments_invoice_id_fkey FOREIGN KEY (invoice_id) REFERENCES public.invoices(id)
 );
-
--- Insert a default bundle rate as an initial setting
-INSERT INTO app_settings (key, value) VALUES ('default_bundle_rate', '0');
-
--- =================================================================
---  Enable Row Level Security (RLS)
---  Important for security when using Supabase client-side
--- =================================================================
-
-ALTER TABLE units ENABLE ROW LEVEL SECURITY;
-ALTER TABLE parties ENABLE ROW LEVEL SECURITY;
-ALTER TABLE items ENABLE ROW LEVEL SECURITY;
-ALTER TABLE item_party_prices ENABLE ROW LEVEL SECURITY;
-ALTER TABLE invoices ENABLE ROW LEVEL SECURITY;
-ALTER TABLE invoice_items ENABLE ROW LEVEL SECURITY;
-ALTER TABLE payments ENABLE ROW LEVEL SECURITY;
-ALTER TABLE app_settings ENABLE ROW LEVEL SECURITY;
-
--- Create policies to allow authenticated users to access data.
--- These are broad policies; they can be made more restrictive later if needed.
-
-CREATE POLICY "Allow all access to authenticated users" ON units FOR ALL TO authenticated USING (true);
-CREATE POLICY "Allow all access to authenticated users" ON parties FOR ALL TO authenticated USING (true);
-CREATE POLICY "Allow all access to authenticated users" ON items FOR ALL TO authenticated USING (true);
-CREATE POLICY "Allow all access to authenticated users" ON item_party_prices FOR ALL TO authenticated USING (true);
-CREATE POLICY "Allow all access to authenticated users" ON invoices FOR ALL TO authenticated USING (true);
-CREATE POLICY "Allow all access to authenticated users" ON invoice_items FOR ALL TO authenticated USING (true);
-CREATE POLICY "Allow all access to authenticated users" ON payments FOR ALL TO authenticated USING (true);
-CREATE POLICY "Allow all access to authenticated users" ON app_settings FOR ALL TO authenticated USING (true); 
+CREATE TABLE public.units (
+  id integer NOT NULL DEFAULT nextval('units_id_seq'::regclass),
+  name text NOT NULL,
+  created_at timestamp with time zone DEFAULT now(),
+  deleted_at timestamp with time zone,
+  CONSTRAINT units_pkey PRIMARY KEY (id)
+);

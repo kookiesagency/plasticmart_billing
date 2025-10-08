@@ -482,8 +482,7 @@ class InvoiceProvider with ChangeNotifier {
           'invoice_id': invoiceId,
           'amount': amountReceived,
           'payment_date': invoiceDate,
-          'payment_method': 'cash',
-          'notes': notes ?? 'Quick entry payment',
+          'remark': notes ?? 'Quick entry payment',
         });
       }
 
