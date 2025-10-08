@@ -88,7 +88,6 @@ class _AddPaymentDialogState extends State<AddPaymentDialog> {
       invoiceId: widget.invoiceId,
       amount: double.parse(_amountController.text),
       paymentDate: _formatDateForDatabase(_selectedDate),
-      paymentMethod: 'cash',
       remark: _remarkController.text.trim().isEmpty
           ? null
           : _remarkController.text.trim(),
