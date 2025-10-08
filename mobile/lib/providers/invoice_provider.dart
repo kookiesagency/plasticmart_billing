@@ -450,6 +450,7 @@ class InvoiceProvider with ChangeNotifier {
     required String invoiceDate,
     required double totalAmount,
     required double amountReceived,
+    String? notes,
   }) async {
     _isLoading = true;
     _errorMessage = null;
@@ -482,6 +483,7 @@ class InvoiceProvider with ChangeNotifier {
           'amount': amountReceived,
           'payment_date': invoiceDate,
           'payment_method': 'cash',
+          'notes': notes ?? 'Quick entry payment',
         });
       }
 
