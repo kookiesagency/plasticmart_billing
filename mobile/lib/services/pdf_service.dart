@@ -25,34 +25,29 @@ class PdfService {
     final totalAmount = subTotal + bundleCharge;
 
     pdf.addPage(
-      pw.Page(
+      pw.MultiPage(
         pageFormat: PdfPageFormat.a4,
         margin: const pw.EdgeInsets.all(32),
         build: (pw.Context context) {
-          return pw.Column(
-            crossAxisAlignment: pw.CrossAxisAlignment.start,
-            children: [
-              // Header
-              _buildHeader(invoice),
-              pw.SizedBox(height: 24),
+          return [
+            // Header
+            _buildHeader(invoice),
+            pw.SizedBox(height: 24),
 
-              // Invoice Info
-              _buildInvoiceInfo(invoice),
-              pw.SizedBox(height: 24),
+            // Invoice Info
+            _buildInvoiceInfo(invoice),
+            pw.SizedBox(height: 24),
 
-              // Items Table
-              _buildItemsTable(items),
-              pw.SizedBox(height: 16),
+            // Items Table
+            _buildItemsTable(items),
+            pw.SizedBox(height: 16),
 
-              // Totals
-              _buildTotals(subTotal, bundleCharge, totalAmount, invoice),
-              pw.SizedBox(height: 32),
-
-              // Footer
-              pw.Spacer(),
-              _buildFooter(),
-            ],
-          );
+            // Totals
+            _buildTotals(subTotal, bundleCharge, totalAmount, invoice),
+          ];
+        },
+        footer: (pw.Context context) {
+          return _buildFooter();
         },
       ),
     );
