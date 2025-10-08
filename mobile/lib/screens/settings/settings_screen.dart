@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import '../../providers/app_mode_provider.dart';
 import '../../services/app_settings_service.dart';
 import 'units_screen.dart';
 
@@ -16,6 +14,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   final _appSettingsService = AppSettingsService();
   bool _loading = false;
   double _currentBundleRate = 150.0;
+  bool _isDarkMode = false; // TODO: Load from SharedPreferences and implement theme switching
 
   @override
   void initState() {
@@ -221,15 +220,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final appMode = Provider.of<AppModeProvider>(context);
-
     return Container(
       color: Colors.grey.shade50,
       child: ListView(
         padding: const EdgeInsets.all(16),
         children: [
           Text(
-            'App Mode',
+            'Appearance',
             style: TextStyle(
               fontSize: 14,
               fontWeight: FontWeight.bold,
@@ -238,17 +235,27 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ),
           const SizedBox(height: 12),
           _buildSettingCard(
-            icon: Icons.settings_outlined,
+            icon: Icons.dark_mode_outlined,
             iconColor: const Color(0xFF8B5CF6),
-            title: 'Advanced Mode',
-            subtitle: appMode.isAdvancedMode
-                ? 'Advanced features enabled'
-                : 'Advanced features disabled',
+            title: 'Dark Mode',
+            subtitle: _isDarkMode
+                ? 'Dark theme enabled'
+                : 'Light theme enabled',
             trailing: Transform.scale(
               scale: 0.8,
               child: Switch(
-                value: appMode.isAdvancedMode,
-                onChanged: (value) => appMode.toggleMode(),
+                value: _isDarkMode,
+                onChanged: (value) {
+                  setState(() => _isDarkMode = value);
+                  // TODO: Implement theme switching with Provider and SharedPreferences
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Dark mode will be implemented soon'),
+                      backgroundColor: Colors.orange,
+                      behavior: SnackBarBehavior.floating,
+                    ),
+                  );
+                },
                 materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
                 activeColor: Colors.white,
                 activeTrackColor: Theme.of(context).colorScheme.primary,

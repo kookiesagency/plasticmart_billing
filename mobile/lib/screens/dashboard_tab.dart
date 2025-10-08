@@ -11,7 +11,9 @@ import 'parties/add_edit_party_screen.dart';
 import 'items/add_edit_item_screen.dart';
 
 class DashboardTab extends StatefulWidget {
-  const DashboardTab({Key? key}) : super(key: key);
+  final Function(int)? onSwitchToTab;
+
+  const DashboardTab({Key? key, this.onSwitchToTab}) : super(key: key);
 
   @override
   State<DashboardTab> createState() => _DashboardTabState();
@@ -519,8 +521,8 @@ class _DashboardTabState extends State<DashboardTab> {
                 ),
                 TextButton(
                   onPressed: () {
-                    // Switch to invoices tab (index 1 after adding dashboard)
-                    // This will be handled by the parent HomeScreen
+                    // Switch to Bills tab (index 1)
+                    widget.onSwitchToTab?.call(1);
                   },
                   child: const Text('View All'),
                 ),
@@ -549,15 +551,15 @@ class _DashboardTabState extends State<DashboardTab> {
     switch (invoice.status) {
       case 'paid':
         statusColor = Colors.green;
-        statusText = 'PAID';
+        statusText = 'Paid';
         break;
       case 'partial':
         statusColor = Colors.orange;
-        statusText = 'PARTIAL';
+        statusText = 'Partial';
         break;
       default:
         statusColor = Colors.red;
-        statusText = 'PENDING';
+        statusText = 'Pending';
     }
 
     return Container(
@@ -582,87 +584,108 @@ class _DashboardTabState extends State<DashboardTab> {
         borderRadius: BorderRadius.circular(16),
         child: Padding(
           padding: const EdgeInsets.all(16),
-          child: Row(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        Expanded(
-                          child: Text(
-                            invoice.partyName ?? 'Unknown',
-                            style: const TextStyle(
-                              fontWeight: FontWeight.w600,
-                              fontSize: 15,
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Expanded(
+                    child: Text(
+                      invoice.partyName ?? 'Unknown Party',
+                      style: const TextStyle(
+                        fontWeight: FontWeight.w600,
+                        fontSize: 16,
+                      ),
+                    ),
+                  ),
+                  Row(
+                    children: [
+                      if (invoice.isOffline == true) ...[
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 6,
+                            vertical: 2,
+                          ),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFFFF7ED), // bg-orange-100
+                            borderRadius: BorderRadius.circular(4),
+                          ),
+                          child: const Text(
+                            'OFFLINE',
+                            style: TextStyle(
+                              color: Color(0xFFC2410C), // text-orange-700
+                              fontSize: 9,
+                              fontWeight: FontWeight.bold,
+                              letterSpacing: 0.5,
                             ),
-                            overflow: TextOverflow.ellipsis,
-                            maxLines: 1,
                           ),
                         ),
-                        if (invoice.isOffline == true) ...[
-                          const SizedBox(width: 8),
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 6,
-                              vertical: 2,
-                            ),
-                            decoration: BoxDecoration(
-                              color: Colors.grey.shade200,
-                              borderRadius: BorderRadius.circular(4),
-                            ),
-                            child: Text(
-                              'OFFLINE',
-                              style: TextStyle(
-                                color: Colors.grey.shade700,
-                                fontSize: 9,
-                                fontWeight: FontWeight.bold,
-                              ),
+                        const SizedBox(width: 6),
+                      ],
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 6,
+                          vertical: 2,
+                        ),
+                        decoration: BoxDecoration(
+                          color: statusColor.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                        child: Text(
+                          statusText,
+                          style: TextStyle(
+                            color: statusColor,
+                            fontSize: 9,
+                            fontWeight: FontWeight.bold,
+                            letterSpacing: 0.5,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+              const SizedBox(height: 8),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        if (invoice.invoiceNumber != null) ...[
+                          Text(
+                            'Bill #${invoice.invoiceNumber}',
+                            style: TextStyle(
+                              color: Colors.grey.shade700,
+                              fontSize: 13,
                             ),
                           ),
+                          const SizedBox(height: 4),
                         ],
+                        Text(
+                          invoice.invoiceDate != null
+                              ? DateFormat('dd MMM yyyy').format(DateTime.parse(invoice.invoiceDate!))
+                              : 'No date',
+                          style: TextStyle(
+                            color: Colors.grey.shade600,
+                            fontSize: 12,
+                          ),
+                        ),
                       ],
                     ),
-                    const SizedBox(height: 4),
-                    Text(
-                      '₹${(invoice.totalAmount ?? 0).toStringAsFixed(2)}',
-                      style: TextStyle(
-                        color: colorScheme.primary,
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      invoice.invoiceDate != null
-                          ? DateFormat('EEE, MMM d').format(DateTime.parse(invoice.invoiceDate!))
-                          : 'No date',
-                      style: TextStyle(
-                        color: Colors.grey.shade600,
-                        fontSize: 12,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 10,
-                  vertical: 6,
-                ),
-                decoration: BoxDecoration(
-                  color: statusColor.withOpacity(0.15),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Text(
-                  statusText,
-                  style: TextStyle(
-                    color: statusColor,
-                    fontSize: 11,
-                    fontWeight: FontWeight.bold,
                   ),
-                ),
+                  Text(
+                    '₹${(invoice.totalAmount ?? 0).toStringAsFixed(2)}',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: colorScheme.primary,
+                    ),
+                  ),
+                ],
               ),
             ],
           ),

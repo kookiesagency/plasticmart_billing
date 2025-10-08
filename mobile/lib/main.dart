@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'config/supabase_config.dart';
-import 'providers/app_mode_provider.dart';
 import 'providers/auth_provider.dart';
 import 'providers/unit_provider.dart';
 import 'providers/party_provider.dart';
@@ -26,7 +25,6 @@ class MyApp extends StatelessWidget {
     return MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (_) => AuthProvider()),
-        ChangeNotifierProvider(create: (_) => AppModeProvider()),
         ChangeNotifierProvider(create: (_) => UnitProvider()),
         ChangeNotifierProvider(create: (_) => PartyProvider()),
         ChangeNotifierProvider(create: (_) => ItemProvider()),

@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import '../providers/app_mode_provider.dart';
 import 'dashboard_tab.dart';
 import 'invoices/invoices_screen.dart';
 import 'invoices/create_invoice_screen.dart';
@@ -21,16 +19,14 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   int _selectedIndex = 0;
 
-  static final List<Widget> _basicScreens = [
-    const DashboardTab(),
-    const InvoicesScreen(),
-    const ItemsScreen(),
-    const PartiesScreen(),
-    const SettingsScreen(),
-  ];
+  void _switchToTab(int index) {
+    setState(() {
+      _selectedIndex = index;
+    });
+  }
 
-  static final List<Widget> _advancedScreens = [
-    const DashboardTab(),
+  List<Widget> _getScreens() => [
+    DashboardTab(onSwitchToTab: _switchToTab),
     const InvoicesScreen(),
     const ItemsScreen(),
     const PartiesScreen(),
@@ -38,7 +34,7 @@ class _HomeScreenState extends State<HomeScreen> {
   ];
 
   static const List<String> _screenTitles = [
-    'Home',
+    'Dashboard',
     'Bills',
     'Items',
     'Parties',
@@ -47,13 +43,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final appMode = Provider.of<AppModeProvider>(context);
-    final screens = appMode.isBasicMode ? _basicScreens : _advancedScreens;
-
-    // Reset index if switching modes and current index is out of bounds
-    if (_selectedIndex >= screens.length) {
-      _selectedIndex = 0;
-    }
+    final screens = _getScreens();
 
     return Scaffold(
       appBar: AppBar(
