@@ -398,6 +398,7 @@ class _ViewInvoiceScreenState extends State<ViewInvoiceScreen> {
                         ),
                         const SizedBox(height: 16),
                       ],
+                      const SizedBox(height: 16),
 
                       // Payment History Card
                       Container(
