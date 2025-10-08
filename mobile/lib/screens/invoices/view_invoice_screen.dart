@@ -580,10 +580,22 @@ class _ViewInvoiceScreenState extends State<ViewInvoiceScreen> {
                             child: OutlinedButton.icon(
                               onPressed: () async {
                                 if (_invoice == null) return;
-                                await _pdfService.sharePdf(
-                                  invoice: _invoice!,
-                                  items: _items,
-                                );
+
+                                try {
+                                  await _pdfService.sharePdf(
+                                    invoice: _invoice!,
+                                    items: _items,
+                                  );
+                                } catch (e) {
+                                  if (mounted) {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(
+                                        content: Text('Failed to share PDF: $e'),
+                                        backgroundColor: Colors.red,
+                                      ),
+                                    );
+                                  }
+                                }
                               },
                               icon: const Icon(Icons.share),
                               label: const Text('Share', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
@@ -601,10 +613,22 @@ class _ViewInvoiceScreenState extends State<ViewInvoiceScreen> {
                             child: ElevatedButton.icon(
                               onPressed: () async {
                                 if (_invoice == null) return;
-                                await _pdfService.previewPdf(
-                                  invoice: _invoice!,
-                                  items: _items,
-                                );
+
+                                try {
+                                  await _pdfService.previewPdf(
+                                    invoice: _invoice!,
+                                    items: _items,
+                                  );
+                                } catch (e) {
+                                  if (mounted) {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(
+                                        content: Text('Failed to generate PDF: $e'),
+                                        backgroundColor: Colors.red,
+                                      ),
+                                    );
+                                  }
+                                }
                               },
                               icon: const Icon(Icons.picture_as_pdf),
                               label: const Text('PDF', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
