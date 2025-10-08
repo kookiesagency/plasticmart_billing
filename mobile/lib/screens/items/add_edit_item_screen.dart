@@ -165,7 +165,7 @@ class _AddEditItemScreenState extends State<AddEditItemScreen> {
                       return ListTile(
                         title: Text(unit.name),
                         trailing: isSelected
-                            ? const Icon(Icons.check_circle, color: Colors.green)
+                            ? const Icon(Icons.check_circle_outline, color: Colors.green)
                             : null,
                         selected: isSelected,
                         onTap: () {
@@ -251,7 +251,7 @@ class _AddEditItemScreenState extends State<AddEditItemScreen> {
                         return ListTile(
                           title: const Text('None'),
                           trailing: _selectedPurchaseParty == null
-                              ? const Icon(Icons.check_circle, color: Colors.green)
+                              ? const Icon(Icons.check_circle_outline, color: Colors.green)
                               : null,
                           selected: _selectedPurchaseParty == null,
                           onTap: () {
@@ -269,7 +269,7 @@ class _AddEditItemScreenState extends State<AddEditItemScreen> {
                       return ListTile(
                         title: Text(party.name),
                         trailing: isSelected
-                            ? const Icon(Icons.check_circle, color: Colors.green)
+                            ? const Icon(Icons.check_circle_outline, color: Colors.green)
                             : null,
                         selected: isSelected,
                         onTap: () {
@@ -599,7 +599,7 @@ class _AddEditItemScreenState extends State<AddEditItemScreen> {
                 decoration: const InputDecoration(
                   labelText: 'Purchase Party (Optional)',
                   border: OutlineInputBorder(),
-                  prefixIcon: Icon(Icons.business),
+                  prefixIcon: Icon(Icons.business_outlined),
                   suffixIcon: Icon(Icons.arrow_drop_down),
                 ),
                 child: Text(

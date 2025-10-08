@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:intl/intl.dart';
 import '../../providers/unit_provider.dart';
 import '../../models/unit.dart';
 
@@ -53,6 +54,10 @@ class _UnitsScreenState extends State<UnitsScreen> with SingleTickerProviderStat
       final matchesDeletedFilter = _showDeleted ? (unit.deletedAt != null) : (unit.deletedAt == null);
       return matchesSearch && matchesDeletedFilter;
     }).toList();
+  }
+
+  String _formatDate(DateTime date) {
+    return DateFormat('dd MMM yyyy').format(date);
   }
 
   void _showAddEditDialog({Unit? unit}) {
@@ -223,7 +228,7 @@ class _UnitsScreenState extends State<UnitsScreen> with SingleTickerProviderStat
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             Icon(
-                              _showDeleted ? Icons.delete_outline : Icons.straighten,
+                              _showDeleted ? Icons.delete_outlined : Icons.straighten_outlined,
                               size: 64,
                               color: Colors.grey,
                             ),
@@ -257,6 +262,7 @@ class _UnitsScreenState extends State<UnitsScreen> with SingleTickerProviderStat
                               key: Key('unit-${unit.id}'),
                               direction: _showDeleted ? DismissDirection.none : DismissDirection.endToStart,
                               background: Container(
+                                margin: const EdgeInsets.only(bottom: 8),
                                 alignment: Alignment.centerRight,
                                 padding: const EdgeInsets.only(right: 20),
                                 decoration: BoxDecoration(
@@ -302,45 +308,52 @@ class _UnitsScreenState extends State<UnitsScreen> with SingleTickerProviderStat
                                     width: 1,
                                   ),
                                 ),
-                                child: ListTile(
-                                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                                  leading: Container(
-                                    width: 56,
-                                    height: 56,
-                                    decoration: BoxDecoration(
-                                      color: colorScheme.primaryContainer,
-                                      borderRadius: BorderRadius.circular(12),
-                                    ),
-                                    child: Center(
-                                      child: Text(
-                                        unit.name.substring(0, 1).toUpperCase(),
-                                        style: TextStyle(
-                                          fontWeight: FontWeight.bold,
-                                          fontSize: 20,
-                                          color: colorScheme.onPrimaryContainer,
+                                child: Padding(
+                                  padding: const EdgeInsets.all(16),
+                                  child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Expanded(
+                                        child: Column(
+                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          children: [
+                                            Text(
+                                              unit.name,
+                                              style: const TextStyle(
+                                                fontWeight: FontWeight.w600,
+                                                fontSize: 16,
+                                              ),
+                                            ),
+                                            if (unit.createdAt != null) ...[
+                                              const SizedBox(height: 4),
+                                              Text(
+                                                'Created on ${_formatDate(unit.createdAt!)}',
+                                                style: TextStyle(
+                                                  color: Colors.grey.shade600,
+                                                  fontSize: 12,
+                                                ),
+                                              ),
+                                            ],
+                                          ],
                                         ),
                                       ),
-                                    ),
+                                      _showDeleted
+                                          ? IconButton(
+                                              icon: const Icon(Icons.restore, color: Colors.green, size: 22),
+                                              onPressed: () => _restoreUnit(unit.id!),
+                                              tooltip: 'Restore',
+                                              padding: EdgeInsets.zero,
+                                              constraints: const BoxConstraints(),
+                                            )
+                                          : IconButton(
+                                              icon: Icon(Icons.edit_outlined, color: colorScheme.primary, size: 22),
+                                              onPressed: () => _showAddEditDialog(unit: unit),
+                                              tooltip: 'Edit',
+                                              padding: EdgeInsets.zero,
+                                              constraints: const BoxConstraints(),
+                                            ),
+                                    ],
                                   ),
-                                  title: Text(
-                                    unit.name,
-                                    style: const TextStyle(
-                                      fontWeight: FontWeight.w600,
-                                      fontSize: 17,
-                                      letterSpacing: 0.5,
-                                    ),
-                                  ),
-                                  trailing: _showDeleted
-                                      ? IconButton(
-                                          icon: const Icon(Icons.restore, color: Colors.green, size: 22),
-                                          onPressed: () => _restoreUnit(unit.id!),
-                                          tooltip: 'Restore',
-                                        )
-                                      : IconButton(
-                                          icon: Icon(Icons.edit_outlined, color: colorScheme.primary, size: 22),
-                                          onPressed: () => _showAddEditDialog(unit: unit),
-                                          tooltip: 'Edit',
-                                        ),
                                 ),
                               ),
                             );

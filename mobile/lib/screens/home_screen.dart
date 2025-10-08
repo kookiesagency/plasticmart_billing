@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/app_mode_provider.dart';
+import 'dashboard_tab.dart';
 import 'invoices/invoices_screen.dart';
 import 'invoices/create_invoice_screen.dart';
 import 'invoices/add_offline_bill_screen.dart';
@@ -21,6 +22,7 @@ class _HomeScreenState extends State<HomeScreen> {
   int _selectedIndex = 0;
 
   static final List<Widget> _basicScreens = [
+    const DashboardTab(),
     const InvoicesScreen(),
     const ItemsScreen(),
     const PartiesScreen(),
@@ -28,6 +30,7 @@ class _HomeScreenState extends State<HomeScreen> {
   ];
 
   static final List<Widget> _advancedScreens = [
+    const DashboardTab(),
     const InvoicesScreen(),
     const ItemsScreen(),
     const PartiesScreen(),
@@ -35,6 +38,7 @@ class _HomeScreenState extends State<HomeScreen> {
   ];
 
   static const List<String> _screenTitles = [
+    'Home',
     'Bills',
     'Items',
     'Parties',
@@ -54,7 +58,8 @@ class _HomeScreenState extends State<HomeScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text(_screenTitles[_selectedIndex]),
-        actions: _selectedIndex == 0 // Invoices tab
+        centerTitle: true,
+        actions: _selectedIndex == 1 // Invoices tab
             ? [
                 IconButton(
                   onPressed: () async {
@@ -84,7 +89,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   tooltip: 'Create Bill',
                 ),
               ]
-            : _selectedIndex == 1 // Items tab
+            : _selectedIndex == 2 // Items tab
                 ? [
                     IconButton(
                       onPressed: () {
@@ -99,7 +104,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       tooltip: 'Add Item',
                     ),
                   ]
-                : _selectedIndex == 2 // Parties tab
+                : _selectedIndex == 3 // Parties tab
                     ? [
                         IconButton(
                           onPressed: () {
@@ -130,6 +135,10 @@ class _HomeScreenState extends State<HomeScreen> {
           });
         },
         items: const [
+          BottomNavigationBarItem(
+            icon: Icon(Icons.home_outlined),
+            label: 'Home',
+          ),
           BottomNavigationBarItem(
             icon: Icon(Icons.receipt),
             label: 'Bills',

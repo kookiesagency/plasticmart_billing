@@ -203,7 +203,7 @@ class _PartiesScreenState extends State<PartiesScreen> with SingleTickerProvider
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           Icon(
-                            _showDeleted ? Icons.delete_outline : Icons.people_outline,
+                            _showDeleted ? Icons.delete_outlined : Icons.people_outlined,
                             size: 64,
                             color: Colors.grey,
                           ),

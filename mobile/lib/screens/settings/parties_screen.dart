@@ -64,7 +64,7 @@ class _PartiesScreenState extends State<PartiesScreen> {
                   decoration: const InputDecoration(
                     labelText: 'Party Name *',
                     border: OutlineInputBorder(),
-                    prefixIcon: Icon(Icons.person),
+                    prefixIcon: Icon(Icons.person_outline),
                   ),
                   textCapitalization: TextCapitalization.words,
                   validator: (value) {
@@ -81,7 +81,7 @@ class _PartiesScreenState extends State<PartiesScreen> {
                   decoration: const InputDecoration(
                     labelText: 'Phone',
                     border: OutlineInputBorder(),
-                    prefixIcon: Icon(Icons.phone),
+                    prefixIcon: Icon(Icons.phone_outlined),
                   ),
                   keyboardType: TextInputType.phone,
                 ),
@@ -91,7 +91,7 @@ class _PartiesScreenState extends State<PartiesScreen> {
                   decoration: const InputDecoration(
                     labelText: 'Email',
                     border: OutlineInputBorder(),
-                    prefixIcon: Icon(Icons.email),
+                    prefixIcon: Icon(Icons.email_outlined),
                   ),
                   keyboardType: TextInputType.emailAddress,
                 ),
@@ -111,7 +111,7 @@ class _PartiesScreenState extends State<PartiesScreen> {
                   decoration: const InputDecoration(
                     labelText: 'Address',
                     border: OutlineInputBorder(),
-                    prefixIcon: Icon(Icons.location_on),
+                    prefixIcon: Icon(Icons.location_on_outlined),
                   ),
                   maxLines: 3,
                   textCapitalization: TextCapitalization.words,
@@ -280,7 +280,7 @@ class _PartiesScreenState extends State<PartiesScreen> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Icon(
-                    Icons.people_outline,
+                    Icons.people_outlined,
                     size: 80,
                     color: colorScheme.primary.withOpacity(0.3),
                   ),
@@ -364,7 +364,7 @@ class _PartiesScreenState extends State<PartiesScreen> {
                           const SizedBox(height: 4),
                           Row(
                             children: [
-                              Icon(Icons.phone, size: 14, color: Colors.grey.shade600),
+                              Icon(Icons.phone_outlined, size: 14, color: Colors.grey.shade600),
                               const SizedBox(width: 4),
                               Text(
                                 party.phone!,
@@ -377,7 +377,7 @@ class _PartiesScreenState extends State<PartiesScreen> {
                           const SizedBox(height: 2),
                           Row(
                             children: [
-                              Icon(Icons.email, size: 14, color: Colors.grey.shade600),
+                              Icon(Icons.email_outlined, size: 14, color: Colors.grey.shade600),
                               const SizedBox(width: 4),
                               Text(
                                 party.email!,
@@ -410,7 +410,7 @@ class _PartiesScreenState extends State<PartiesScreen> {
                           tooltip: 'Edit',
                         ),
                         IconButton(
-                          icon: const Icon(Icons.delete_outline, color: Colors.red),
+                          icon: const Icon(Icons.delete_outlined, color: Colors.red),
                           onPressed: () => _deleteParty(party.id!),
                           tooltip: 'Delete',
                         ),

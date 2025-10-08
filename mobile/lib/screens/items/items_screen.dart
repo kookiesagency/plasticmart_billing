@@ -212,7 +212,7 @@ class _ItemsScreenState extends State<ItemsScreen> with SingleTickerProviderStat
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             Icon(
-                              _showDeleted ? Icons.delete_outline : Icons.inventory_2_outlined,
+                              _showDeleted ? Icons.delete_outlined : Icons.inventory_2_outlined,
                               size: 64,
                               color: Colors.grey,
                             ),

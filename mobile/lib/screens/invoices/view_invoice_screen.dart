@@ -202,7 +202,7 @@ class _ViewInvoiceScreenState extends State<ViewInvoiceScreen> {
                 value: 'delete',
                 child: Row(
                   children: [
-                    Icon(Icons.delete_outline, size: 20, color: Colors.red),
+                    Icon(Icons.delete_outlined, size: 20, color: Colors.red),
                     SizedBox(width: 12),
                     Text('Delete', style: TextStyle(color: Colors.red, fontSize: 15)),
                   ],
@@ -302,7 +302,7 @@ class _ViewInvoiceScreenState extends State<ViewInvoiceScreen> {
                             const SizedBox(height: 16),
                             Row(
                               children: [
-                                Icon(Icons.calendar_today, size: 16, color: Colors.grey.shade600),
+                                Icon(Icons.calendar_today_outlined, size: 16, color: Colors.grey.shade600),
                                 const SizedBox(width: 8),
                                 Text(
                                   _formatDate(_invoice!.invoiceDate),
@@ -317,7 +317,7 @@ class _ViewInvoiceScreenState extends State<ViewInvoiceScreen> {
                               const SizedBox(height: 8),
                               Row(
                                 children: [
-                                  Icon(Icons.access_time, size: 16, color: Colors.grey.shade600),
+                                  Icon(Icons.access_time_outlined, size: 16, color: Colors.grey.shade600),
                                   const SizedBox(width: 8),
                                   Text(
                                     'Created: ${DateFormat('dd MMM yyyy, hh:mm a').format(_invoice!.createdAt!)}',
