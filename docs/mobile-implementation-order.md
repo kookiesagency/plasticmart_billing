@@ -11,9 +11,10 @@ This document provides a step-by-step implementation order for building the Plas
 - [x] Bottom Navigation Bar setup
 - [x] Provider state management
 - [x] SharedPreferences for persistence
-- [x] Basic/Advanced Mode toggle
+- [x] ~~Basic/Advanced Mode toggle~~ (Removed - all features now in one mode)
 - [x] Home screen with adaptive tabs
 - [x] Project folder structure
+- [x] Light and Dark theme implementation
 
 ---
 
@@ -530,14 +531,40 @@ This document provides a step-by-step implementation order for building the Plas
 
 ---
 
-### **Step 10: Settings & Configuration** ⚙️
+### ✅ **Step 10: Settings & Configuration** ⚙️ - COMPLETED
 **Why last?** Nice-to-have features after core functionality is complete.
 
-**What to build:**
-- [ ] Enhance Settings screen with:
-  - [ ] App theme toggle (Light/Dark mode) - Currently has placeholder, needs full implementation
+**What was built:**
+- [x] Enhanced Settings screen with:
+  - [x] Dark Mode toggle (Light/Dark theme switching)
+  - [x] Theme persistence using SharedPreferences
+  - [x] ThemeProvider with ChangeNotifier pattern
+  - [x] Default Bundle Rate management
+  - [x] Units management access
 
-**Testing:** Can configure app preferences and company details
+**Dark Mode Implementation:**
+- [x] Created ThemeProvider with theme state management
+- [x] Persist theme preference in SharedPreferences
+- [x] Updated MaterialApp with themeMode property
+- [x] Implemented comprehensive light and dark ThemeData
+- [x] Updated all screens to be dark mode compatible:
+  - [x] Create Invoice Screen (stepper colors fixed)
+  - [x] Item Details Screen (header and button styling)
+  - [x] Weekly Report Screen (header styling)
+  - [x] Settings Screen (border and switch styling)
+  - [x] All dialogs and date pickers with theme support
+- [x] Wired Settings toggle to theme provider with Switch component
+
+**UI Components:**
+- [x] Section headers (Appearance, General Settings, Master Data)
+- [x] Setting cards with icons and descriptions
+- [x] Dark mode toggle switch with proper colors
+- [x] Bundle rate dialog with theme-aware styling
+- [x] Navigation to Units screen
+
+**Database:** Uses `app_settings` table for bundle rate
+
+**Testing:** ✅ Can toggle dark/light mode with persistence, configure bundle rate, access units management
 
 ---
 
@@ -644,13 +671,21 @@ After completing all 10 steps, users should be able to:
 
 ## 📌 **Current Status**
 
-**Completed:** Steps 0-11 + UI/UX Polish (Authentication, Units, Parties, Items, Invoice Creation, Invoice Management, Payment Management, Party Report, PDF Generation & Sharing, Offline Bill Entry, Icon Standardization, Home Screen Dashboard)
-**Next Step:** Step 10 - Settings & Configuration (Light/Dark theme toggle)
-**Mode:** Basic Mode Complete - All Core Features Implemented
+**Completed:** Steps 0-11 + UI/UX Polish (Authentication, Units, Parties, Items, Invoice Creation, Invoice Management, Payment Management, Party Report, PDF Generation & Sharing, Offline Bill Entry, Icon Standardization, Home Screen Dashboard, Light/Dark Theme)
+**Next Step:** Hindi and Urdu Localization
+**Mode:** All Core Features Implemented (Basic/Advanced mode removed)
 **Pending from Step 5:** Date/status filters (not critical for MVP)
-**Step 10 Status:** Theme toggle remaining (Basic/Advanced mode removed as all features are now in one mode)
 
 **Recent Completions:**
+- **Step 10: Light/Dark Theme Implementation** ✅ (October 2025)
+  - Complete dark mode support across all screens
+  - ThemeProvider with state persistence
+  - Fixed stepper background colors in Create Invoice screen
+  - Updated Item Details and Weekly Report headers for dark theme
+  - Refined Settings screen borders and switch styling
+  - Theme-aware dialogs and date pickers
+  - Consistent dark mode colors (#3D6B5C for dark green, proper opacity for borders)
+
 - **Step 11: Home Screen Dashboard** ✅ (October 2025)
   - Financial summary cards with timezone-aware calculations (IST)
   - Quick actions grid (2x2 layout with Create Bill, Offline Bill, Add Party, Add Item)
@@ -694,66 +729,95 @@ After completing all 10 steps, users should be able to:
 
 ---
 
-## 📝 **Pending Tasks - Future Development**
+## 📝 **Pending Tasks - Implementation Order**
 
-### **High Priority:**
-1. **Dark Mode Implementation** (Step 10)
-   - Create ThemeProvider with ChangeNotifier
-   - Persist theme preference in SharedPreferences
-   - Update MaterialApp with themeMode property
-   - Implement light and dark ThemeData
-   - Update all screens to be dark mode compatible
-   - Settings toggle is already in place as placeholder
+### **Priority 1: Basic Mode Restriction** 🔒
+**Status:** Next to implement
+- Reintroduce Basic Mode so it only exposes the Items and Party sections
+- Hide Bills, Dashboard, and other advanced features when Basic Mode is active
+- Implement toggle in Settings screen
+- Persist Basic Mode preference in SharedPreferences
+- Update bottom navigation to show/hide tabs based on mode
+- Ensure toggle updates navigation and state providers in real-time
 
-2. **Hindi and Urdu Localization**
-   - Full language support with language switcher
-   - Translate all UI text and messages
-   - RTL support for Urdu
-   - Persistent language preference
+### **Priority 2: Localization (Hindi & Urdu)** 🌐
+**Status:** Pending
+- Full language support with language switcher in Settings
+- i18n strings for all UI text and messages
+- RTL (Right-to-Left) handling for Urdu
+- Persistent language preference in SharedPreferences
+- Support for Hindi, Urdu, and English
 
-### **Medium Priority:**
-3. **Invoice Filters** (Step 5 - Optional)
-   - Date range filter for invoices
-   - Payment status filter (Paid/Pending/Partial)
+### **Priority 3: Invoice Filters** 🔍
+**Status:** Pending (Step 5 - Optional)
+- Date range filter for invoices on Bills screen
+- Payment status filter (Paid/Pending/Partial)
+- Filter UI with bottom sheet or dialog
+- Clear filters option
 
-4. **Draft Invoices** (Step 5 - Deferred)
-   - Save incomplete invoices
-   - Will implement on web first, then mobile
+### **Priority 4: Draft Invoices** 💾
+**Status:** Pending (Step 5 - Deferred, after web implementation)
+- Save incomplete/unfinished invoices as drafts
+- Resume draft invoices from where user left off
+- Draft invoices list or section
+- Auto-save draft functionality
+- Will implement on web first, then mobile
 
-### **Low Priority - Phase 3:**
-5. **Offline Mode**
-   - Work without internet connection
-   - Local data storage with sync queue
+### **Priority 5: Offline Mode** 📴
+**Status:** Pending (Phase 3)
+- Work without internet connection
+- Local data storage with SQLite or Hive
+- Sync queue for pending operations
+- Offline indicator in UI
+- Handle offline create/edit/delete operations
 
-6. **Background Sync**
-   - Sync data when connected
-   - Conflict resolution strategy
+### **Priority 6: Background Sync** 🔄
+**Status:** Pending (Phase 3)
+- Automatic sync when device comes online
+- Conflict resolution strategy for concurrent edits
+- Sync status indicators
+- Manual sync trigger option
 
-7. **Accessibility**
-   - Screen reader support
-   - Large text support
-   - High contrast mode
+### **Priority 7: Accessibility Enhancements** ♿
+**Status:** Pending (Phase 3)
+- Screen reader support with semantic labels
+- Scalable fonts and large text support
+- High contrast mode for better visibility
+- Keyboard navigation support
+- WCAG compliance
 
-8. **Gesture Navigation**
-   - Enhanced swipe gestures for common actions
+### **Priority 8: Gesture Navigation Improvements** 👆
+**Status:** Pending (Phase 3)
+- Enhanced swipe gestures for common flows
+- Swipe to navigate between tabs
+- Pinch to zoom for invoices/PDFs
+- Custom gesture shortcuts
 
-### **Future - Phase 4:**
-9. **AI/ML Features**
-   - OCR for receipts - Scan and create items/invoices from receipts
-   - Voice commands - Create invoices using voice
+### **Priority 9: AI/ML Features** 🤖
+**Status:** Pending (Phase 4 - Future)
+- OCR for receipts: Scan and create items/invoices from receipt images
+- Voice commands: Create invoices using voice input
+- Smart suggestions based on usage patterns
+- Auto-fill party/item details
 
-### **Quality Assurance:**
-10. **Testing Suite**
-    - Unit tests for core business logic
-    - Integration tests for database operations
-    - E2E tests for critical user flows
-    - Device testing on multiple devices and OS versions
+### **Priority 10: Testing Suite** 🧪
+**Status:** Pending (Quality Assurance)
+- Unit tests for core business logic (services, providers)
+- Integration tests for database operations
+- Widget tests for UI components
+- E2E tests for critical user flows (login, create invoice, payments)
+- Device testing on multiple devices and OS versions (iOS/Android)
+- Performance and memory leak testing
 
-11. **Deployment**
-    - App Store optimization with screenshots
-    - Google Play Store release with metadata
-    - Beta testing with TestFlight/Firebase
-    - Analytics integration for tracking
+### **Priority 11: Deployment Preparation** 🚀
+**Status:** Pending (Quality Assurance)
+- App Store optimization with screenshots and descriptions
+- Google Play Store release with metadata
+- Beta testing with TestFlight (iOS) and Firebase/Play Console (Android)
+- Analytics integration (Firebase Analytics, Mixpanel, etc.)
+- Crash reporting setup (Crashlytics, Sentry)
+- App versioning and release notes
+- CI/CD pipeline for automated builds
 
 ---
 
@@ -769,10 +833,11 @@ After completing all 10 steps, users should be able to:
 - Offline Bill Entry
 - Home Screen Dashboard
 - UI/UX Polish & Consistency
+- Light/Dark Theme (Complete) ✅
 
 **🚧 In Progress:** None
 
-**📅 Next Up:** Dark Mode Implementation (High Priority)
+**📅 Next Up:** Basic Mode Restriction (Priority 1)
 
 ---
 

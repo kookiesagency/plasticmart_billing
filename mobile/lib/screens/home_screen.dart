@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import '../providers/basic_mode_provider.dart';
 import 'dashboard_tab.dart';
 import 'invoices/invoices_screen.dart';
 import 'invoices/create_invoice_screen.dart';
@@ -18,6 +20,7 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   int _selectedIndex = 0;
+  bool _previousBasicMode = false;
 
   void _switchToTab(int index) {
     setState(() {
@@ -25,31 +28,92 @@ class _HomeScreenState extends State<HomeScreen> {
     });
   }
 
-  List<Widget> _getScreens() => [
-    DashboardTab(onSwitchToTab: _switchToTab),
-    const InvoicesScreen(),
-    const ItemsScreen(),
-    const PartiesScreen(),
-    const SettingsScreen(),
-  ];
+  void _handleModeChange(bool isBasicMode) {
+    // If mode changed, reset to first tab to avoid out of bounds
+    if (_previousBasicMode != isBasicMode) {
+      setState(() {
+        _selectedIndex = 0;
+        _previousBasicMode = isBasicMode;
+      });
+    }
+  }
 
-  static const List<String> _screenTitles = [
-    'Dashboard',
-    'Bills',
-    'Items',
-    'Parties',
-    'Settings',
-  ];
+  List<Widget> _getScreens(bool isBasicMode) {
+    if (isBasicMode) {
+      // Basic Mode: Dashboard, Items, Parties, Settings
+      return [
+        DashboardTab(onSwitchToTab: _switchToTab),
+        const ItemsScreen(),
+        const PartiesScreen(),
+        const SettingsScreen(),
+      ];
+    } else {
+      // Full Mode: All tabs
+      return [
+        DashboardTab(onSwitchToTab: _switchToTab),
+        const InvoicesScreen(),
+        const ItemsScreen(),
+        const PartiesScreen(),
+        const SettingsScreen(),
+      ];
+    }
+  }
+
+  List<String> _getScreenTitles(bool isBasicMode) {
+    if (isBasicMode) {
+      return [
+        'Dashboard',
+        'Items',
+        'Parties',
+        'Settings',
+      ];
+    } else {
+      return [
+        'Dashboard',
+        'Bills',
+        'Items',
+        'Parties',
+        'Settings',
+      ];
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
-    final screens = _getScreens();
+    final basicModeProvider = context.watch<BasicModeProvider>();
+    final isBasicMode = basicModeProvider.isBasicMode;
+
+    // Handle mode changes
+    _handleModeChange(isBasicMode);
+
+    final screens = _getScreens(isBasicMode);
+    final titles = _getScreenTitles(isBasicMode);
+
+    // Ensure selected index is within bounds
+    if (_selectedIndex >= screens.length) {
+      _selectedIndex = 0;
+    }
+
+    // Calculate the correct tab index for actions
+    int itemsTabIndex;
+    int partiesTabIndex;
+    int billsTabIndex;
+
+    if (isBasicMode) {
+      itemsTabIndex = 1;
+      partiesTabIndex = 2;
+      billsTabIndex = -1; // Not available in basic mode
+    } else {
+      itemsTabIndex = 2;
+      partiesTabIndex = 3;
+      billsTabIndex = 1;
+    }
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(_screenTitles[_selectedIndex]),
+        title: Text(titles[_selectedIndex]),
         centerTitle: true,
-        actions: _selectedIndex == 1 // Invoices tab
+        actions: !isBasicMode && _selectedIndex == billsTabIndex // Invoices tab (only in full mode)
             ? [
                 IconButton(
                   onPressed: () async {
@@ -79,7 +143,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   tooltip: 'Create Bill',
                 ),
               ]
-            : _selectedIndex == 2 // Items tab
+            : _selectedIndex == itemsTabIndex // Items tab
                 ? [
                     IconButton(
                       onPressed: () {
@@ -94,7 +158,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       tooltip: 'Add Item',
                     ),
                   ]
-                : _selectedIndex == 3 // Parties tab
+                : _selectedIndex == partiesTabIndex // Parties tab
                     ? [
                         IconButton(
                           onPressed: () {
@@ -124,28 +188,47 @@ class _HomeScreenState extends State<HomeScreen> {
             _selectedIndex = index;
           });
         },
-        items: const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.home_outlined),
-            label: 'Home',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.receipt),
-            label: 'Bills',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.inventory),
-            label: 'Items',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.people),
-            label: 'Parties',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.settings),
-            label: 'Settings',
-          ),
-        ],
+        items: isBasicMode
+            ? const [
+                BottomNavigationBarItem(
+                  icon: Icon(Icons.home_outlined),
+                  label: 'Home',
+                ),
+                BottomNavigationBarItem(
+                  icon: Icon(Icons.inventory),
+                  label: 'Items',
+                ),
+                BottomNavigationBarItem(
+                  icon: Icon(Icons.people),
+                  label: 'Parties',
+                ),
+                BottomNavigationBarItem(
+                  icon: Icon(Icons.settings),
+                  label: 'Settings',
+                ),
+              ]
+            : const [
+                BottomNavigationBarItem(
+                  icon: Icon(Icons.home_outlined),
+                  label: 'Home',
+                ),
+                BottomNavigationBarItem(
+                  icon: Icon(Icons.receipt),
+                  label: 'Bills',
+                ),
+                BottomNavigationBarItem(
+                  icon: Icon(Icons.inventory),
+                  label: 'Items',
+                ),
+                BottomNavigationBarItem(
+                  icon: Icon(Icons.people),
+                  label: 'Parties',
+                ),
+                BottomNavigationBarItem(
+                  icon: Icon(Icons.settings),
+                  label: 'Settings',
+                ),
+              ],
       ),
     );
   }

@@ -4,30 +4,39 @@ import 'package:flutter/material.dart';
 /// Usage: Wrap the showDatePicker with this theme builder
 class DatePickerTheme {
   static Widget buildTheme(BuildContext context, Widget? child) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final isDark = theme.brightness == Brightness.dark;
+
+    final dividerColor = isDark ? Colors.white24 : Colors.grey.shade200;
+
     return Theme(
-      data: Theme.of(context).copyWith(
-        colorScheme: ColorScheme.light(
-          primary: Theme.of(context).colorScheme.primary,
-          onPrimary: Colors.white,
-          surface: Colors.white,
-          onSurface: Colors.black,
+      data: theme.copyWith(
+        colorScheme: colorScheme.copyWith(
+          primary: colorScheme.primary,
+          onPrimary: colorScheme.onPrimary,
+          surface: theme.cardColor,
+          onSurface: colorScheme.onSurface,
         ),
-        dialogBackgroundColor: Colors.white,
-        dialogTheme: const DialogTheme(
-          backgroundColor: Colors.white,
-          elevation: 2,
+        dialogBackgroundColor: theme.cardColor,
+        dialogTheme: theme.dialogTheme.copyWith(
+          backgroundColor: theme.cardColor,
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.all(Radius.circular(8)),
+            borderRadius: BorderRadius.circular(16),
           ),
         ),
-        dividerColor: Colors.grey.shade100,
+        textButtonTheme: TextButtonThemeData(
+          style: TextButton.styleFrom(
+            foregroundColor: colorScheme.primary,
+          ),
+        ),
         dividerTheme: DividerThemeData(
-          color: Colors.grey.shade100,
+          color: dividerColor,
           thickness: 1,
           space: 1,
         ),
       ),
-      child: child!,
+      child: child ?? const SizedBox.shrink(),
     );
   }
 }

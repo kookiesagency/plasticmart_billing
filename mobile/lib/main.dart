@@ -6,6 +6,9 @@ import 'providers/unit_provider.dart';
 import 'providers/party_provider.dart';
 import 'providers/item_provider.dart';
 import 'providers/invoice_provider.dart';
+import 'providers/theme_provider.dart';
+import 'providers/basic_mode_provider.dart';
+import 'theme/app_theme.dart';
 import 'screens/auth/splash_screen.dart';
 
 void main() async {
@@ -29,42 +32,24 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => PartyProvider()),
         ChangeNotifierProvider(create: (_) => ItemProvider()),
         ChangeNotifierProvider(create: (_) => InvoiceProvider()),
+        ChangeNotifierProvider(create: (_) => ThemeProvider()),
+        ChangeNotifierProvider(create: (_) => BasicModeProvider()),
       ],
-      child: MaterialApp(
-        title: 'PlasticMart Billing',
-        debugShowCheckedModeBanner: false,
-        theme: ThemeData(
-          colorScheme: ColorScheme.fromSeed(
-            seedColor: const Color(0xFF2D9D8F),
-            brightness: Brightness.light,
-          ),
-          scaffoldBackgroundColor: Colors.white,
-          useMaterial3: true,
-          splashColor: Colors.grey.shade100,
-          highlightColor: Colors.grey.shade50,
-          appBarTheme: const AppBarTheme(
-            backgroundColor: Colors.white,
-            elevation: 0,
-          ),
-          cardTheme: CardTheme(
-            elevation: 0,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
-              side: BorderSide(
-                color: Colors.grey.shade200,
-                width: 1,
-              ),
-            ),
-          ),
-        ),
-        darkTheme: ThemeData(
-          colorScheme: ColorScheme.fromSeed(
-            seedColor: const Color(0xFF2D9D8F),
-            brightness: Brightness.dark,
-          ),
-          useMaterial3: true,
-        ),
-        home: const SplashScreen(),
+      child: Consumer<ThemeProvider>(
+        builder: (context, themeProvider, _) {
+          final themeMode = themeProvider.isInitialized
+              ? themeProvider.themeMode
+              : ThemeMode.light;
+
+          return MaterialApp(
+            title: 'PlasticMart Billing',
+            debugShowCheckedModeBanner: false,
+            theme: AppTheme.light(),
+            darkTheme: AppTheme.dark(),
+            themeMode: themeMode,
+            home: const SplashScreen(),
+          );
+        },
       ),
     );
   }
