@@ -1,6 +1,6 @@
 {
-    "name": "plasticmart_mobile",
-    "short_name": "plasticmart_mobile",
+    "name": "PlasticMart",
+    "short_name": "PlasticMart",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",
