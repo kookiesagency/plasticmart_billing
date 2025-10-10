@@ -623,88 +623,92 @@ class _ViewInvoiceScreenState extends State<ViewInvoiceScreen> {
                           ],
                         ),
                       ),
-                      const SizedBox(height: 24),
 
-                      // Action Buttons
-                      Row(
-                        children: [
-                          Expanded(
-                            child: Builder(
-                              builder: (BuildContext buttonContext) {
-                                return OutlinedButton(
-                                  onPressed: () async {
-                                    if (_invoice == null) return;
+                      // Hide PDF and Share buttons for offline invoices (they don't have items)
+                      if (_invoice!.isOffline != true) ...[
+                        const SizedBox(height: 24),
 
-                                    try {
-                                      // Get button position for iPad share dialog
-                                      final box = buttonContext.findRenderObject() as RenderBox?;
-                                      final sharePositionOrigin = box != null
-                                          ? box.localToGlobal(Offset.zero) & box.size
-                                          : null;
+                        // Action Buttons
+                        Row(
+                          children: [
+                            Expanded(
+                              child: Builder(
+                                builder: (BuildContext buttonContext) {
+                                  return OutlinedButton(
+                                    onPressed: () async {
+                                      if (_invoice == null) return;
 
-                                      await _pdfService.sharePdf(
-                                        invoice: _invoice!,
-                                        items: _items,
-                                        sharePositionOrigin: sharePositionOrigin,
-                                      );
-                                    } catch (e) {
-                                      if (mounted) {
-                                        ScaffoldMessenger.of(context).showSnackBar(
-                                          SnackBar(
-                                            content: Text('Failed to share PDF: $e'),
-                                            backgroundColor: Colors.red,
-                                          ),
+                                      try {
+                                        // Get button position for iPad share dialog
+                                        final box = buttonContext.findRenderObject() as RenderBox?;
+                                        final sharePositionOrigin = box != null
+                                            ? box.localToGlobal(Offset.zero) & box.size
+                                            : null;
+
+                                        await _pdfService.sharePdf(
+                                          invoice: _invoice!,
+                                          items: _items,
+                                          sharePositionOrigin: sharePositionOrigin,
                                         );
+                                      } catch (e) {
+                                        if (mounted) {
+                                          ScaffoldMessenger.of(context).showSnackBar(
+                                            SnackBar(
+                                              content: Text('Failed to share PDF: $e'),
+                                              backgroundColor: Colors.red,
+                                            ),
+                                          );
+                                        }
                                       }
-                                    }
-                                  },
-                                  style: OutlinedButton.styleFrom(
-                                    padding: const EdgeInsets.symmetric(vertical: 16),
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(12),
-                                    ),
-                                    side: BorderSide(color: Theme.of(context).colorScheme.primary),
-                                  ),
-                                  child: const Text('Share', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
-                                );
-                              },
-                            ),
-                          ),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: ElevatedButton(
-                              onPressed: () async {
-                                if (_invoice == null) return;
-
-                                try {
-                                  await _pdfService.previewPdf(
-                                    invoice: _invoice!,
-                                    items: _items,
-                                  );
-                                } catch (e) {
-                                  if (mounted) {
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      SnackBar(
-                                        content: Text('Failed to generate PDF: $e'),
-                                        backgroundColor: Colors.red,
+                                    },
+                                    style: OutlinedButton.styleFrom(
+                                      padding: const EdgeInsets.symmetric(vertical: 16),
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(12),
                                       ),
-                                    );
-                                  }
-                                }
-                              },
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: Theme.of(context).colorScheme.primary,
-                                foregroundColor: Colors.white,
-                                padding: const EdgeInsets.symmetric(vertical: 16),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
+                                      side: BorderSide(color: Theme.of(context).colorScheme.primary),
+                                    ),
+                                    child: const Text('Share', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+                                  );
+                                },
                               ),
-                              child: const Text('PDF', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
                             ),
-                          ),
-                        ],
-                      ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: ElevatedButton(
+                                onPressed: () async {
+                                  if (_invoice == null) return;
+
+                                  try {
+                                    await _pdfService.previewPdf(
+                                      invoice: _invoice!,
+                                      items: _items,
+                                    );
+                                  } catch (e) {
+                                    if (mounted) {
+                                      ScaffoldMessenger.of(context).showSnackBar(
+                                        SnackBar(
+                                          content: Text('Failed to generate PDF: $e'),
+                                          backgroundColor: Colors.red,
+                                        ),
+                                      );
+                                    }
+                                  }
+                                },
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Theme.of(context).colorScheme.primary,
+                                  foregroundColor: Colors.white,
+                                  padding: const EdgeInsets.symmetric(vertical: 16),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                ),
+                                child: const Text('PDF', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
                     ],
                   ),
                 ),

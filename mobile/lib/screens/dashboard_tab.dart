@@ -3,7 +3,9 @@ import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 import '../providers/invoice_provider.dart';
 import '../providers/party_provider.dart';
+import '../providers/basic_mode_provider.dart';
 import '../models/invoice.dart';
+import '../theme/theme_helpers.dart';
 import 'invoices/view_invoice_screen.dart';
 import 'invoices/create_invoice_screen.dart';
 import 'invoices/add_offline_bill_screen.dart';
@@ -11,7 +13,9 @@ import 'parties/add_edit_party_screen.dart';
 import 'items/add_edit_item_screen.dart';
 
 class DashboardTab extends StatefulWidget {
-  const DashboardTab({Key? key}) : super(key: key);
+  final Function(int)? onSwitchToTab;
+
+  const DashboardTab({Key? key, this.onSwitchToTab}) : super(key: key);
 
   @override
   State<DashboardTab> createState() => _DashboardTabState();
@@ -29,12 +33,14 @@ class _DashboardTabState extends State<DashboardTab> {
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
+    final basicModeProvider = context.watch<BasicModeProvider>();
+    final isBasicMode = basicModeProvider.isBasicMode;
 
     return RefreshIndicator(
       onRefresh: () async {
         await Future.wait([
-          Provider.of<InvoiceProvider>(context, listen: false).fetchInvoices(),
+          if (!isBasicMode)
+            Provider.of<InvoiceProvider>(context, listen: false).fetchInvoices(),
           Provider.of<PartyProvider>(context, listen: false).fetchParties(),
         ]);
       },
@@ -45,117 +51,157 @@ class _DashboardTabState extends State<DashboardTab> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Quick Actions Row
-            _buildQuickActions(context, colorScheme),
-            const SizedBox(height: 24),
+            _buildQuickActions(context),
 
-            // Financial Summary Cards
-            _buildFinancialSummary(context, colorScheme),
-            const SizedBox(height: 24),
-
-            // Payment Status Cards
-            _buildPaymentStatus(context, colorScheme),
-            const SizedBox(height: 24),
-
-            // Recent Invoices Section
-            _buildRecentInvoices(context, colorScheme),
+            // Show invoice-related sections only in Full Mode
+            if (!isBasicMode) ...[
+              const SizedBox(height: 24),
+              // Financial Summary Cards
+              _buildFinancialSummary(context),
+              const SizedBox(height: 24),
+              // Payment Status Cards
+              _buildPaymentStatus(context),
+              const SizedBox(height: 24),
+              // Recent Invoices Section
+              _buildRecentInvoices(context),
+            ],
           ],
         ),
       ),
     );
   }
 
-  Widget _buildQuickActions(BuildContext context, ColorScheme colorScheme) {
+  Widget _buildQuickActions(BuildContext context) {
+    final theme = Theme.of(context);
+    final basicModeProvider = context.watch<BasicModeProvider>();
+    final isBasicMode = basicModeProvider.isBasicMode;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
           'Quick Actions',
-          style: const TextStyle(
-            fontSize: 18,
+          style: theme.textTheme.titleMedium?.copyWith(
             fontWeight: FontWeight.w600,
           ),
         ),
         const SizedBox(height: 12),
-        // 2x2 Grid for 4 buttons
-        Column(
-          children: [
-            Row(
-              children: [
-                Expanded(
-                  child: _buildQuickActionButton(
-                    context: context,
-                    icon: Icons.receipt_long_outlined,
-                    label: 'Create Bill',
-                    color: colorScheme.primary,
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => const CreateInvoiceScreen(),
-                        ),
-                      );
-                    },
+        // Show only Add Item and Add Party one by one in Basic Mode
+        if (isBasicMode)
+          Column(
+            children: [
+              _buildQuickActionButton(
+                context: context,
+                icon: Icons.inventory_2_outlined,
+                label: 'Add Item',
+                color: const Color(0xFF0EA5E9), // Sky blue
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const AddEditItemScreen(),
+                    ),
+                  );
+                },
+              ),
+              const SizedBox(height: 12),
+              _buildQuickActionButton(
+                context: context,
+                icon: Icons.people_outlined,
+                label: 'Add Party',
+                color: const Color(0xFFF59E0B), // Amber/Orange
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const AddEditPartyScreen(),
+                    ),
+                  );
+                },
+              ),
+            ],
+          )
+        else
+          // 2x2 Grid for 4 buttons in Full Mode
+          Column(
+            children: [
+              Row(
+                children: [
+                  Expanded(
+                    child: _buildQuickActionButton(
+                      context: context,
+                      icon: Icons.receipt_long_outlined,
+                      label: 'Create Bill',
+                      color: theme.colorScheme.primary,
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const CreateInvoiceScreen(),
+                          ),
+                        );
+                      },
+                    ),
                   ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: _buildQuickActionButton(
-                    context: context,
-                    icon: Icons.bolt,
-                    label: 'Offline Bill',
-                    color: Colors.orange,
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => const AddOfflineBillScreen(),
-                        ),
-                      );
-                    },
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: _buildQuickActionButton(
+                      context: context,
+                      icon: Icons.bolt,
+                      label: 'Offline Bill',
+                      color: Colors.orange,
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const AddOfflineBillScreen(),
+                          ),
+                        );
+                      },
+                    ),
                   ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 12),
-            Row(
-              children: [
-                Expanded(
-                  child: _buildQuickActionButton(
-                    context: context,
-                    icon: Icons.people_outlined,
-                    label: 'Add Party',
-                    color: Colors.green,
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => const AddEditPartyScreen(),
-                        ),
-                      );
-                    },
+                ],
+              ),
+              const SizedBox(height: 12),
+              Row(
+                children: [
+                  Expanded(
+                    child: _buildQuickActionButton(
+                      context: context,
+                      icon: Icons.people_outlined,
+                      label: 'Add Party',
+                      color: Colors.green,
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const AddEditPartyScreen(),
+                          ),
+                        );
+                      },
+                    ),
                   ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: _buildQuickActionButton(
-                    context: context,
-                    icon: Icons.inventory_2_outlined,
-                    label: 'Add Item',
-                    color: Colors.purple,
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => const AddEditItemScreen(),
-                        ),
-                      );
-                    },
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: _buildQuickActionButton(
+                      context: context,
+                      icon: Icons.inventory_2_outlined,
+                      label: 'Add Item',
+                      color: Colors.purple,
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const AddEditItemScreen(),
+                          ),
+                        );
+                      },
+                    ),
                   ),
-                ),
-              ],
-            ),
-          ],
-        ),
+                ],
+              ),
+            ],
+          ),
       ],
     );
   }
@@ -167,29 +213,38 @@ class _DashboardTabState extends State<DashboardTab> {
     required Color color,
     required VoidCallback onTap,
   }) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    final surfaceColor = theme.cardColor;
+    final backgroundTint = Color.alphaBlend(
+      color.withOpacity(isDark ? 0.18 : 0.08),
+      surfaceColor,
+    );
+    final borderColor = color.withOpacity(isDark ? 0.45 : 0.25);
+
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(12),
       child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 12),
+        width: double.infinity,
+        padding: const EdgeInsets.symmetric(vertical: 48, horizontal: 24),
         decoration: BoxDecoration(
-          color: color.withOpacity(0.1),
+          color: backgroundTint,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
-            color: color.withOpacity(0.3),
+            color: borderColor,
             width: 1,
           ),
         ),
-        child: Column(
+        child: Row(
           children: [
-            Icon(icon, color: color, size: 28),
-            const SizedBox(height: 8),
+            Icon(icon, color: color, size: 40),
+            const SizedBox(width: 20),
             Text(
               label,
-              textAlign: TextAlign.center,
-              style: TextStyle(
+              style: theme.textTheme.titleMedium?.copyWith(
                 color: color,
-                fontSize: 12,
+                fontSize: 18,
                 fontWeight: FontWeight.w600,
               ),
             ),
@@ -199,9 +254,12 @@ class _DashboardTabState extends State<DashboardTab> {
     );
   }
 
-  Widget _buildFinancialSummary(BuildContext context, ColorScheme colorScheme) {
+  Widget _buildFinancialSummary(BuildContext context) {
     return Consumer2<InvoiceProvider, PartyProvider>(
       builder: (context, invoiceProvider, partyProvider, child) {
+        final theme = Theme.of(context);
+        final isDark = theme.brightness == Brightness.dark;
+
         final invoices = invoiceProvider.invoices;
         final parties = partyProvider.parties;
 
@@ -264,8 +322,7 @@ class _DashboardTabState extends State<DashboardTab> {
           children: [
             Text(
               'Financial Summary',
-              style: const TextStyle(
-                fontSize: 18,
+              style: theme.textTheme.titleMedium?.copyWith(
                 fontWeight: FontWeight.w600,
               ),
             ),
@@ -283,24 +340,32 @@ class _DashboardTabState extends State<DashboardTab> {
                   amount: todayRevenue,
                   icon: Icons.today_outlined,
                   color: Colors.blue,
+                  isDark: isDark,
+                  theme: theme,
                 ),
                 _buildSummaryCard(
                   title: 'This Week',
                   amount: weekRevenue,
                   icon: Icons.calendar_today_outlined,
                   color: Colors.green,
+                  isDark: isDark,
+                  theme: theme,
                 ),
                 _buildSummaryCard(
                   title: 'This Month',
                   amount: monthRevenue,
                   icon: Icons.calendar_month_outlined,
                   color: Colors.purple,
+                  isDark: isDark,
+                  theme: theme,
                 ),
                 _buildSummaryCard(
                   title: 'Outstanding',
                   amount: totalOutstanding,
                   icon: Icons.account_balance_wallet_outlined,
                   color: Colors.orange,
+                  isDark: isDark,
+                  theme: theme,
                 ),
               ],
             ),
@@ -315,17 +380,18 @@ class _DashboardTabState extends State<DashboardTab> {
     required double amount,
     required IconData icon,
     required Color color,
+    required bool isDark,
+    required ThemeData theme,
   }) {
+    final borderColor = theme.cardTheme.shape is RoundedRectangleBorder
+        ? (theme.cardTheme.shape as RoundedRectangleBorder).side.color
+        : (isDark ? Colors.white24 : Colors.grey.shade200);
+    final labelColor =
+        isDark ? Colors.grey.shade400 : Colors.grey.shade600;
+
     return Container(
       padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: Colors.grey.shade200,
-          width: 1,
-        ),
-      ),
+      decoration: ThemeHelpers.cardDecoration(context),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -335,9 +401,8 @@ class _DashboardTabState extends State<DashboardTab> {
             children: [
               Text(
                 title,
-                style: TextStyle(
-                  color: Colors.grey.shade600,
-                  fontSize: 13,
+                style: theme.textTheme.bodySmall?.copyWith(
+                  color: labelColor,
                   fontWeight: FontWeight.w500,
                 ),
               ),
@@ -347,7 +412,7 @@ class _DashboardTabState extends State<DashboardTab> {
           const SizedBox(height: 8),
           Text(
             '₹${amount.toStringAsFixed(2)}',
-            style: TextStyle(
+            style: theme.textTheme.titleMedium?.copyWith(
               color: color,
               fontSize: 18,
               fontWeight: FontWeight.bold,
@@ -358,9 +423,12 @@ class _DashboardTabState extends State<DashboardTab> {
     );
   }
 
-  Widget _buildPaymentStatus(BuildContext context, ColorScheme colorScheme) {
+  Widget _buildPaymentStatus(BuildContext context) {
     return Consumer<InvoiceProvider>(
       builder: (context, invoiceProvider, child) {
+        final theme = Theme.of(context);
+        final isDark = theme.brightness == Brightness.dark;
+
         final invoices = invoiceProvider.invoices;
 
         int paidCount = 0;
@@ -382,8 +450,7 @@ class _DashboardTabState extends State<DashboardTab> {
           children: [
             Text(
               'Payment Status',
-              style: const TextStyle(
-                fontSize: 18,
+              style: theme.textTheme.titleMedium?.copyWith(
                 fontWeight: FontWeight.w600,
               ),
             ),
@@ -396,6 +463,8 @@ class _DashboardTabState extends State<DashboardTab> {
                     count: paidCount,
                     color: Colors.green,
                     icon: Icons.check_circle_outline,
+                    theme: theme,
+                    isDark: isDark,
                   ),
                 ),
                 const SizedBox(width: 12),
@@ -405,6 +474,8 @@ class _DashboardTabState extends State<DashboardTab> {
                     count: pendingCount,
                     color: Colors.red,
                     icon: Icons.pending_outlined,
+                    theme: theme,
+                    isDark: isDark,
                   ),
                 ),
                 const SizedBox(width: 12),
@@ -414,6 +485,8 @@ class _DashboardTabState extends State<DashboardTab> {
                     count: partialCount,
                     color: Colors.orange,
                     icon: Icons.timelapse_outlined,
+                    theme: theme,
+                    isDark: isDark,
                   ),
                 ),
               ],
@@ -429,14 +502,22 @@ class _DashboardTabState extends State<DashboardTab> {
     required int count,
     required Color color,
     required IconData icon,
+    required ThemeData theme,
+    required bool isDark,
   }) {
+    final background = Color.alphaBlend(
+      color.withOpacity(isDark ? 0.16 : 0.08),
+      theme.cardColor,
+    );
+    final borderColor = color.withOpacity(isDark ? 0.45 : 0.25);
+
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
+        color: background,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: color.withOpacity(0.3),
+          color: borderColor,
           width: 1,
         ),
       ),
@@ -446,7 +527,7 @@ class _DashboardTabState extends State<DashboardTab> {
           const SizedBox(height: 8),
           Text(
             count.toString(),
-            style: TextStyle(
+            style: theme.textTheme.headlineSmall?.copyWith(
               color: color,
               fontSize: 24,
               fontWeight: FontWeight.bold,
@@ -455,7 +536,7 @@ class _DashboardTabState extends State<DashboardTab> {
           const SizedBox(height: 4),
           Text(
             title,
-            style: TextStyle(
+            style: theme.textTheme.labelLarge?.copyWith(
               color: color,
               fontSize: 13,
               fontWeight: FontWeight.w600,
@@ -466,21 +547,27 @@ class _DashboardTabState extends State<DashboardTab> {
     );
   }
 
-  Widget _buildRecentInvoices(BuildContext context, ColorScheme colorScheme) {
+  Widget _buildRecentInvoices(BuildContext context) {
     return Consumer<InvoiceProvider>(
       builder: (context, invoiceProvider, child) {
+        final theme = Theme.of(context);
+        final colorScheme = theme.colorScheme;
+        final isDark = theme.brightness == Brightness.dark;
+        final borderColor = theme.cardTheme.shape is RoundedRectangleBorder
+            ? (theme.cardTheme.shape as RoundedRectangleBorder).side.color
+            : (isDark ? Colors.white24 : Colors.grey.shade200);
+        final subtitleColor =
+            isDark ? Colors.grey.shade400 : Colors.grey.shade600;
+
         final recentInvoices = invoiceProvider.invoices.take(5).toList();
 
         if (recentInvoices.isEmpty) {
           return Container(
             padding: const EdgeInsets.all(24),
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: theme.cardColor,
               borderRadius: BorderRadius.circular(16),
-              border: Border.all(
-                color: Colors.grey.shade200,
-                width: 1,
-              ),
+              border: Border.all(color: borderColor, width: 1),
             ),
             child: Center(
               child: Column(
@@ -488,14 +575,13 @@ class _DashboardTabState extends State<DashboardTab> {
                   Icon(
                     Icons.receipt_long_outlined,
                     size: 48,
-                    color: Colors.grey.shade400,
+                    color: subtitleColor,
                   ),
                   const SizedBox(height: 12),
                   Text(
                     'No invoices yet',
-                    style: TextStyle(
-                      color: Colors.grey.shade600,
-                      fontSize: 16,
+                    style: theme.textTheme.titleMedium?.copyWith(
+                      color: subtitleColor,
                     ),
                   ),
                 ],
@@ -512,16 +598,12 @@ class _DashboardTabState extends State<DashboardTab> {
               children: [
                 Text(
                   'Recent Invoices',
-                  style: const TextStyle(
-                    fontSize: 18,
+                  style: theme.textTheme.titleMedium?.copyWith(
                     fontWeight: FontWeight.w600,
                   ),
                 ),
                 TextButton(
-                  onPressed: () {
-                    // Switch to invoices tab (index 1 after adding dashboard)
-                    // This will be handled by the parent HomeScreen
-                  },
+                  onPressed: () => widget.onSwitchToTab?.call(1),
                   child: const Text('View All'),
                 ),
               ],
@@ -533,7 +615,14 @@ class _DashboardTabState extends State<DashboardTab> {
               itemCount: recentInvoices.length,
               itemBuilder: (context, index) {
                 final invoice = recentInvoices[index];
-                return _buildRecentInvoiceCard(invoice, colorScheme);
+                return _buildRecentInvoiceCard(
+                  context: context,
+                  invoice: invoice,
+                  theme: theme,
+                  borderColor: borderColor,
+                  subtitleColor: subtitleColor,
+                  colorScheme: colorScheme,
+                );
               },
             ),
           ],
@@ -542,34 +631,34 @@ class _DashboardTabState extends State<DashboardTab> {
     );
   }
 
-  Widget _buildRecentInvoiceCard(Invoice invoice, ColorScheme colorScheme) {
+  Widget _buildRecentInvoiceCard({
+    required BuildContext context,
+    required Invoice invoice,
+    required ThemeData theme,
+    required Color borderColor,
+    required Color subtitleColor,
+    required ColorScheme colorScheme,
+  }) {
     Color statusColor;
     String statusText;
 
     switch (invoice.status) {
       case 'paid':
         statusColor = Colors.green;
-        statusText = 'PAID';
+        statusText = 'Paid';
         break;
       case 'partial':
         statusColor = Colors.orange;
-        statusText = 'PARTIAL';
+        statusText = 'Partial';
         break;
       default:
         statusColor = Colors.red;
-        statusText = 'PENDING';
+        statusText = 'Pending';
     }
 
     return Container(
-      margin: const EdgeInsets.only(bottom: 8),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: Colors.grey.shade200,
-          width: 1,
-        ),
-      ),
+      margin: const EdgeInsets.only(bottom: 12),
+      decoration: ThemeHelpers.cardDecoration(context),
       child: InkWell(
         onTap: () {
           Navigator.push(
@@ -582,87 +671,109 @@ class _DashboardTabState extends State<DashboardTab> {
         borderRadius: BorderRadius.circular(16),
         child: Padding(
           padding: const EdgeInsets.all(16),
-          child: Row(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        Expanded(
-                          child: Text(
-                            invoice.partyName ?? 'Unknown',
-                            style: const TextStyle(
-                              fontWeight: FontWeight.w600,
-                              fontSize: 15,
-                            ),
-                            overflow: TextOverflow.ellipsis,
-                            maxLines: 1,
-                          ),
-                        ),
-                        if (invoice.isOffline == true) ...[
-                          const SizedBox(width: 8),
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 6,
-                              vertical: 2,
-                            ),
-                            decoration: BoxDecoration(
-                              color: Colors.grey.shade200,
-                              borderRadius: BorderRadius.circular(4),
-                            ),
-                            child: Text(
-                              'OFFLINE',
-                              style: TextStyle(
-                                color: Colors.grey.shade700,
-                                fontSize: 9,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ],
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      '₹${(invoice.totalAmount ?? 0).toStringAsFixed(2)}',
-                      style: TextStyle(
-                        color: colorScheme.primary,
-                        fontSize: 16,
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Expanded(
+                    child: Text(
+                      invoice.partyName ?? 'Unknown Party',
+                      style: theme.textTheme.titleMedium?.copyWith(
                         fontWeight: FontWeight.w600,
                       ),
                     ),
-                    const SizedBox(height: 4),
-                    Text(
-                      invoice.invoiceDate != null
-                          ? DateFormat('EEE, MMM d').format(DateTime.parse(invoice.invoiceDate!))
-                          : 'No date',
-                      style: TextStyle(
-                        color: Colors.grey.shade600,
-                        fontSize: 12,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 10,
-                  vertical: 6,
-                ),
-                decoration: BoxDecoration(
-                  color: statusColor.withOpacity(0.15),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Text(
-                  statusText,
-                  style: TextStyle(
-                    color: statusColor,
-                    fontSize: 11,
-                    fontWeight: FontWeight.bold,
                   ),
-                ),
+                  Row(
+                    children: [
+                      if (invoice.isOffline == true) ...[
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 6,
+                            vertical: 2,
+                          ),
+                          decoration: BoxDecoration(
+                            color: theme.brightness == Brightness.dark
+                                ? const Color(0xFF7C2D12).withOpacity(0.25)
+                                : const Color(0xFFFFF7ED),
+                            borderRadius: BorderRadius.circular(4),
+                          ),
+                          child: const Text(
+                            'OFFLINE',
+                            style: TextStyle(
+                              color: Color(0xFFC2410C), // text-orange-700
+                              fontSize: 9,
+                              fontWeight: FontWeight.bold,
+                              letterSpacing: 0.5,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 6),
+                      ],
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 6,
+                          vertical: 2,
+                        ),
+                        decoration: BoxDecoration(
+                          color: statusColor.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                        child: Text(
+                          statusText,
+                          style: TextStyle(
+                            color: statusColor,
+                            fontSize: 9,
+                            fontWeight: FontWeight.bold,
+                            letterSpacing: 0.5,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+              const SizedBox(height: 8),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        if (invoice.invoiceNumber != null) ...[
+                          Text(
+                            'Bill #${invoice.invoiceNumber}',
+                            style: theme.textTheme.bodyMedium?.copyWith(
+                              color: subtitleColor,
+                              fontSize: 13,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                        ],
+                        Text(
+                          invoice.invoiceDate != null
+                              ? DateFormat('dd MMM yyyy').format(DateTime.parse(invoice.invoiceDate!))
+                              : 'No date',
+                          style: theme.textTheme.bodySmall?.copyWith(
+                            color: subtitleColor,
+                            fontSize: 12,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Text(
+                    '₹${(invoice.totalAmount ?? 0).toStringAsFixed(2)}',
+                    style: theme.textTheme.titleMedium?.copyWith(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: colorScheme.primary,
+                    ),
+                  ),
+                ],
               ),
             ],
           ),

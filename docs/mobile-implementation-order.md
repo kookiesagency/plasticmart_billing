@@ -11,9 +11,10 @@ This document provides a step-by-step implementation order for building the Plas
 - [x] Bottom Navigation Bar setup
 - [x] Provider state management
 - [x] SharedPreferences for persistence
-- [x] Basic/Advanced Mode toggle
+- [x] ~~Basic/Advanced Mode toggle~~ (Removed - all features now in one mode)
 - [x] Home screen with adaptive tabs
 - [x] Project folder structure
+- [x] Light and Dark theme implementation
 
 ---
 
@@ -530,89 +531,112 @@ This document provides a step-by-step implementation order for building the Plas
 
 ---
 
-### **Step 10: Settings & Configuration** ⚙️
+### ✅ **Step 10: Settings & Configuration** ⚙️ - COMPLETED
 **Why last?** Nice-to-have features after core functionality is complete.
 
-**What to build:**
-- [ ] Enhance Settings screen with:
-  - [ ] App theme toggle (Light/Dark mode)
+**What was built:**
+- [x] Enhanced Settings screen with:
+  - [x] Dark Mode toggle (Light/Dark theme switching)
+  - [x] Theme persistence using SharedPreferences
+  - [x] ThemeProvider with ChangeNotifier pattern
+  - [x] Default Bundle Rate management
+  - [x] Units management access
 
-**Testing:** Can configure app preferences and company details
+**Dark Mode Implementation:**
+- [x] Created ThemeProvider with theme state management
+- [x] Persist theme preference in SharedPreferences
+- [x] Updated MaterialApp with themeMode property
+- [x] Implemented comprehensive light and dark ThemeData
+- [x] Updated all screens to be dark mode compatible:
+  - [x] Create Invoice Screen (stepper colors fixed)
+  - [x] Item Details Screen (header and button styling)
+  - [x] Weekly Report Screen (header styling)
+  - [x] Settings Screen (border and switch styling)
+  - [x] All dialogs and date pickers with theme support
+- [x] Wired Settings toggle to theme provider with Switch component
+
+**UI Components:**
+- [x] Section headers (Appearance, General Settings, Master Data)
+- [x] Setting cards with icons and descriptions
+- [x] Dark mode toggle switch with proper colors
+- [x] Bundle rate dialog with theme-aware styling
+- [x] Navigation to Units screen
+
+**Database:** Uses `app_settings` table for bundle rate
+
+**Testing:** ✅ Can toggle dark/light mode with persistence, configure bundle rate, access units management
 
 ---
 
-### **Step 11: Home Screen Dashboard** 🏠
+### ✅ **Step 11: Home Screen Dashboard** 🏠 - COMPLETED
 **Why eleventh?** Central hub providing business overview and quick access to key metrics.
 
-**What to build:**
+**What was built:**
 
-**Priority 1 - Dashboard Summary Cards** (Start Here):
-- [ ] Financial Overview Section:
-  - [ ] **Today's Revenue** card - Total sales today with calendar icon
-  - [ ] **This Week's Revenue** card - Weekly total with trend indicator
-  - [ ] **This Month's Revenue** card - Monthly total with calendar icon
-  - [ ] **Total Outstanding** card - Money to collect (pending + partial) with warning icon
+**Dashboard Summary Cards:**
+- [x] Financial Overview Section with timezone-aware calculations (IST):
+  - [x] **Today's Revenue** card - Total sales today (using created_at instead of invoice_date)
+  - [x] **This Week's Revenue** card - Weekly total from Monday to today
+  - [x] **This Month's Revenue** card - Monthly total from 1st to today
+  - [x] **Total Outstanding** card - Opening Balance + Total Billed - Total Received
 
-- [ ] Payment Status Cards:
-  - [ ] **Paid Invoices** - Count with green check circle icon
-  - [ ] **Pending Invoices** - Count with red pending icon
-  - [ ] **Partial Payments** - Count with orange partial icon
-  - [ ] Tappable cards navigating to filtered invoice list
+**Quick Actions Section:**
+- [x] Quick Actions Grid (2x2 layout):
+  - [x] Create Bill button (primary action with green background)
+  - [x] Offline Bill button (lightning bolt icon)
+  - [x] Add Party button (navigate to party creation)
+  - [x] Add Item button (navigate to item creation)
+  - [x] Gradient backgrounds for visual appeal
+  - [x] Consistent icons and styling
 
-**Priority 1 - Recent Activity**:
-- [ ] Recent Invoices Section:
-  - [ ] List last 10 invoices
-  - [ ] Show: Party name, amount, date, status badge
-  - [ ] Tap to view invoice details
-  - [ ] "View All" button navigating to invoices tab
+**Recent Activity:**
+- [x] Recent Invoices Section:
+  - [x] List last 5 invoices (optimized for mobile)
+  - [x] Show: Party name, amount, date, status badge, offline badge
+  - [x] Invoice number and date with proper formatting
+  - [x] Tap to view invoice details
+  - [x] "View All" button navigating to Bills tab
+  - [x] Same card style as Bills tab (vertical layout)
 
-- [ ] Quick Actions Row (at top):
-  - [ ] Create Invoice button (navigate to create screen)
-  - [ ] Offline Bill button (already exists - reuse)
-  - [ ] Add Party button (navigate to party creation)
-  - [ ] Consistent button styling (12px border radius)
-
-**Priority 2 - Additional Features** (Later):
-- [ ] Pending Payments Section:
-  - [ ] List invoices awaiting payment
-  - [ ] Show party name, amount due, days pending
-  - [ ] Quick "Add Payment" action
-
-- [ ] Top Parties Widget:
-  - [ ] Top 5 parties by total business this month
-  - [ ] Show party name and total amount
-  - [ ] Tap to view party details
-
-- [ ] Today's Summary Banner (optional):
-  - [ ] One-line stats: "X bills • ₹X billed • ₹X received"
-  - [ ] Date range selector (Today/Week/Month)
-
-**UI Layout Structure**:
+**UI Layout Structure Implemented**:
 ```
-Home Screen
-├── Quick Actions Row (3 buttons)
+Dashboard Screen
 ├── Financial Summary (4 cards in 2x2 grid)
-├── Payment Status (3 cards in row or 3x1 grid)
-├── Recent Invoices (List with "View All")
-└── (Optional) Pending Payments / Top Parties
+├── Quick Actions (4 buttons in 2x2 grid)
+└── Recent Invoices (Last 5 invoices with "View All")
 ```
 
-**Card Design**:
-- White background with grey border
-- 16px border radius
+**Card Design Features**:
+- White background with grey border (16px radius)
+- Gradient backgrounds for financial cards
 - Icon + Title + Value layout
 - Consistent padding (16px)
-- Color coding: Green (positive), Red (negative), Orange (partial)
+- Color coding for status badges
+- Proper text overflow handling
 
-**Data Fetching**:
-- Aggregate queries on `invoices` and `payments` tables
-- Date range filtering (today/week/month)
-- Status calculation (paid/pending/partial)
-- Real-time updates with Provider
+**Key Technical Features**:
+- [x] Timezone-aware date filtering (Asia/Kolkata)
+- [x] Week calculation using Monday as start day (business week convention)
+- [x] Real-time calculations from invoices and payments
+- [x] Proper date comparison using `DateTime.compareTo()`
+- [x] Outstanding calculation: opening_balance + billed - received
+- [x] Provider-based state management with Consumer2 pattern
+- [x] Smart number formatting (integers without decimals)
 
-**Database:** Read-only aggregate queries on existing tables
+**Critical Fixes & Improvements**:
+- [x] Fixed web dashboard to use Monday-based weeks (added `weekStartsOn: 1`)
+- [x] Fixed timezone handling in SQL (convert UTC to IST before date extraction)
+- [x] Created database trigger to auto-calculate invoice totals
+- [x] Fixed Next.js hydration error with `suppressHydrationWarning`
+- [x] Updated dashboard stats to use `created_at` instead of `invoice_date`
+- [x] Database migrations created:
+  - `update_dashboard_stats_use_created_at.sql`
+  - `fix_dashboard_timezone_ist.sql`
+  - `add_auto_calculate_invoice_total_trigger.sql`
 
-**Testing:** Can view business metrics, navigate to details, quick actions work
+**Database:** Read-only aggregate queries on `invoices`, `payments`, and `parties` tables
+
+**Testing:** ✅ Can view business metrics, navigate to invoice details, use quick actions, see accurate financial data matching web dashboard
 
 ---
 
@@ -647,13 +671,29 @@ After completing all 10 steps, users should be able to:
 
 ## 📌 **Current Status**
 
-**Completed:** Steps 0-9 + UI/UX Polish (Authentication, Units, Parties, Items, Invoice Creation, Invoice Management, Payment Management, Party Report, PDF Generation & Sharing, Offline Bill Entry, Icon Standardization)
-**Next Step:** Step 11 - Home Screen Dashboard (Business metrics & quick actions)
-**Mode:** Basic Mode First
+**Completed:** Steps 0-11 + UI/UX Polish (Authentication, Units, Parties, Items, Invoice Creation, Invoice Management, Payment Management, Party Report, PDF Generation & Sharing, Offline Bill Entry, Icon Standardization, Home Screen Dashboard, Light/Dark Theme)
+**Next Step:** Hindi and Urdu Localization
+**Mode:** All Core Features Implemented (Basic/Advanced mode removed)
 **Pending from Step 5:** Date/status filters (not critical for MVP)
-**Step 10 Status:** Partially skipped (only theme toggle deferred for later)
 
 **Recent Completions:**
+- **Step 10: Light/Dark Theme Implementation** ✅ (October 2025)
+  - Complete dark mode support across all screens
+  - ThemeProvider with state persistence
+  - Fixed stepper background colors in Create Invoice screen
+  - Updated Item Details and Weekly Report headers for dark theme
+  - Refined Settings screen borders and switch styling
+  - Theme-aware dialogs and date pickers
+  - Consistent dark mode colors (#3D6B5C for dark green, proper opacity for borders)
+
+- **Step 11: Home Screen Dashboard** ✅ (October 2025)
+  - Financial summary cards with timezone-aware calculations (IST)
+  - Quick actions grid (2x2 layout with Create Bill, Offline Bill, Add Party, Add Item)
+  - Recent invoices section showing last 5 invoices with "View All" button
+  - Database trigger for auto-calculating invoice totals
+  - Fixed web dashboard to match mobile (Monday-based weeks, created_at filtering)
+  - Critical bug fixes: timezone handling, hydration errors, invoice total sync
+
 - **UI/UX Polish & Consistency** ✅ (December 2025)
   - Units screen redesigned with simplified card layout
   - All icons standardized to outline/flat versions across entire app
@@ -687,18 +727,118 @@ After completing all 10 steps, users should be able to:
 
 - **Step 8: PDF Generation & Sharing** ✅ (October 2025)
 
-**Awaiting:** User approval to proceed with Step 11 - Home Screen Dashboard
+---
+
+## 📝 **Pending Tasks - Implementation Order**
+
+### **Priority 1: Basic Mode Restriction** 🔒
+**Status:** Next to implement
+- Reintroduce Basic Mode so it only exposes the Items and Party sections
+- Hide Bills, Dashboard, and other advanced features when Basic Mode is active
+- Implement toggle in Settings screen
+- Persist Basic Mode preference in SharedPreferences
+- Update bottom navigation to show/hide tabs based on mode
+- Ensure toggle updates navigation and state providers in real-time
+
+### **Priority 2: Localization (Hindi & Urdu)** 🌐
+**Status:** Pending
+- Full language support with language switcher in Settings
+- i18n strings for all UI text and messages
+- RTL (Right-to-Left) handling for Urdu
+- Persistent language preference in SharedPreferences
+- Support for Hindi, Urdu, and English
+
+### **Priority 3: Invoice Filters** 🔍
+**Status:** Pending (Step 5 - Optional)
+- Date range filter for invoices on Bills screen
+- Payment status filter (Paid/Pending/Partial)
+- Filter UI with bottom sheet or dialog
+- Clear filters option
+
+### **Priority 4: Draft Invoices** 💾
+**Status:** Pending (Step 5 - Deferred, after web implementation)
+- Save incomplete/unfinished invoices as drafts
+- Resume draft invoices from where user left off
+- Draft invoices list or section
+- Auto-save draft functionality
+- Will implement on web first, then mobile
+
+### **Priority 5: Offline Mode** 📴
+**Status:** Pending (Phase 3)
+- Work without internet connection
+- Local data storage with SQLite or Hive
+- Sync queue for pending operations
+- Offline indicator in UI
+- Handle offline create/edit/delete operations
+
+### **Priority 6: Background Sync** 🔄
+**Status:** Pending (Phase 3)
+- Automatic sync when device comes online
+- Conflict resolution strategy for concurrent edits
+- Sync status indicators
+- Manual sync trigger option
+
+### **Priority 7: Accessibility Enhancements** ♿
+**Status:** Pending (Phase 3)
+- Screen reader support with semantic labels
+- Scalable fonts and large text support
+- High contrast mode for better visibility
+- Keyboard navigation support
+- WCAG compliance
+
+### **Priority 8: Gesture Navigation Improvements** 👆
+**Status:** Pending (Phase 3)
+- Enhanced swipe gestures for common flows
+- Swipe to navigate between tabs
+- Pinch to zoom for invoices/PDFs
+- Custom gesture shortcuts
+
+### **Priority 9: AI/ML Features** 🤖
+**Status:** Pending (Phase 4 - Future)
+- OCR for receipts: Scan and create items/invoices from receipt images
+- Voice commands: Create invoices using voice input
+- Smart suggestions based on usage patterns
+- Auto-fill party/item details
+
+### **Priority 10: Testing Suite** 🧪
+**Status:** Pending (Quality Assurance)
+- Unit tests for core business logic (services, providers)
+- Integration tests for database operations
+- Widget tests for UI components
+- E2E tests for critical user flows (login, create invoice, payments)
+- Device testing on multiple devices and OS versions (iOS/Android)
+- Performance and memory leak testing
+
+### **Priority 11: Deployment Preparation** 🚀
+**Status:** Pending (Quality Assurance)
+- App Store optimization with screenshots and descriptions
+- Google Play Store release with metadata
+- Beta testing with TestFlight (iOS) and Firebase/Play Console (Android)
+- Analytics integration (Firebase Analytics, Mixpanel, etc.)
+- Crash reporting setup (Crashlytics, Sentry)
+- App versioning and release notes
+- CI/CD pipeline for automated builds
 
 ---
 
-## 🔄 **After Basic Mode is Complete**
+## 🎯 **Current Status Summary**
 
-Once all 10 steps are complete and tested, we'll move to:
+**✅ Completed:** All core features (Steps 0-11)
+- Authentication & Settings
+- Units, Parties, Items Management
+- Invoice Creation & Management
+- Payment Tracking
+- Party Reports
+- PDF Generation & Sharing
+- Offline Bill Entry
+- Home Screen Dashboard
+- UI/UX Polish & Consistency
+- Light/Dark Theme (Complete) ✅
 
-- **Phase 2:** Advanced Mode features (advanced party management, bulk operations, analytics)
-- **Phase 3:** Mobile-specific features (offline mode, push notifications, widgets)
-- **Phase 4:** Business intelligence & automation
+**🚧 In Progress:** None
+
+**📅 Next Up:** Basic Mode Restriction (Priority 1)
 
 ---
 
-**Note:** This order ensures we build a fully functional Basic Mode app first, allowing real-world testing and feedback before adding advanced features.
+**Note:** The mobile app now has full feature parity with the web app. All pending tasks are enhancements and future features that will be implemented based on user feedback and business priorities.

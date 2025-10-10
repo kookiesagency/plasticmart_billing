@@ -21,7 +21,20 @@
       "Bash(git commit:*)",
       "Bash(find:*)",
       "Bash(git push:*)",
-      "Bash(git merge:*)"
+      "Bash(git merge:*)",
+      "Bash(dart run:*)",
+      "Bash(brew install:*)",
+      "Bash(export:*)",
+      "Bash(echo $ANDROID_HOME)",
+      "Bash(yes)",
+      "Bash(sdkmanager:*)",
+      "Bash(java:*)",
+      "Bash(cat:*)",
+      "Bash(./gradlew:*)",
+      "Bash(/usr/libexec/java_home:*)",
+      "Bash(identify:*)",
+      "Bash(sips:*)",
+      "Bash(git checkout:*)"
     ],
     "deny": [],
     "ask": []
