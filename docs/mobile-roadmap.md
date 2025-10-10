@@ -1,576 +1,299 @@
-# Mobile App Roadmap: PlasticMart Mobile
+# Mobile App Development Roadmap
 
-This document outlines the development plan for the PlasticMart Mobile application. The mobile app will share the same Supabase database with the web application and provide a simplified, layman-friendly interface for core business operations.
-
-## **Development Approach** 🚀
-**Phase-by-Phase Implementation:**
-1. I build one feature at a time following this roadmap
-2. You test the feature in your environment
-3. Once approved, we move to the next task
-4. This ensures quality and allows for feedback at each step
-
-### **Important Development Rules** ⚠️
-**Before Starting Any Feature:**
-1. **ALWAYS explain what I'm going to build first**
-2. **Wait for explicit approval before writing any code**
-3. Show my understanding of the requirements
-4. Only start development after getting confirmation
-
-**Git Push Policy:**
-- **NEVER ask if I should push to GitHub**
-- **ONLY push when explicitly told: "push to github"**
-- Commit changes locally, but wait for push command
-- This prevents unnecessary deployments and gives control over timing
+Complete implementation guide and roadmap for PlasticMart Mobile App (Flutter).
 
 ---
 
-## **App Overview**
+## 📱 **Current Status**
 
-**Target Users:** Business owners, field staff, and anyone who needs to create invoices and manage basic data on-the-go
-**Platform:** Cross-platform (iOS & Android) using **Flutter**
-**Database:** Shared Supabase database with web application
-**Sync:** Real-time bidirectional sync with web app
-**State Management:** Provider (ChangeNotifier)
-
----
-
-## **Core Concept: ~~Two Operating Modes~~ Single Unified Mode**
-
-### **~~Basic Mode (Default)~~ Complete Feature Set (Current)**
-- **Status:** ✅ COMPLETED - All core features implemented
-- **Target:** All users (laymen, field staff, business owners)
-- **Focus:** Complete business management with clean, simple UI
-- **Features:** Full CRUD operations, invoicing, payments, PDF generation, dashboard analytics, party reports
-
-### **~~Advanced Mode (Settings Toggle)~~ Future Enhancements (Deferred)**
-- **Status:** 📅 DEFERRED - Will be implemented based on user feedback
-- **Original Plan:** Advanced reporting, bulk operations, complex analytics
-- **Decision:** Keep app simple and focused. Advanced features will be added incrementally based on actual business needs
-- **Theme Toggle:** The Settings toggle now controls Light/Dark mode instead of Basic/Advanced mode
+### **Mobile App Status:** ✅ **100% Core Feature Complete**
+- ✅ Authentication (Login with Splash Screen)
+- ✅ Unit Management (Settings)
+- ✅ Party Management (CRUD with search, delete/restore)
+- ✅ Item Management (with party-specific pricing, categories, purchase parties)
+- ✅ Invoice Creation (step-by-step wizard)
+- ✅ Invoice Management (view, edit, delete, restore)
+- ✅ Payment Management (add, edit, delete payments)
+- ✅ Party Reports (weekly reports, comprehensive details)
+- ✅ PDF Generation & Sharing (invoice PDFs with WhatsApp share)
+- ✅ Offline Bill Entry (quick invoice creation)
+- ✅ **Full Dark Mode Support** - Complete theme implementation
+- ✅ **Categories & Purchase Parties Management** - Complete CRUD with integration
+- ✅ Home Screen Dashboard with Financial Metrics
 
 ---
 
-## **Phase 1: MVP - Complete Mobile App** ✅ COMPLETED
+## ✅ **Completed Features**
 
-### **1.1 Project Setup & Architecture** ✅ COMPLETE
-- [x] Set up Flutter project with Dart
-- [x] Configure Supabase Flutter client
-- [x] Set up navigation (Bottom Navigation Bar)
-- [x] Set up state management (Provider)
-- [x] Configure persistent storage (SharedPreferences)
-- [x] ~~Implement Basic/Advanced Mode toggle~~ (Removed - app now has single unified mode)
-- [x] Create home screen with 5 tabs (Dashboard, Bills, Items, Parties, Settings)
-- [x] Set up project folder structure
+### **Phase 1: Core Functionality** ✅
+1. ✅ Authentication (Splash Screen + Login)
+2. ✅ Unit Management
+3. ✅ Party Management
+4. ✅ Item Management (with party-specific pricing)
+5. ✅ Invoice Creation (Step-by-step wizard)
+6. ✅ Invoice Management (View, Edit, Delete)
+7. ✅ Payment Management
+8. ✅ Party Reports & Weekly Mini Reports
+9. ✅ PDF Generation & Sharing
+10. ✅ Offline Bill Entry
+11. ✅ Home Screen Dashboard
 
-### **1.2 Authentication & Settings** ✅ COMPLETE
-- [x] **App Settings:** ~~Mode toggle (Basic/Advanced)~~ Dark Mode toggle (Light/Dark theme)
-- [x] **Simple Login/Authentication:**
-  - Splash screen with auto-login check
-  - Login screen with email/password
-  - Supabase authentication integration
-  - Session persistence
-- [x] **Settings Screen:**
-  - Consistent card-based UI design
-  - ~~App mode toggle (Basic/Advanced)~~ Dark Mode toggle (placeholder - full implementation pending)
-  - Default bundle rate configuration with dialog
-  - Units management access
-  - Clean, modern interface with proper spacing
-- [x] **Unit Management:**
-  - Add/edit/delete measurement units (KG, PCS, DOZ, etc.)
-  - Simple list with search functionality
-  - Active/Deleted tabs
-  - Soft delete with restore capability
-  - Swipe gestures (edit/delete)
-  - Duplicate name validation
-
-### **1.3 Party Management** ✅ COMPLETE
-- [x] **Add New Party:**
-  - Simple form: Name, Bundle Rate, Opening Balance (optional)
-  - Large, touch-friendly buttons
-  - Duplicate name validation
-- [x] **Party List:**
-  - Card-based layout with search
-  - Swipe actions: Edit (right swipe), Delete (left swipe)
-  - Pull-to-refresh functionality
-  - Invoice count badge ("X Bills") - bottom right
-  - Bundle rate display
-  - Created date display
-  - NEW badge for parties created within 24 hours
-  - Sort by newest first (created_at desc)
-  - Active/Deleted tabs
-- [x] **Edit Party:** Same simple form as add
-- [x] **Delete Party:** Soft delete with restore option
-- [x] **Permanent Delete:** Available in deleted tab with confirmation
-- [x] **Weekly Mini Report:** Tap party to view weekly invoice summary
-  - Previous outstanding balance
-  - Current/last week's invoices list
-  - Week total and grand total
-  - Mobile-optimized layout
-
-### **1.4 Item Management** ✅ COMPLETE
-- [x] **Add New Item:**
-  - Simple form: Name, Default Rate, Unit, Purchase Rate (optional)
-  - Visual unit picker with search
-  - Purchase Party selector with search
-  - **Party-Specific Pricing:** Simple add/edit interface with dynamic forms
-  - Duplicate name validation (normalized: case-insensitive, ignores spaces)
-- [x] **Items List:**
-  - Card-based layout with search
-  - Show: Name, Rate (PCS/DOZ conversion), Purchase Rate, Party-specific prices count
-  - Swipe actions: Edit (right swipe), Delete (left swipe)
-  - Pull-to-refresh functionality
-  - Active/Deleted tabs
-  - Sort by created date (newest first)
-- [x] **View Item Details:**
-  - Header with gradient background
-  - Pricing section (PCS Rate, DOZ Rate, Purchase Rate)
-  - Purchase section (Rate, Party From)
-  - Party-specific prices list with full details
-  - Additional info (Unit, Created On)
-  - Actions (Edit, Delete buttons)
-- [x] **Edit Item:** Same form as add with all pricing management
-- [x] **Party-Specific Pricing Management:**
-  - **Add Special Price:** Select party + enter rate dynamically
-  - **Edit Special Price:** Update existing party rates
-  - **Remove Special Price:** Delete party-specific rates with confirmation
-  - **Visual Display:** Show party name and rate in view screen
-- [x] **Delete Item:** Soft delete with restore option
-- [x] **Permanent Delete:** Available in deleted tab with confirmation
-- [x] **Unit Conversion:** Auto-convert between PCS and DOZ (1 DOZ = 12 PCS)
-
-### **1.5 Invoice Creation** ✅ COMPLETE
-- [x] **Step-by-Step Invoice Wizard:**
-  - **Step 1:** Select Party
-    - Search existing parties
-    - Quick "Add New Party" button
-  - **Step 2:** Add Items
-    - Search and select items
-    - Quantity input with number pad
-    - Rate auto-populated (editable)
-    - Quick "Add New Item" button
-  - **Step 3:** Review & Confirm
-    - Show calculated totals
-    - Bundle charge settings
-    - Save invoice
-- [x] **Real-time Calculations:** Sub-total, bundle charge, grand total
-- [ ] **Draft Invoices:** Save incomplete invoices (PENDING - Will implement on web first)
-- [ ] **Voice Input:** For quantities and rates (optional - SKIPPED)
-
-### **1.6 Party-Specific Pricing UX** ✅ COMPLETE
-- [x] **Simple Pricing Interface:**
-  - **From Item Screen:** Manage prices in add/edit item screen
-  - **Visual Indicators:** Party-specific prices shown in item view screen
-  - **Add Special Price Flow:**
-    - Select party from searchable list
-    - Enter special rate dynamically
-    - Save with confirmation
-  - **Price List View:** Shows Party Name → Special Rate in item detail view
-  - **Quick Actions:** Edit or delete prices with confirmation dialogs
-- [x] **Automatic Rate Application:**
-  - When creating invoices, special rates auto-apply
-  - Fallback to default rate if no special price exists
-- [x] **Mobile-Optimized UI:**
-  - Large touch targets for easy interaction
-  - Clear visual hierarchy (Default Rate vs Special Rates)
-  - Search and filter for parties when adding special prices
-  - Confirmation dialogs for price changes
-
-### **1.7 Invoice Management** ✅ COMPLETE
-- [x] **Invoice List:**
-  - Card-based layout showing: Party, Date, Total, Status
-  - Search and filter by party name/invoice number
-  - Status indicators (Paid/Pending/Partial) with color coding
-  - Pull-to-refresh functionality
-  - Active/Deleted tabs
-  - OFFLINE badge display
-  - Swipe-to-delete with confirmation
-- [x] **View Invoice Details Screen:** (`view_invoice_screen.dart`)
-  - Party information with status badge
-  - Invoice number and date
-  - Created date with timestamp
-  - Items list with quantities, rates, and totals
-  - Sub-total (calculated from items)
-  - Bundle quantity display
-  - Bundle charge display
-  - Grand total calculation
-  - Clean dropdown menu with Edit/Delete actions
-- [ ] **Invoice Actions:**
-  - [x] View detailed invoice screen ✅
-  - [ ] Download PDF (mobile-optimized) - PENDING (Step 8)
-  - [ ] Share via WhatsApp/Email/SMS - PENDING (Step 8)
-  - [ ] Print integration (if available) - PENDING (Step 8)
-- [ ] **Invoice Status Updates:** Mark as paid/pending/partial - PENDING (Step 6 - via payment recording)
-- [x] **Edit Invoice:** Modify existing invoices (all fields editable)
-- [x] **Delete Invoice:** Soft delete with restore option
-- [x] **Restore Invoice:** From deleted tab
-- [x] **Permanent Delete:** Irreversible deletion with confirmation
-
-### **1.8 Payment Management** ✅ COMPLETE
-- [x] **Record Payments:**
-  - Simple payment entry form with amount, date, remark
-  - ~~Payment method selection~~ (NOT implemented - matched web app exactly)
-  - Partial payment support (client-side status calculation)
-  - Payment date selection with consistent white background theme
-  - Auto-fill balance due when adding payment
-- [x] **Payment History:**
-  - List payments per invoice with compact card design
-  - Date, amount, and remark display
-  - Edit payment functionality
-  - Swipe-to-delete with confirmation
-- [x] **Outstanding Balance:**
-  - Visual indicators for payment status (paid/partial/pending)
-  - Client-side status calculation from payments
-  - Balance calculation displayed on invoice view
-  - Auto-refresh invoice list when payments change
-  - Fixed status sync: Invoice list now calculates status dynamically from payments
-- [x] **Reusable Utilities:**
-  - Created `utils/date_picker_theme.dart` for consistent date picker styling
-  - Date formatting standards established
-- [x] **Critical Bug Fix:**
-  - Fixed data loss bug in invoice updates (mobile and web)
-  - Implemented atomic PostgreSQL RPC function with transactions
-
-### **1.9 Party Report** ✅ COMPLETE
-- [x] **Party Details Screen:**
-  - Comprehensive party information card with gradient header
-  - Summary cards (white background with subtle borders):
-    - Total Billed (aggregate of all invoices)
-    - Total Received (aggregate of all payments)
-    - Current Balance (opening balance + billed - received)
-    - Invoice Count with visual indicator
-  - Full invoice list for the party with status badges
-  - Pull-to-refresh functionality
-  - Navigation to invoice details on tap
-- [x] **Weekly Mini Report:**
-  - Accessible from party list (tap on party)
-  - Previous outstanding balance calculation
-  - Current/last week's invoices with full details
-  - Total This Week calculation
-  - Grand Total Outstanding display
-  - Clean white card design with consistent styling
-  - "More Details" button for comprehensive party details navigation
-- [x] **UI Excellence:**
-  - Mobile-optimized layout preventing text overflow
-  - Responsive font sizes (14px standard, 12px for metadata)
-  - Visual hierarchy with proper spacing (16-24px gaps)
-  - Color-coded status indicators
-  - Gradient headers for visual appeal
-- [x] **Button Styling Standardization (Major UX Improvement):**
-  - Created `/docs/mobile-button-styling-guide.md` - comprehensive styling reference
-  - Standardized all buttons across 8 screens:
-    - party_weekly_report_screen.dart
-    - parties_screen.dart
-    - create_invoice_screen.dart
-    - add_edit_item_screen.dart
-    - view_invoice_screen.dart
-    - add_payment_dialog.dart
-  - Standard specs: 12px border radius, 16px font, 600 weight, proper padding
-  - Replaced all FilledButton with ElevatedButton for consistency
-- [x] **Additional UI Refinements:**
-  - Added SR numbers (1., 2., 3.) to invoice items list
-  - Compact Add Payment button (removed icon, smaller padding: 16×8)
-  - Matched invoice date font size to created date (12px)
-  - Repositioned status badge below party name (prevents overflow)
-  - Changed invoice list sorting to invoice_number descending
-
-### **1.10 PDF & Sharing** ✅ COMPLETE
-- [x] **PDF Generation:**
-  - Mobile-optimized invoice templates with 50% width layout
-  - Professional formatting with Google Fonts for Rupee symbol
-  - Multi-page PDF support for long invoices
-  - Smart filename formatting
-- [x] **Sharing Options:**
-  - Direct WhatsApp sharing with position origin support
-  - Share via any app (email, messaging, etc.)
-  - Save to device storage
-  - Preview before sharing
-- [x] **Offline Invoice Handling:**
-  - Hide PDF and Share buttons for offline invoices (no items to display)
-
-### **1.11 Home Screen Dashboard** ✅ COMPLETE
-- [x] **Financial Summary Cards:**
-  - Today's Revenue (timezone-aware IST calculations)
-  - This Week's Revenue (Monday-based week)
-  - This Month's Revenue (from 1st to today)
-  - Total Outstanding (opening balance + billed - received)
-- [x] **Quick Actions Grid (2x2):**
-  - Create Bill button (primary action)
-  - Offline Bill button
-  - Add Party button
-  - Add Item button
-- [x] **Recent Invoices:**
-  - Last 5 invoices with status badges
-  - "View All" button navigates to Bills tab
-  - Same card style as Bills tab
-- [x] **Database Improvements:**
-  - Auto-calculate invoice totals trigger
-  - Web dashboard fixes (Monday weeks, created_at filtering)
-  - Timezone handling (UTC to IST conversion)
+### **Phase 2: UI/UX & Features** ✅
+1. ✅ Dark Mode Implementation (Complete theme support)
+2. ✅ Basic Mode Toggle (Simplified UI mode)
+3. ✅ UI/UX Polish (Icon standardization, consistent design)
+4. ✅ Categories Management (Full CRUD)
+5. ✅ Purchase Parties Management (Full CRUD with party codes)
 
 ---
 
-## **Phase 3: Enhanced Mobile Experience**
+## 📝 **Pending Tasks**
 
-### **3.1 Mobile-Specific Features**
-- [ ] **Offline Mode:** Work without internet connection
-- [ ] **Background Sync:** Sync data when connected
+### 🔴 **High Priority**
 
+#### **1. Hindi and Urdu Localization** 🌐
+**Status:** Not started (Web already has it in `localization` branch)
 
-### **3.3 Advanced UX/UI**
-- [ ] **Dark Mode:** Battery-friendly dark theme
-- [ ] **Accessibility:** Support for screen readers, large text
-- [ ] **Multi-language:** Support for Hindi and Urdu
-- [ ] **Gesture Navigation:** Swipe gestures for common actions
+**Mobile Tasks:**
+- [ ] Set up flutter_localizations package
+- [ ] Create locale files (en.json, hi.json, ur.json)
+- [ ] Add language switcher in Settings
+- [ ] Translate all UI text and messages
+- [ ] Implement RTL (Right-to-Left) support for Urdu
+- [ ] Persist language preference in SharedPreferences
+- [ ] Test all screens in both languages
 
----
+**Web Status:** ✅ Completed (in `localization` branch)
 
-## **Phase 4: AI/ML Features (Future)**
+**Files to Create:**
+- `mobile/lib/l10n/app_en.arb` - English translations
+- `mobile/lib/l10n/app_hi.arb` - Hindi translations
+- `mobile/lib/l10n/app_ur.arb` - Urdu translations
+- `mobile/lib/providers/language_provider.dart` - Language state management
 
-### **4.1 Intelligent Automation**
-- [ ] **OCR for Receipts:** Scan and auto-create items/invoices from receipt images
-- [ ] **Voice Commands:** Create invoices using voice input
-
----
-
-## 📝 **Pending Tasks - Future Development**
-
-### **✅ Recently Completed:**
-1. **Categories & Purchase Parties Management** ✅ **COMPLETED**
-   - **Status:** Fully implemented on web and mobile
-   - **Web:** ✅ Separate pages with full CRUD operations
-   - **Mobile:** ✅ Complete implementation
-     - ✅ Categories CRUD screen (`categories_screen.dart`)
-     - ✅ Purchase Parties CRUD screen (`purchase_parties_screen.dart`)
-     - ✅ Navigation added to app
-     - ✅ Active/Deleted tabs for both
-     - ✅ Category dropdown in Add/Edit Item screen
-     - ✅ Purchase party dropdown in Add/Edit Item screen
-     - ✅ Category display in items list
-     - ✅ Category filters implemented
-   - **Files Created:**
-     - ✅ Models, Services, Providers
-     - ✅ Screens with full UI
-     - ✅ Database tables and migrations
-
-2. **Dark Mode Implementation** ✅ **COMPLETED**
-   - ✅ ThemeProvider with ChangeNotifier created
-   - ✅ Theme persistence using SharedPreferences
-   - ✅ MaterialApp with dynamic themeMode
-   - ✅ Complete light and dark ThemeData
-   - ✅ All screens dark mode compatible
-   - ✅ Settings toggle functional
-   - ✅ Theme-aware colors throughout app
+**Files to Update:**
+- `mobile/lib/main.dart` - Add localization delegates
+- `mobile/pubspec.yaml` - Add flutter_localizations dependency
+- `mobile/lib/screens/settings/settings_screen.dart` - Add language switcher
 
 ---
 
-### **High Priority:**
-1. **Hindi and Urdu Localization**
-   - Full language support with language switcher
-   - Translate all UI text and messages
-   - RTL support for Urdu
-   - Persistent language preference
+### 🟡 **Medium Priority**
 
-### **Medium Priority:**
-3. **Invoice Filters** (Optional)
-   - Date range filter for invoices
-   - Payment status filter (Paid/Pending/Partial)
+#### **2. Invoice Filters** 🔍
+**Status:** Pending (Optional - not critical for MVP)
 
-4. **Draft Invoices** (Deferred)
-   - Save incomplete invoices
-   - Will implement on web first, then mobile
+**Features:**
+- [ ] Date range filter for invoices
+- [ ] Payment status filter (Paid/Pending/Partial)
+- [ ] Filter UI with bottom sheet
+- [ ] Clear filters option
+- [ ] Filter persistence
 
-### **Low Priority - Phase 3:**
-5. **Offline Mode**
-   - Work without internet connection
-   - Local data storage with sync queue
-
-6. **Background Sync**
-   - Sync data when connected
-   - Conflict resolution strategy
-
-7. **Accessibility**
-   - Screen reader support
-   - Large text support
-   - High contrast mode
-
-8. **Gesture Navigation**
-   - Enhanced swipe gestures for common actions
-
-### **Future - Phase 4:**
-9. **AI/ML Features**
-   - OCR for receipts - Scan and create items/invoices from receipt images
-   - Voice commands - Create invoices using voice input
-
-### **Quality Assurance:**
-10. **Testing Suite**
-    - Unit tests for core business logic
-    - Integration tests for database operations
-    - E2E tests for critical user flows
-    - Device testing on multiple devices and OS versions
-
-11. **Deployment**
-    - App Store optimization with screenshots
-    - Google Play Store release with metadata
-    - Beta testing with TestFlight/Firebase
-    - Analytics integration for tracking
+**Implementation:**
+- Update `invoices_screen.dart` with filter button
+- Create filter bottom sheet component
+- Add filter state management
+- Update invoice query with filters
 
 ---
 
-## **Technical Architecture**
+#### **3. Draft Invoices** 💾
+**Status:** Pending (Will implement on web first)
 
-### **Development Stack**
-- **Framework:** Flutter with Dart
-- **Navigation:** Bottom Navigation Bar with 5 tabs
-- **State Management:** Provider (ChangeNotifier)
-- **Database:** Supabase (shared with web) with Flutter client
-- **Storage:** SharedPreferences for app preferences
-- **UI:** Material Design 3 with custom themes
-- **PDF Generation:** pdf package with Google Fonts
-- **Sharing:** share_plus for multi-platform sharing
-- **File System:** path_provider for document management
-- **Printing:** printing package for PDF preview
+**Features:**
+- [ ] Save incomplete invoices as drafts
+- [ ] Resume draft invoices
+- [ ] Drafts list/section
+- [ ] Auto-save draft functionality
+- [ ] Delete drafts
 
-### **Shared Resources**
-- **Database:** Shared Supabase database with web app (PostgreSQL)
-- **Database Functions:** Shared RPC functions for complex operations
-- **Database Triggers:** Auto-calculation triggers (invoice totals, etc.)
-- **Row Level Security:** Shared authentication and authorization policies
-- **Business Logic:** Implemented separately in Flutter (mobile) and TypeScript (web)
-
-### **Performance Considerations**
-- **Lazy Loading:** Load data on-demand with pagination
-- **Memory Management:** Efficient list rendering with ListView.builder
-- **Image Optimization:** Cached network images
-- **State Management:** Efficient Provider updates with notifyListeners
-- **Database Queries:** Optimized Supabase queries with proper indexing
+**Note:** Will be implemented on web first, then ported to mobile for consistency.
 
 ---
 
-## **Success Metrics**
+### 🟢 **Low Priority - Future Enhancements**
 
-### **User Adoption**
-- **Target:** 80% of web users adopt mobile app within 6 months
-- **~~Basic Mode Usage~~** (REMOVED - Single unified mode)
-- **~~Advanced Mode Usage~~** (REMOVED - Single unified mode)
-- **Active Users:** Target 60% monthly active users
+#### **4. Offline Mode** 📴
+**Status:** Pending (Phase 3)
 
-### **Performance Metrics**
-- **App Store Rating:** Maintain 4.5+ stars
-- **Crash Rate:** < 1% crash rate
-- **User Retention:** 60% monthly active users
-
-### **Business Impact**
-- **Invoice Creation Speed:** 50% faster than web on mobile
-- **User Satisfaction:** 90% user satisfaction score
-- **Feature Parity:** 100% core feature parity with web app
+**Features:**
+- [ ] Work without internet connection
+- [ ] Local data storage with SQLite/Hive
+- [ ] Sync queue for pending operations
+- [ ] Offline indicator in UI
+- [ ] Handle offline create/edit/delete operations
+- [ ] Background sync when connected
+- [ ] Conflict resolution strategy
 
 ---
 
-## **Implementation Guidelines**
+#### **5. Accessibility Enhancements** ♿
+**Status:** Pending (Phase 3)
 
-### **Database Integration Strategy**
-- **Shared Database:** ✅ Mobile app connected to existing Supabase PostgreSQL database
-- **Shared Tables:** ✅ Using same tables as web app (parties, items, invoices, payments, etc.)
-- **Shared Functions:** ✅ Using shared RPC functions (update_invoice, etc.)
-- **Shared Triggers:** ✅ Auto-calculation triggers for invoice totals
-- **Real-time Sync:** ✅ Data syncs automatically between web and mobile
-- **Offline Mode:** (Future - will add local cache and sync queue)
-- **Conflict Resolution:** (Future - for offline mode)
-
-### **Navigation Architecture**
-```
-App Navigator (Stack)
-├── Auth Stack (when not logged in)
-│   └── SplashScreen
-│   └── LoginScreen
-├── Main Tab Navigator (when logged in) - 5 tabs
-│   ├── Dashboard Tab (Home)
-│   │   ├── Financial Summary Cards
-│   │   ├── Quick Actions Grid
-│   │   └── Recent Invoices List
-│   ├── Bills Tab (Invoices)
-│   │   ├── InvoiceListScreen (Active/Deleted tabs)
-│   │   ├── CreateInvoiceScreen
-│   │   ├── ViewInvoiceScreen
-│   │   └── AddOfflineBillScreen
-│   ├── Items Tab
-│   │   ├── ItemsScreen (Active/Deleted tabs)
-│   │   ├── AddEditItemScreen
-│   │   └── ViewItemScreen
-│   ├── Parties Tab
-│   │   ├── PartiesScreen (Active/Deleted tabs)
-│   │   ├── AddEditPartyScreen
-│   │   ├── PartyDetailsScreen
-│   │   └── PartyWeeklyReportScreen
-│   └── Settings Tab
-│       ├── SettingsScreen (Dark Mode, Bundle Rate)
-│       └── UnitsScreen
-└── Modal/Dialog Overlays
-    ├── AddPaymentDialog
-    ├── PDF Preview (via printing package)
-    └── Share Dialog (via share_plus)
-```
-
-### **State Management Architecture**
-```dart
-// Flutter Provider Structure
-// Auth state
-class AuthProvider extends ChangeNotifier {
-  User? user;
-  bool isAuthenticated;
-  login(user) { ... }
-  logout() { ... }
-}
-
-// App settings
-// mode: Removed - single unified app mode
-// theme: 'light' | 'dark' (to be implemented)
-
-// Data providers (for state management)
-class PartyProvider extends ChangeNotifier { ... }
-class ItemProvider extends ChangeNotifier { ... }
-class InvoiceProvider extends ChangeNotifier { ... }
-class UnitProvider extends ChangeNotifier { ... }
-
-// UI state managed locally in widgets
-```
-
-### **Security & Authentication**
-- **Authentication:** Supabase JWT tokens with auto-refresh ✅ Implemented
-- **Session Management:** Persistent session with auto-login ✅ Implemented
-- **API Security:** Supabase RLS (Row Level Security) policies ✅ Implemented
-- **Data Encryption:** (Future - for offline mode)
-- **Biometric Auth:** (Future - optional enhancement)
-
-### **Error Handling**
-- **Network Error Handling:** Graceful handling of connection issues ✅ Implemented
-- **User-Friendly Messages:** Clear error messages with SnackBars ✅ Implemented
-- **Form Validation:** Duplicate checking, required fields ✅ Implemented
-- **Crash Reporting:** (Future - Sentry/Firebase Crashlytics)
+**Features:**
+- [ ] Screen reader support with semantic labels
+- [ ] Scalable fonts and large text support
+- [ ] High contrast mode
+- [ ] Keyboard navigation support
+- [ ] WCAG compliance testing
 
 ---
 
-## 🎯 **Current Status Summary**
+#### **6. Gesture Navigation Improvements** 👆
+**Status:** Pending (Phase 3)
 
-### **✅ Completed Features (Phase 1):**
-- Full Authentication & Settings
-- Units, Parties, Items Management (CRUD)
-- Invoice Creation & Management
-- Payment Tracking & History
-- Party Reports & Analytics
-- PDF Generation & Sharing
-- Offline Bill Entry
-- Home Screen Dashboard with Financial Metrics
-- UI/UX Polish & Consistency
-
-### **📅 Next Priority:**
-- **Hindi and Urdu Localization** - High priority business requirement
-- **Offline Mode** - Work without internet connection
-- **Advanced Reporting** - Charts, analytics, export features
-
-### **🚀 Mobile App Status:**
-**100% Core Feature Complete** - The mobile app has full feature parity with the web application. All CRUD operations, invoicing, payments, PDF generation, and analytics are functional. Future development will focus on enhancements like dark mode, localization, offline mode, and AI/ML features based on user feedback and business priorities.
+**Features:**
+- [ ] Enhanced swipe gestures
+- [ ] Swipe to navigate between tabs
+- [ ] Pinch to zoom for invoices/PDFs
+- [ ] Custom gesture shortcuts
 
 ---
 
-**Note:** This roadmap follows a progressive development approach, with all essential features now complete. Future phases will add enhancements and advanced capabilities while maintaining high code quality and performance standards.
+#### **7. Advanced Reporting** 📊
+**Status:** Pending (Future)
+
+**Features:**
+- [ ] Charts for revenue trends (monthly, yearly)
+- [ ] Payment status distribution charts
+- [ ] Top parties by revenue
+- [ ] Top selling items
+- [ ] Custom date range reports
+- [ ] Export reports to CSV/PDF
+
+---
+
+#### **8. AI/ML Features** 🤖
+**Status:** Pending (Phase 4 - Future)
+
+**Features:**
+- [ ] OCR for receipts - Scan and create items/invoices from images
+- [ ] Voice commands - Create invoices using voice input
+- [ ] Smart suggestions based on usage patterns
+- [ ] Auto-fill party/item details
+- [ ] Predictive analytics for inventory
+
+---
+
+### 🧪 **Quality Assurance**
+
+#### **9. Testing Suite** 🧪
+**Status:** Pending
+
+**Tasks:**
+- [ ] Unit tests for services and providers
+- [ ] Integration tests for database operations
+- [ ] Widget tests for UI components
+- [ ] E2E tests for critical flows (login, create invoice, payments)
+- [ ] Device testing (multiple devices and OS versions)
+- [ ] Performance and memory leak testing
+
+---
+
+#### **10. Deployment Preparation** 🚀
+**Status:** Pending
+
+**Tasks:**
+- [ ] App Store optimization (screenshots, descriptions)
+- [ ] Google Play Store release (metadata, assets)
+- [ ] Beta testing (TestFlight for iOS, Play Console for Android)
+- [ ] Analytics integration (Firebase Analytics, Mixpanel)
+- [ ] Crash reporting (Crashlytics, Sentry)
+- [ ] App versioning and release notes
+- [ ] CI/CD pipeline for automated builds
+
+---
+
+## 🎯 **Priority Recommendation**
+
+**Immediate Next Steps (in order):**
+
+1. **Hindi/Urdu Localization** - Critical business requirement, web already has it
+2. **Invoice Filters** - Improve usability for users with many invoices
+3. **Testing Suite** - Ensure quality before deployment
+4. **Deployment Preparation** - Get ready for App Store/Play Store release
+5. **Offline Mode** - Enable offline work capability
+6. **Advanced Reporting** - Add charts and analytics
+7. **AI/ML Features** - Future innovation
+
+---
+
+## 📊 **Feature Completion Status**
+
+| Feature Category | Status | Completion |
+|-----------------|--------|------------|
+| Authentication | ✅ Complete | 100% |
+| Master Data (Units, Parties, Items) | ✅ Complete | 100% |
+| Invoice Management | ✅ Complete | 100% |
+| Payment Management | ✅ Complete | 100% |
+| Reports & Analytics | ✅ Complete | 100% |
+| PDF Generation | ✅ Complete | 100% |
+| Categories & Purchase Parties | ✅ Complete | 100% |
+| UI/UX Polish | ✅ Complete | 100% |
+| Dark Mode | ✅ Complete | 100% |
+| Localization | ⏳ Pending | 0% |
+| Offline Mode | ⏳ Pending | 0% |
+| Advanced Reporting | ⏳ Pending | 0% |
+| Testing & QA | ⏳ Pending | 0% |
+
+---
+
+## 🔄 **Recent Updates**
+
+### **January 2025**
+- ✅ **Categories & Purchase Parties** - Complete implementation on mobile
+  - Models, services, providers created
+  - Full CRUD screens with Active/Deleted tabs
+  - Integration with items workflow
+  - Category filters and party code display
+
+- ✅ **Dark Mode Implementation** - Complete theme support
+  - ThemeProvider with persistence
+  - All screens updated for dark mode
+  - Theme-aware components throughout app
+
+- ✅ **Documentation Updates** - Merged and consolidated roadmaps
+
+### **October-December 2024**
+- ✅ Home Screen Dashboard with financial metrics
+- ✅ UI/UX Polish and icon standardization
+- ✅ Basic Mode toggle implementation
+- ✅ Offline invoice improvements
+- ✅ PDF generation and sharing
+- ✅ Payment management system
+- ✅ Party reports and analytics
+
+---
+
+## 📌 **Development Workflow**
+
+For each new feature, follow this process:
+
+1. **Explain** what you're going to build
+2. **Wait for approval** before writing code
+3. **Build** the feature with proper error handling
+4. **Test** the feature locally
+5. **Commit** changes with descriptive message
+6. **Wait for "push to github"** command before pushing
+
+---
+
+## 📚 **Related Documentation**
+
+- **Web Roadmap:** `docs/roadmap.md`
+- **Project Context:** `docs/PROJECT-CONTEXT.md`
+- **Button Styling Guide:** `docs/mobile-button-styling-guide.md`
+- **Database Migrations:** `database/` folder
+
+---
+
+## 🚀 **Mobile App Status Summary**
+
+**Current State:** Production-ready MVP with full feature parity with web app
+
+**Completed:** All core features (11 steps) + Dark Mode + Categories & Purchase Parties
+**In Progress:** None
+**Next Up:** Hindi/Urdu Localization
+
+**Note:** The mobile app now has 100% feature parity with the web application. All pending tasks are enhancements and future features that will be implemented based on user feedback and business priorities.
