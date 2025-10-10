@@ -13,7 +13,8 @@ class ItemService {
           .select('''
             *,
             units(id, name),
-            purchase_party:parties!purchase_party_id(id, name),
+            item_categories(id, name),
+            purchase_parties!purchase_party_id(id, party_code, name),
             item_party_prices(*, parties(name))
           ''');
 

@@ -67,7 +67,6 @@ class _UnitsScreenState extends State<UnitsScreen> with SingleTickerProviderStat
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        backgroundColor: Colors.white,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         title: Text(unit == null ? 'Add Unit' : 'Edit Unit'),
         content: Form(
@@ -163,8 +162,9 @@ class _UnitsScreenState extends State<UnitsScreen> with SingleTickerProviderStat
   @override
   Widget build(BuildContext context) {
     final unitProvider = Provider.of<UnitProvider>(context);
-    final colorScheme = Theme.of(context).colorScheme;
-
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final isDarkTheme = theme.brightness == Brightness.dark;
 
     final units = _showDeleted ? unitProvider.deletedUnits : unitProvider.units;
     final filteredUnits = _getFilteredUnits(units);
@@ -200,15 +200,15 @@ class _UnitsScreenState extends State<UnitsScreen> with SingleTickerProviderStat
                 prefixIcon: const Icon(Icons.search),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide(color: Colors.grey.shade300, width: 1),
+                  borderSide: BorderSide(color: isDarkTheme ? Colors.white.withOpacity(0.2) : Colors.grey.shade300, width: 1),
                 ),
                 enabledBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide(color: Colors.grey.shade300, width: 1),
+                  borderSide: BorderSide(color: isDarkTheme ? Colors.white.withOpacity(0.2) : Colors.grey.shade300, width: 1),
                 ),
                 focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide(color: Theme.of(context).colorScheme.primary, width: 1),
+                  borderSide: BorderSide(color: colorScheme.primary, width: 1),
                 ),
                 contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               ),
@@ -275,7 +275,6 @@ class _UnitsScreenState extends State<UnitsScreen> with SingleTickerProviderStat
                                 return await showDialog<bool>(
                                   context: context,
                                   builder: (context) => AlertDialog(
-                                    backgroundColor: Colors.white,
                                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                                     title: const Text('Delete Unit'),
                                     content: const Text('Are you sure you want to delete this unit?'),
@@ -301,10 +300,10 @@ class _UnitsScreenState extends State<UnitsScreen> with SingleTickerProviderStat
                               child: Container(
                                 margin: const EdgeInsets.only(bottom: 8),
                                 decoration: BoxDecoration(
-                                  color: Colors.white,
+                                  color: theme.cardColor,
                                   borderRadius: BorderRadius.circular(16),
                                   border: Border.all(
-                                    color: Colors.grey.shade200,
+                                    color: isDarkTheme ? Colors.white.withOpacity(0.1) : Colors.grey.shade200,
                                     width: 1,
                                   ),
                                 ),
@@ -329,7 +328,7 @@ class _UnitsScreenState extends State<UnitsScreen> with SingleTickerProviderStat
                                               Text(
                                                 'Created on ${_formatDate(unit.createdAt!)}',
                                                 style: TextStyle(
-                                                  color: Colors.grey.shade600,
+                                                  color: theme.textTheme.bodySmall?.color?.withOpacity(0.7),
                                                   fontSize: 12,
                                                 ),
                                               ),

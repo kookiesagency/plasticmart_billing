@@ -4,6 +4,8 @@ import '../../models/item.dart';
 import '../../providers/item_provider.dart';
 import '../../providers/unit_provider.dart';
 import '../../providers/party_provider.dart';
+import '../../providers/purchase_party_provider.dart';
+import '../../providers/item_category_provider.dart';
 import 'add_edit_item_screen.dart';
 import 'view_item_screen.dart';
 
@@ -43,12 +45,16 @@ class _ItemsScreenState extends State<ItemsScreen> with SingleTickerProviderStat
     final itemProvider = Provider.of<ItemProvider>(context, listen: false);
     final unitProvider = Provider.of<UnitProvider>(context, listen: false);
     final partyProvider = Provider.of<PartyProvider>(context, listen: false);
+    final purchasePartyProvider = Provider.of<PurchasePartyProvider>(context, listen: false);
+    final categoryProvider = Provider.of<ItemCategoryProvider>(context, listen: false);
 
     await Future.wait([
       itemProvider.fetchItems(),
       itemProvider.fetchDeletedItems(),
       unitProvider.fetchUnits(),
       partyProvider.fetchParties(),
+      purchasePartyProvider.fetchPurchaseParties(),
+      categoryProvider.fetchCategories(),
     ]);
   }
 
@@ -74,7 +80,6 @@ class _ItemsScreenState extends State<ItemsScreen> with SingleTickerProviderStat
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        backgroundColor: Colors.white,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         title: const Text('Delete Item'),
         content: const Text('Are you sure you want to delete this item?'),
@@ -162,7 +167,9 @@ class _ItemsScreenState extends State<ItemsScreen> with SingleTickerProviderStat
   @override
   Widget build(BuildContext context) {
     final itemProvider = Provider.of<ItemProvider>(context);
-    final colorScheme = Theme.of(context).colorScheme;
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final isDarkTheme = theme.brightness == Brightness.dark;
 
     final items = _showDeleted ? itemProvider.deletedItems : itemProvider.items;
     final filteredItems = _getFilteredItems(items);
@@ -184,15 +191,25 @@ class _ItemsScreenState extends State<ItemsScreen> with SingleTickerProviderStat
                 prefixIcon: const Icon(Icons.search),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide(color: Colors.grey.shade300, width: 1),
+                  borderSide: BorderSide(
+                    color: isDarkTheme
+                        ? Colors.white.withOpacity(0.2)
+                        : Colors.grey.shade300,
+                    width: 1,
+                  ),
                 ),
                 enabledBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide(color: Colors.grey.shade300, width: 1),
+                  borderSide: BorderSide(
+                    color: isDarkTheme
+                        ? Colors.white.withOpacity(0.2)
+                        : Colors.grey.shade300,
+                    width: 1,
+                  ),
                 ),
                 focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide(color: Theme.of(context).colorScheme.primary, width: 1),
+                  borderSide: BorderSide(color: colorScheme.primary, width: 1),
                 ),
                 contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               ),
@@ -280,7 +297,6 @@ class _ItemsScreenState extends State<ItemsScreen> with SingleTickerProviderStat
                                   return await showDialog<bool>(
                                     context: context,
                                     builder: (context) => AlertDialog(
-                                      backgroundColor: Colors.white,
                                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                                       title: const Text('Delete Item'),
                                       content: const Text('Are you sure you want to delete this item?'),
@@ -309,10 +325,12 @@ class _ItemsScreenState extends State<ItemsScreen> with SingleTickerProviderStat
                               child: Container(
                                 margin: const EdgeInsets.only(bottom: 8),
                                 decoration: BoxDecoration(
-                                  color: Colors.white,
+                                  color: theme.cardColor,
                                   borderRadius: BorderRadius.circular(16),
                                   border: Border.all(
-                                    color: Colors.grey.shade200,
+                                    color: isDarkTheme
+                                        ? Colors.white.withOpacity(0.1)
+                                        : Colors.grey.shade200,
                                     width: 1,
                                   ),
                                 ),
@@ -347,7 +365,7 @@ class _ItemsScreenState extends State<ItemsScreen> with SingleTickerProviderStat
                                                   Text(
                                                     'Rate: ',
                                                     style: TextStyle(
-                                                      color: Colors.grey.shade600,
+                                                      color: theme.textTheme.bodySmall?.color?.withOpacity(0.7),
                                                       fontSize: 14,
                                                     ),
                                                   ),
@@ -364,7 +382,7 @@ class _ItemsScreenState extends State<ItemsScreen> with SingleTickerProviderStat
                                                     Text(
                                                       ' • ',
                                                       style: TextStyle(
-                                                        color: Colors.grey.shade400,
+                                                        color: theme.textTheme.bodySmall?.color?.withOpacity(0.5),
                                                         fontSize: 14,
                                                       ),
                                                     ),
@@ -394,7 +412,7 @@ class _ItemsScreenState extends State<ItemsScreen> with SingleTickerProviderStat
                                                   Text(
                                                     'Purchase: ',
                                                     style: TextStyle(
-                                                      color: Colors.grey.shade600,
+                                                      color: theme.textTheme.bodySmall?.color?.withOpacity(0.7),
                                                       fontSize: 14,
                                                     ),
                                                   ),
@@ -403,8 +421,8 @@ class _ItemsScreenState extends State<ItemsScreen> with SingleTickerProviderStat
                                                       // Always show PCS first
                                                       Text(
                                                         _getPcsRate(item, item.purchaseRate!),
-                                                        style: const TextStyle(
-                                                          color: Colors.black87,
+                                                        style: TextStyle(
+                                                          color: theme.textTheme.bodyLarge?.color,
                                                           fontSize: 14,
                                                           fontWeight: FontWeight.w600,
                                                         ),
@@ -412,7 +430,7 @@ class _ItemsScreenState extends State<ItemsScreen> with SingleTickerProviderStat
                                                       Text(
                                                         ' • ',
                                                         style: TextStyle(
-                                                          color: Colors.grey.shade400,
+                                                          color: theme.textTheme.bodySmall?.color?.withOpacity(0.5),
                                                           fontSize: 14,
                                                         ),
                                                       ),
@@ -420,15 +438,15 @@ class _ItemsScreenState extends State<ItemsScreen> with SingleTickerProviderStat
                                                       Text(
                                                         _getDozRate(item, item.purchaseRate!),
                                                         style: TextStyle(
-                                                          color: Colors.grey.shade600,
+                                                          color: theme.textTheme.bodySmall?.color?.withOpacity(0.7),
                                                           fontSize: 14,
                                                         ),
                                                       ),
                                                     ] else ...[
                                                       Text(
                                                         '₹${item.purchaseRate!.toStringAsFixed(2)}${item.unit != null ? '/${item.unit!.name}' : ''}',
-                                                        style: const TextStyle(
-                                                          color: Colors.black87,
+                                                        style: TextStyle(
+                                                          color: theme.textTheme.bodyLarge?.color,
                                                           fontSize: 14,
                                                           fontWeight: FontWeight.w600,
                                                         ),
@@ -438,7 +456,7 @@ class _ItemsScreenState extends State<ItemsScreen> with SingleTickerProviderStat
                                                     Text(
                                                       'Not set',
                                                       style: TextStyle(
-                                                        color: Colors.grey.shade600,
+                                                        color: theme.textTheme.bodySmall?.color?.withOpacity(0.7),
                                                         fontSize: 14,
                                                       ),
                                                     ),

@@ -8,8 +8,13 @@ import 'providers/item_provider.dart';
 import 'providers/invoice_provider.dart';
 import 'providers/theme_provider.dart';
 import 'providers/basic_mode_provider.dart';
+import 'providers/item_category_provider.dart';
+import 'providers/purchase_party_provider.dart';
 import 'theme/app_theme.dart';
 import 'screens/auth/splash_screen.dart';
+import 'screens/settings/categories_screen.dart';
+import 'screens/purchase_parties/purchase_parties_screen.dart';
+import 'screens/purchase_parties/purchase_party_details_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -34,6 +39,8 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => InvoiceProvider()),
         ChangeNotifierProvider(create: (_) => ThemeProvider()),
         ChangeNotifierProvider(create: (_) => BasicModeProvider()),
+        ChangeNotifierProvider(create: (_) => ItemCategoryProvider()),
+        ChangeNotifierProvider(create: (_) => PurchasePartyProvider()),
       ],
       child: Consumer<ThemeProvider>(
         builder: (context, themeProvider, _) {
@@ -48,6 +55,11 @@ class MyApp extends StatelessWidget {
             darkTheme: AppTheme.dark(),
             themeMode: themeMode,
             home: const SplashScreen(),
+            routes: {
+              '/categories': (context) => const CategoriesScreen(),
+              '/purchase-parties': (context) => const PurchasePartiesScreen(),
+              '/purchase-party-details': (context) => const PurchasePartyDetailsScreen(),
+            },
           );
         },
       ),

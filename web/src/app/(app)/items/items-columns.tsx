@@ -15,14 +15,20 @@ export type Item = {
   name: string
   default_rate: number
   purchase_rate?: number | null
+  category_id?: number | null
   purchase_party_id?: number | null
   created_at: string
   units: {
     id: number
     name: string
   } | null
+  item_categories?: {
+    id: number
+    name: string
+  } | null
   purchase_party?: {
     id: number
+    party_code: string
     name: string
   } | null
 }
@@ -185,6 +191,37 @@ export const columns = (
         type="text"
       />
     ),
+  },
+  {
+    accessorKey: 'item_categories.name',
+    header: ({ column }) => (
+        <div
+            className="flex items-center cursor-pointer"
+            onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
+        >
+            Category
+            <ArrowUpDown className="ml-2 h-4 w-4" />
+        </div>
+    ),
+    cell: ({ row }) => row.original.item_categories?.name ?? '-',
+  },
+  {
+    accessorKey: 'purchase_party.party_code',
+    header: ({ column }) => (
+        <div
+            className="flex items-center cursor-pointer"
+            onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
+        >
+            Purchase Party
+            <ArrowUpDown className="ml-2 h-4 w-4" />
+        </div>
+    ),
+    cell: ({ row }) => {
+      const party = row.original.purchase_party
+      return party ? (
+        <span className="font-mono font-semibold">{party.party_code}</span>
+      ) : '-'
+    },
   },
   {
     accessorKey: 'units.name',

@@ -3,10 +3,15 @@ import 'package:provider/provider.dart';
 import '../../models/item.dart';
 import '../../models/unit.dart';
 import '../../models/party.dart';
+import '../../models/purchase_party.dart';
+import '../../models/item_category.dart';
 import '../../models/item_party_price.dart';
 import '../../providers/item_provider.dart';
 import '../../providers/unit_provider.dart';
 import '../../providers/party_provider.dart';
+import '../../providers/purchase_party_provider.dart';
+import '../../providers/item_category_provider.dart';
+import '../../theme/app_button_styles.dart';
 
 class AddEditItemScreen extends StatefulWidget {
   final Item? item;
@@ -36,7 +41,8 @@ class _AddEditItemScreenState extends State<AddEditItemScreen> {
   final _purchaseRateController = TextEditingController();
 
   Unit? _selectedUnit;
-  Party? _selectedPurchaseParty;
+  ItemCategory? _selectedCategory;
+  PurchaseParty? _selectedPurchaseParty;
   bool _isLoading = false;
   List<_PartyPriceEntry> _partyPrices = [];
 
@@ -51,6 +57,8 @@ class _AddEditItemScreenState extends State<AddEditItemScreen> {
       WidgetsBinding.instance.addPostFrameCallback((_) async {
         final unitProvider = Provider.of<UnitProvider>(context, listen: false);
         final partyProvider = Provider.of<PartyProvider>(context, listen: false);
+        final purchasePartyProvider = Provider.of<PurchasePartyProvider>(context, listen: false);
+        final categoryProvider = Provider.of<ItemCategoryProvider>(context, listen: false);
         final itemProvider = Provider.of<ItemProvider>(context, listen: false);
 
         setState(() {
@@ -59,9 +67,19 @@ class _AddEditItemScreenState extends State<AddEditItemScreen> {
             orElse: () => unitProvider.units.first,
           );
 
-          if (widget.item!.purchasePartyId != null && partyProvider.parties.isNotEmpty) {
+          if (widget.item!.categoryId != null && categoryProvider.categories.isNotEmpty) {
             try {
-              _selectedPurchaseParty = partyProvider.parties.firstWhere(
+              _selectedCategory = categoryProvider.categories.firstWhere(
+                (c) => c.id == widget.item!.categoryId,
+              );
+            } catch (e) {
+              _selectedCategory = null;
+            }
+          }
+
+          if (widget.item!.purchasePartyId != null && purchasePartyProvider.purchaseParties.isNotEmpty) {
+            try {
+              _selectedPurchaseParty = purchasePartyProvider.purchaseParties.firstWhere(
                 (p) => p.id == widget.item!.purchasePartyId,
               );
             } catch (e) {
@@ -101,11 +119,12 @@ class _AddEditItemScreenState extends State<AddEditItemScreen> {
   void _showUnitPicker() {
     final unitProvider = Provider.of<UnitProvider>(context, listen: false);
     String searchQuery = '';
+    final theme = Theme.of(context);
 
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      backgroundColor: Colors.white,
+      backgroundColor: theme.cardColor,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(12)),
       ),
@@ -120,65 +139,75 @@ class _AddEditItemScreenState extends State<AddEditItemScreen> {
             minChildSize: 0.5,
             maxChildSize: 0.95,
             expand: false,
-            builder: (context, scrollController) => Column(
-              children: [
-                Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Column(
+            builder: (context, scrollController) => Container(
+              padding: const EdgeInsets.all(20),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Header
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Container(
-                        width: 40,
-                        height: 4,
-                        decoration: BoxDecoration(
-                          color: Colors.grey.shade300,
-                          borderRadius: BorderRadius.circular(2),
-                        ),
+                      const Text(
+                        'Select Unit',
+                        style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                       ),
-                      const SizedBox(height: 16),
-                      TextField(
-                        decoration: InputDecoration(
-                          hintText: 'Search units...',
-                          prefixIcon: const Icon(Icons.search),
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                        ),
-                        onChanged: (value) {
-                          setModalState(() {
-                            searchQuery = value;
-                          });
-                        },
-                        autofocus: true,
+                      IconButton(
+                        icon: const Icon(Icons.close),
+                        onPressed: () => Navigator.pop(context),
+                        padding: EdgeInsets.zero,
+                        constraints: const BoxConstraints(),
                       ),
                     ],
                   ),
-                ),
-                Expanded(
-                  child: ListView.builder(
-                    controller: scrollController,
-                    itemCount: filteredUnits.length,
-                    itemBuilder: (context, index) {
-                      final unit = filteredUnits[index];
-                      final isSelected = _selectedUnit?.id == unit.id;
+                  const SizedBox(height: 16),
 
-                      return ListTile(
-                        title: Text(unit.name),
-                        trailing: isSelected
-                            ? const Icon(Icons.check_circle_outline, color: Colors.green)
-                            : null,
-                        selected: isSelected,
-                        onTap: () {
-                          setState(() {
-                            _selectedUnit = unit;
-                          });
-                          Navigator.pop(context);
-                        },
-                      );
+                  // Search Field
+                  TextField(
+                    decoration: InputDecoration(
+                      hintText: 'Search units...',
+                      prefixIcon: const Icon(Icons.search),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                    ),
+                    onChanged: (value) {
+                      setModalState(() {
+                        searchQuery = value;
+                      });
                     },
+                    autofocus: true,
                   ),
-                ),
-              ],
+                  const SizedBox(height: 16),
+
+                  // Units List
+                  Expanded(
+                    child: ListView.builder(
+                      controller: scrollController,
+                      itemCount: filteredUnits.length,
+                      itemBuilder: (context, index) {
+                        final unit = filteredUnits[index];
+                        final isSelected = _selectedUnit?.id == unit.id;
+
+                        return ListTile(
+                          title: Text(unit.name),
+                          trailing: isSelected
+                              ? Icon(Icons.check_circle, color: theme.colorScheme.primary)
+                              : null,
+                          selected: isSelected,
+                          onTap: () {
+                            setState(() {
+                              _selectedUnit = unit;
+                            });
+                            Navigator.pop(context);
+                          },
+                        );
+                      },
+                    ),
+                  ),
+                ],
+              ),
             ),
           );
         },
@@ -186,21 +215,22 @@ class _AddEditItemScreenState extends State<AddEditItemScreen> {
     );
   }
 
-  void _showPartyPicker() {
-    final partyProvider = Provider.of<PartyProvider>(context, listen: false);
+  void _showCategoryPicker() {
+    final categoryProvider = Provider.of<ItemCategoryProvider>(context, listen: false);
     String searchQuery = '';
+    final theme = Theme.of(context);
 
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      backgroundColor: Colors.white,
+      backgroundColor: theme.cardColor,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(12)),
       ),
       builder: (context) => StatefulBuilder(
         builder: (context, setModalState) {
-          final filteredParties = partyProvider.parties
-              .where((p) => p.name.toLowerCase().contains(searchQuery.toLowerCase()))
+          final filteredCategories = categoryProvider.categories
+              .where((c) => c.name.toLowerCase().contains(searchQuery.toLowerCase()))
               .toList();
 
           return DraggableScrollableSheet(
@@ -208,81 +238,227 @@ class _AddEditItemScreenState extends State<AddEditItemScreen> {
             minChildSize: 0.5,
             maxChildSize: 0.95,
             expand: false,
-            builder: (context, scrollController) => Column(
-              children: [
-                Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Column(
+            builder: (context, scrollController) => Container(
+              padding: const EdgeInsets.all(20),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Header
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Container(
-                        width: 40,
-                        height: 4,
-                        decoration: BoxDecoration(
-                          color: Colors.grey.shade300,
-                          borderRadius: BorderRadius.circular(2),
-                        ),
+                      const Text(
+                        'Select Category',
+                        style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                       ),
-                      const SizedBox(height: 16),
-                      TextField(
-                        decoration: InputDecoration(
-                          hintText: 'Search parties...',
-                          prefixIcon: const Icon(Icons.search),
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                        ),
-                        onChanged: (value) {
-                          setModalState(() {
-                            searchQuery = value;
-                          });
-                        },
-                        autofocus: true,
+                      IconButton(
+                        icon: const Icon(Icons.close),
+                        onPressed: () => Navigator.pop(context),
+                        padding: EdgeInsets.zero,
+                        constraints: const BoxConstraints(),
                       ),
                     ],
                   ),
-                ),
-                Expanded(
-                  child: ListView.builder(
-                    controller: scrollController,
-                    itemCount: filteredParties.length + 1,
-                    itemBuilder: (context, index) {
-                      if (index == 0) {
+                  const SizedBox(height: 16),
+
+                  // Search Field
+                  TextField(
+                    decoration: InputDecoration(
+                      hintText: 'Search categories...',
+                      prefixIcon: const Icon(Icons.search),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                    ),
+                    onChanged: (value) {
+                      setModalState(() {
+                        searchQuery = value;
+                      });
+                    },
+                    autofocus: true,
+                  ),
+                  const SizedBox(height: 16),
+
+                  // Categories List
+                  Expanded(
+                    child: ListView.builder(
+                      controller: scrollController,
+                      itemCount: filteredCategories.length + 1,
+                      itemBuilder: (context, index) {
+                        if (index == 0) {
+                          return ListTile(
+                            title: const Text('None'),
+                            trailing: _selectedCategory == null
+                                ? Icon(Icons.check_circle, color: theme.colorScheme.primary)
+                                : null,
+                            selected: _selectedCategory == null,
+                            onTap: () {
+                              setState(() {
+                                _selectedCategory = null;
+                              });
+                              Navigator.pop(context);
+                            },
+                          );
+                        }
+
+                        final category = filteredCategories[index - 1];
+                        final isSelected = _selectedCategory?.id == category.id;
+
                         return ListTile(
-                          title: const Text('None'),
-                          trailing: _selectedPurchaseParty == null
-                              ? const Icon(Icons.check_circle_outline, color: Colors.green)
+                          title: Text(category.name),
+                          subtitle: category.description != null && category.description!.isNotEmpty
+                              ? Text(category.description!)
                               : null,
-                          selected: _selectedPurchaseParty == null,
+                          trailing: isSelected
+                              ? Icon(Icons.check_circle, color: theme.colorScheme.primary)
+                              : null,
+                          selected: isSelected,
                           onTap: () {
                             setState(() {
-                              _selectedPurchaseParty = null;
+                              _selectedCategory = category;
                             });
                             Navigator.pop(context);
                           },
                         );
-                      }
-
-                      final party = filteredParties[index - 1];
-                      final isSelected = _selectedPurchaseParty?.id == party.id;
-
-                      return ListTile(
-                        title: Text(party.name),
-                        trailing: isSelected
-                            ? const Icon(Icons.check_circle_outline, color: Colors.green)
-                            : null,
-                        selected: isSelected,
-                        onTap: () {
-                          setState(() {
-                            _selectedPurchaseParty = party;
-                          });
-                          Navigator.pop(context);
-                        },
-                      );
-                    },
+                      },
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  void _showPurchasePartyPicker() {
+    final purchasePartyProvider = Provider.of<PurchasePartyProvider>(context, listen: false);
+    String searchQuery = '';
+    final theme = Theme.of(context);
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: theme.cardColor,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(12)),
+      ),
+      builder: (context) => StatefulBuilder(
+        builder: (context, setModalState) {
+          final filteredParties = purchasePartyProvider.purchaseParties
+              .where((p) =>
+                  p.name.toLowerCase().contains(searchQuery.toLowerCase()) ||
+                  p.partyCode.toLowerCase().contains(searchQuery.toLowerCase()))
+              .toList();
+
+          return DraggableScrollableSheet(
+            initialChildSize: 0.7,
+            minChildSize: 0.5,
+            maxChildSize: 0.95,
+            expand: false,
+            builder: (context, scrollController) => Container(
+              padding: const EdgeInsets.all(20),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Header
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Text(
+                        'Select Purchase Party',
+                        style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.close),
+                        onPressed: () => Navigator.pop(context),
+                        padding: EdgeInsets.zero,
+                        constraints: const BoxConstraints(),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+
+                  // Search Field
+                  TextField(
+                    decoration: InputDecoration(
+                      hintText: 'Search purchase parties...',
+                      prefixIcon: const Icon(Icons.search),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                    ),
+                    onChanged: (value) {
+                      setModalState(() {
+                        searchQuery = value;
+                      });
+                    },
+                    autofocus: true,
+                  ),
+                  const SizedBox(height: 16),
+
+                  // Purchase Parties List
+                  Expanded(
+                    child: ListView.builder(
+                      controller: scrollController,
+                      itemCount: filteredParties.length + 1,
+                      itemBuilder: (context, index) {
+                        if (index == 0) {
+                          return ListTile(
+                            title: const Text('None'),
+                            trailing: _selectedPurchaseParty == null
+                                ? Icon(Icons.check_circle, color: theme.colorScheme.primary)
+                                : null,
+                            selected: _selectedPurchaseParty == null,
+                            onTap: () {
+                              setState(() {
+                                _selectedPurchaseParty = null;
+                              });
+                              Navigator.pop(context);
+                            },
+                          );
+                        }
+
+                        final party = filteredParties[index - 1];
+                        final isSelected = _selectedPurchaseParty?.id == party.id;
+
+                        return ListTile(
+                          leading: Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                            decoration: BoxDecoration(
+                              color: theme.colorScheme.primary.withOpacity(0.1),
+                              borderRadius: BorderRadius.circular(6),
+                            ),
+                            child: Text(
+                              party.partyCode,
+                              style: TextStyle(
+                                fontFamily: 'monospace',
+                                fontWeight: FontWeight.bold,
+                                fontSize: 12,
+                                color: theme.colorScheme.primary,
+                              ),
+                            ),
+                          ),
+                          title: Text(party.name),
+                          trailing: isSelected
+                              ? Icon(Icons.check_circle, color: theme.colorScheme.primary)
+                              : null,
+                          selected: isSelected,
+                          onTap: () {
+                            setState(() {
+                              _selectedPurchaseParty = party;
+                            });
+                            Navigator.pop(context);
+                          },
+                        );
+                      },
+                    ),
+                  ),
+                ],
+              ),
             ),
           );
         },
@@ -293,11 +469,12 @@ class _AddEditItemScreenState extends State<AddEditItemScreen> {
   void _showPartyPricesPicker() {
     final partyProvider = Provider.of<PartyProvider>(context, listen: false);
     String searchQuery = '';
+    final theme = Theme.of(context);
 
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      backgroundColor: Colors.white,
+      backgroundColor: theme.cardColor,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(12)),
       ),
@@ -316,67 +493,77 @@ class _AddEditItemScreenState extends State<AddEditItemScreen> {
             minChildSize: 0.5,
             maxChildSize: 0.95,
             expand: false,
-            builder: (context, scrollController) => Column(
-              children: [
-                Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Column(
+            builder: (context, scrollController) => Container(
+              padding: const EdgeInsets.all(20),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Header
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Container(
-                        width: 40,
-                        height: 4,
-                        decoration: BoxDecoration(
-                          color: Colors.grey.shade300,
-                          borderRadius: BorderRadius.circular(2),
-                        ),
+                      const Text(
+                        'Add Party Price',
+                        style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                       ),
-                      const SizedBox(height: 16),
-                      TextField(
-                        decoration: InputDecoration(
-                          hintText: 'Search parties...',
-                          prefixIcon: const Icon(Icons.search),
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                        ),
-                        onChanged: (value) {
-                          setModalState(() {
-                            searchQuery = value;
-                          });
-                        },
-                        autofocus: true,
+                      IconButton(
+                        icon: const Icon(Icons.close),
+                        onPressed: () => Navigator.pop(context),
+                        padding: EdgeInsets.zero,
+                        constraints: const BoxConstraints(),
                       ),
                     ],
                   ),
-                ),
-                Expanded(
-                  child: filteredParties.isEmpty
-                      ? const Center(
-                          child: Text(
-                            'All parties have been added',
-                            style: TextStyle(color: Colors.grey),
-                          ),
-                        )
-                      : ListView.builder(
-                          controller: scrollController,
-                          itemCount: filteredParties.length,
-                          itemBuilder: (context, index) {
-                            final party = filteredParties[index];
+                  const SizedBox(height: 16),
 
-                            return ListTile(
-                              title: Text(party.name),
-                              onTap: () {
-                                setState(() {
-                                  _partyPrices.add(_PartyPriceEntry(party: party, price: null));
-                                });
-                                Navigator.pop(context);
-                              },
-                            );
-                          },
-                        ),
-                ),
-              ],
+                  // Search Field
+                  TextField(
+                    decoration: InputDecoration(
+                      hintText: 'Search parties...',
+                      prefixIcon: const Icon(Icons.search),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                    ),
+                    onChanged: (value) {
+                      setModalState(() {
+                        searchQuery = value;
+                      });
+                    },
+                    autofocus: true,
+                  ),
+                  const SizedBox(height: 16),
+
+                  // Parties List
+                  Expanded(
+                    child: filteredParties.isEmpty
+                        ? const Center(
+                            child: Text(
+                              'All parties have been added',
+                              style: TextStyle(color: Colors.grey),
+                            ),
+                          )
+                        : ListView.builder(
+                            controller: scrollController,
+                            itemCount: filteredParties.length,
+                            itemBuilder: (context, index) {
+                              final party = filteredParties[index];
+
+                              return ListTile(
+                                title: Text(party.name),
+                                onTap: () {
+                                  setState(() {
+                                    _partyPrices.add(_PartyPriceEntry(party: party, price: null));
+                                  });
+                                  Navigator.pop(context);
+                                },
+                              );
+                            },
+                          ),
+                  ),
+                ],
+              ),
             ),
           );
         },
@@ -437,6 +624,7 @@ class _AddEditItemScreenState extends State<AddEditItemScreen> {
           : null,
       unitId: _selectedUnit!.id!,
       unit: _selectedUnit,
+      categoryId: _selectedCategory?.id,
       purchasePartyId: _selectedPurchaseParty?.id,
     );
 
@@ -484,7 +672,9 @@ class _AddEditItemScreenState extends State<AddEditItemScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final isDarkTheme = theme.brightness == Brightness.dark;
 
     return GestureDetector(
       onTap: () => FocusScope.of(context).unfocus(),
@@ -552,6 +742,68 @@ class _AddEditItemScreenState extends State<AddEditItemScreen> {
               ),
             ),
             const SizedBox(height: 16),
+            InkWell(
+              onTap: _showCategoryPicker,
+              child: InputDecorator(
+                decoration: const InputDecoration(
+                  labelText: 'Category (Optional)',
+                  border: OutlineInputBorder(),
+                  prefixIcon: Icon(Icons.category_outlined),
+                  suffixIcon: Icon(Icons.arrow_drop_down),
+                ),
+                child: Text(
+                  _selectedCategory?.name ?? 'Select category',
+                  style: TextStyle(
+                    color: _selectedCategory == null ? Colors.grey : null,
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
+            InkWell(
+              onTap: _showPurchasePartyPicker,
+              child: InputDecorator(
+                decoration: const InputDecoration(
+                  labelText: 'Purchase Party (Optional)',
+                  border: OutlineInputBorder(),
+                  prefixIcon: Icon(Icons.business_outlined),
+                  suffixIcon: Icon(Icons.arrow_drop_down),
+                ),
+                child: Row(
+                  children: [
+                    if (_selectedPurchaseParty != null) ...[
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                        decoration: BoxDecoration(
+                          color: Theme.of(context).colorScheme.primary.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                        child: Text(
+                          _selectedPurchaseParty!.partyCode,
+                          style: TextStyle(
+                            fontFamily: 'monospace',
+                            fontWeight: FontWeight.bold,
+                            fontSize: 11,
+                            color: Theme.of(context).colorScheme.primary,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                    ],
+                    Expanded(
+                      child: Text(
+                        _selectedPurchaseParty?.name ?? 'Select purchase party',
+                        style: TextStyle(
+                          color: _selectedPurchaseParty == null ? Colors.grey : null,
+                        ),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
             TextFormField(
               controller: _defaultRateController,
               decoration: const InputDecoration(
@@ -592,24 +844,6 @@ class _AddEditItemScreenState extends State<AddEditItemScreen> {
               },
               textInputAction: TextInputAction.next,
             ),
-            const SizedBox(height: 16),
-            InkWell(
-              onTap: _showPartyPicker,
-              child: InputDecorator(
-                decoration: const InputDecoration(
-                  labelText: 'Purchase Party (Optional)',
-                  border: OutlineInputBorder(),
-                  prefixIcon: Icon(Icons.business_outlined),
-                  suffixIcon: Icon(Icons.arrow_drop_down),
-                ),
-                child: Text(
-                  _selectedPurchaseParty?.name ?? 'Select party',
-                  style: TextStyle(
-                    color: _selectedPurchaseParty == null ? Colors.grey : null,
-                  ),
-                ),
-              ),
-            ),
             const SizedBox(height: 24),
             const Divider(),
             const SizedBox(height: 16),
@@ -635,23 +869,23 @@ class _AddEditItemScreenState extends State<AddEditItemScreen> {
               Container(
                 padding: const EdgeInsets.all(24),
                 decoration: BoxDecoration(
-                  color: Colors.grey.shade50,
+                  color: isDarkTheme ? Colors.white.withOpacity(0.05) : Colors.grey.shade50,
                   borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: Colors.grey.shade200),
+                  border: Border.all(color: isDarkTheme ? Colors.white.withOpacity(0.1) : Colors.grey.shade200),
                 ),
                 child: Center(
                   child: Column(
                     children: [
-                      Icon(Icons.price_change_outlined, size: 48, color: Colors.grey.shade400),
+                      Icon(Icons.price_change_outlined, size: 48, color: theme.textTheme.bodySmall?.color?.withOpacity(0.5)),
                       const SizedBox(height: 8),
                       Text(
                         'No party-specific prices yet',
-                        style: TextStyle(color: Colors.grey.shade600),
+                        style: TextStyle(color: theme.textTheme.bodySmall?.color?.withOpacity(0.7)),
                       ),
                       const SizedBox(height: 4),
                       Text(
                         'Add parties with custom prices',
-                        style: TextStyle(color: Colors.grey.shade500, fontSize: 12),
+                        style: TextStyle(color: theme.textTheme.bodySmall?.color?.withOpacity(0.5), fontSize: 12),
                       ),
                     ],
                   ),
@@ -679,7 +913,6 @@ class _AddEditItemScreenState extends State<AddEditItemScreen> {
                     return await showDialog<bool>(
                       context: context,
                       builder: (context) => AlertDialog(
-                        backgroundColor: Colors.white,
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                         title: const Text('Remove Party Price'),
                         content: Text('Remove price for ${partyPrice.party.name}?'),
@@ -713,9 +946,9 @@ class _AddEditItemScreenState extends State<AddEditItemScreen> {
                   child: Container(
                     margin: const EdgeInsets.only(bottom: 12),
                     decoration: BoxDecoration(
-                      color: Colors.white,
+                      color: theme.cardColor,
                       borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: Colors.grey.shade200),
+                      border: Border.all(color: isDarkTheme ? Colors.white.withOpacity(0.1) : Colors.grey.shade200),
                     ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -765,14 +998,7 @@ class _AddEditItemScreenState extends State<AddEditItemScreen> {
               width: double.infinity,
               child: ElevatedButton(
                 onPressed: _isLoading ? null : _save,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Theme.of(context).colorScheme.primary,
-                  foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                ),
+                style: AppButtonStyles.primaryElevated(context),
                 child: _isLoading
                     ? const SizedBox(
                         width: 20,

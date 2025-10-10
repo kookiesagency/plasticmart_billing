@@ -1,6 +1,7 @@
 import 'unit.dart';
-import 'party.dart';
+import 'purchase_party.dart';
 import 'item_party_price.dart';
+import 'item_category.dart';
 
 class Item {
   final int? id;
@@ -9,8 +10,10 @@ class Item {
   final double? purchaseRate;
   final int unitId;
   final Unit? unit;
+  final int? categoryId;
+  final ItemCategory? itemCategory;
   final int? purchasePartyId;
-  final Party? purchaseParty;
+  final PurchaseParty? purchaseParty;
   final List<ItemPartyPrice>? itemPartyPrices;
   final DateTime? createdAt;
   final DateTime? deletedAt;
@@ -22,6 +25,8 @@ class Item {
     this.purchaseRate,
     required this.unitId,
     this.unit,
+    this.categoryId,
+    this.itemCategory,
     this.purchasePartyId,
     this.purchaseParty,
     this.itemPartyPrices,
@@ -46,8 +51,14 @@ class Item {
           : null,
       unitId: json['unit_id'] as int,
       unit: json['units'] != null ? Unit.fromJson(json['units']) : null,
+      categoryId: json['category_id'] as int?,
+      itemCategory: json['item_categories'] != null
+          ? ItemCategory.fromJson(json['item_categories'])
+          : null,
       purchasePartyId: json['purchase_party_id'] as int?,
-      purchaseParty: json['parties'] != null ? Party.fromJson(json['parties']) : null,
+      purchaseParty: json['purchase_parties'] != null
+          ? PurchaseParty.fromJson(json['purchase_parties'])
+          : null,
       itemPartyPrices: partyPrices,
       createdAt: json['created_at'] != null
           ? DateTime.parse(json['created_at'] as String)
@@ -65,6 +76,7 @@ class Item {
       'default_rate': defaultRate,
       if (purchaseRate != null) 'purchase_rate': purchaseRate,
       'unit_id': unitId,
+      if (categoryId != null) 'category_id': categoryId,
       if (purchasePartyId != null) 'purchase_party_id': purchasePartyId,
       if (createdAt != null) 'created_at': createdAt!.toIso8601String(),
       if (deletedAt != null) 'deleted_at': deletedAt!.toIso8601String(),
@@ -78,8 +90,10 @@ class Item {
     double? purchaseRate,
     int? unitId,
     Unit? unit,
+    int? categoryId,
+    ItemCategory? itemCategory,
     int? purchasePartyId,
-    Party? purchaseParty,
+    PurchaseParty? purchaseParty,
     List<ItemPartyPrice>? itemPartyPrices,
     DateTime? createdAt,
     DateTime? deletedAt,
@@ -91,6 +105,8 @@ class Item {
       purchaseRate: purchaseRate ?? this.purchaseRate,
       unitId: unitId ?? this.unitId,
       unit: unit ?? this.unit,
+      categoryId: categoryId ?? this.categoryId,
+      itemCategory: itemCategory ?? this.itemCategory,
       purchasePartyId: purchasePartyId ?? this.purchasePartyId,
       purchaseParty: purchaseParty ?? this.purchaseParty,
       itemPartyPrices: itemPartyPrices ?? this.itemPartyPrices,

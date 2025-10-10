@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 import '../../models/party.dart';
 import '../../models/invoice.dart';
 import '../../providers/invoice_provider.dart';
+import '../../theme/theme_helpers.dart';
 import '../invoices/view_invoice_screen.dart';
 
 class PartyDetailsScreen extends StatefulWidget {
@@ -89,17 +90,19 @@ class _PartyDetailsScreenState extends State<PartyDetailsScreen> {
   }
 
   Widget _buildSummaryCard({
+    required BuildContext context,
     required String title,
     required String value,
     required IconData icon,
     required Color color,
   }) {
+    final theme = Theme.of(context);
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: theme.cardColor,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.grey.shade200),
+        border: Border.all(color: ThemeHelpers.borderColor(context)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -113,7 +116,7 @@ class _PartyDetailsScreenState extends State<PartyDetailsScreen> {
                   title,
                   style: TextStyle(
                     fontSize: 12,
-                    color: Colors.grey.shade600,
+                    color: ThemeHelpers.mutedTextColor(context),
                   ),
                 ),
               ),
@@ -135,13 +138,14 @@ class _PartyDetailsScreenState extends State<PartyDetailsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final isDark = theme.brightness == Brightness.dark;
 
     return Scaffold(
-      backgroundColor: Colors.grey.shade50,
+      backgroundColor: theme.scaffoldBackgroundColor,
       appBar: AppBar(
         title: Text(widget.party.name),
-        backgroundColor: Colors.white,
         elevation: 0,
       ),
       body: _isLoading
@@ -154,11 +158,7 @@ class _PartyDetailsScreenState extends State<PartyDetailsScreen> {
                   // Party Information Card
                   Container(
                     padding: const EdgeInsets.all(20),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: Colors.grey.shade200),
-                    ),
+                    decoration: ThemeHelpers.cardDecoration(context, radius: 12),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -180,7 +180,7 @@ class _PartyDetailsScreenState extends State<PartyDetailsScreen> {
                                     'Bundle Rate',
                                     style: TextStyle(
                                       fontSize: 12,
-                                      color: Colors.grey.shade600,
+                                      color: ThemeHelpers.mutedTextColor(context),
                                     ),
                                   ),
                                   const SizedBox(height: 4),
@@ -204,7 +204,7 @@ class _PartyDetailsScreenState extends State<PartyDetailsScreen> {
                                     'Opening Balance',
                                     style: TextStyle(
                                       fontSize: 12,
-                                      color: Colors.grey.shade600,
+                                      color: ThemeHelpers.mutedTextColor(context),
                                     ),
                                   ),
                                   const SizedBox(height: 4),
@@ -235,24 +235,28 @@ class _PartyDetailsScreenState extends State<PartyDetailsScreen> {
                     childAspectRatio: 1.5,
                     children: [
                       _buildSummaryCard(
+                        context: context,
                         title: 'Total Billed',
                         value: _formatCurrency(_totalBilled),
                         icon: Icons.receipt_long_outlined,
                         color: colorScheme.primary,
                       ),
                       _buildSummaryCard(
+                        context: context,
                         title: 'Total Received',
                         value: _formatCurrency(_totalReceived),
                         icon: Icons.check_circle_outline,
                         color: Colors.green,
                       ),
                       _buildSummaryCard(
+                        context: context,
                         title: 'Current Balance',
                         value: _formatCurrency(_currentBalance),
                         icon: Icons.account_balance_wallet_outlined,
                         color: _currentBalance > 0 ? Colors.red : Colors.green,
                       ),
                       _buildSummaryCard(
+                        context: context,
                         title: 'Invoice Count',
                         value: _invoices.length.toString(),
                         icon: Icons.description_outlined,
@@ -263,12 +267,11 @@ class _PartyDetailsScreenState extends State<PartyDetailsScreen> {
                   const SizedBox(height: 24),
 
                   // Invoice List Header
-                  Text(
+                  const Text(
                     'Invoices',
                     style: TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
-                      color: Colors.grey.shade800,
                     ),
                   ),
                   const SizedBox(height: 12),
@@ -283,14 +286,14 @@ class _PartyDetailsScreenState extends State<PartyDetailsScreen> {
                             Icon(
                               Icons.receipt_outlined,
                               size: 64,
-                              color: Colors.grey.shade400,
+                              color: ThemeHelpers.mutedTextColor(context),
                             ),
                             const SizedBox(height: 16),
                             Text(
                               'No invoices yet',
                               style: TextStyle(
                                 fontSize: 16,
-                                color: Colors.grey.shade600,
+                                color: ThemeHelpers.mutedTextColor(context),
                               ),
                             ),
                           ],
@@ -302,9 +305,9 @@ class _PartyDetailsScreenState extends State<PartyDetailsScreen> {
                       return Container(
                         margin: const EdgeInsets.only(bottom: 8),
                         decoration: BoxDecoration(
-                          color: Colors.white,
+                          color: theme.cardColor,
                           borderRadius: BorderRadius.circular(12),
-                          border: Border.all(color: Colors.grey.shade200),
+                          border: Border.all(color: ThemeHelpers.borderColor(context)),
                         ),
                         child: InkWell(
                           onTap: () async {
@@ -341,7 +344,7 @@ class _PartyDetailsScreenState extends State<PartyDetailsScreen> {
                                         _formatDate(invoice.invoiceDate),
                                         style: TextStyle(
                                           fontSize: 12,
-                                          color: Colors.grey.shade600,
+                                          color: ThemeHelpers.mutedTextColor(context),
                                         ),
                                       ),
                                     ],

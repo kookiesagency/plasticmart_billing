@@ -112,7 +112,6 @@ class _PartiesScreenState extends State<PartiesScreen> with SingleTickerProvider
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        backgroundColor: Colors.white,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         title: const Text('Permanently Delete Party'),
         content: const Text('This action is IRREVERSIBLE. This will permanently delete the party and all associated data. Are you sure?'),
@@ -153,7 +152,9 @@ class _PartiesScreenState extends State<PartiesScreen> with SingleTickerProvider
   @override
   Widget build(BuildContext context) {
     final partyProvider = Provider.of<PartyProvider>(context);
-    final colorScheme = Theme.of(context).colorScheme;
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final isDarkTheme = theme.brightness == Brightness.dark;
 
     final parties = _showDeleted ? partyProvider.deletedParties : partyProvider.parties;
     final filteredParties = _getFilteredParties(parties);
@@ -175,15 +176,15 @@ class _PartiesScreenState extends State<PartiesScreen> with SingleTickerProvider
               prefixIcon: const Icon(Icons.search),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
-                borderSide: BorderSide(color: Colors.grey.shade300, width: 1),
+                borderSide: BorderSide(color: isDarkTheme ? Colors.white.withOpacity(0.2) : Colors.grey.shade300, width: 1),
               ),
               enabledBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
-                borderSide: BorderSide(color: Colors.grey.shade300, width: 1),
+                borderSide: BorderSide(color: isDarkTheme ? Colors.white.withOpacity(0.2) : Colors.grey.shade300, width: 1),
               ),
               focusedBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
-                borderSide: BorderSide(color: Theme.of(context).colorScheme.primary, width: 1),
+                borderSide: BorderSide(color: colorScheme.primary, width: 1),
               ),
               contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             ),
@@ -271,7 +272,6 @@ class _PartiesScreenState extends State<PartiesScreen> with SingleTickerProvider
                                 return await showDialog<bool>(
                                   context: context,
                                   builder: (context) => AlertDialog(
-                                    backgroundColor: Colors.white,
                                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                                     title: const Text('Delete Party'),
                                     content: const Text('Are you sure you want to delete this party?'),
@@ -300,10 +300,10 @@ class _PartiesScreenState extends State<PartiesScreen> with SingleTickerProvider
                             child: Container(
                               margin: const EdgeInsets.only(bottom: 8),
                               decoration: BoxDecoration(
-                                color: Colors.white,
+                                color: theme.cardColor,
                                 borderRadius: BorderRadius.circular(16),
                                 border: Border.all(
-                                  color: Colors.grey.shade200,
+                                  color: isDarkTheme ? Colors.white.withOpacity(0.1) : Colors.grey.shade200,
                                   width: 1,
                                 ),
                               ),
@@ -384,7 +384,7 @@ class _PartiesScreenState extends State<PartiesScreen> with SingleTickerProvider
                                                         Text(
                                                           'Created: ${_formatDate(party.createdAt!)}',
                                                           style: TextStyle(
-                                                            color: Colors.grey.shade600,
+                                                            color: theme.textTheme.bodySmall?.color?.withOpacity(0.7),
                                                             fontSize: 12,
                                                           ),
                                                         ),

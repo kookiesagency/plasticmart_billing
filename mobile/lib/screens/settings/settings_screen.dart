@@ -305,6 +305,28 @@ class _SettingsScreenState extends State<SettingsScreen> {
               );
             },
           ),
+          const SizedBox(height: 12),
+          _buildSettingCard(
+            icon: Icons.category_outlined,
+            iconColor: const Color(0xFF8B5CF6),
+            title: 'Item Categories',
+            subtitle: 'Manage item categories',
+            trailing: const Icon(Icons.chevron_right, color: Colors.grey),
+            onTap: () {
+              Navigator.pushNamed(context, '/categories');
+            },
+          ),
+          const SizedBox(height: 12),
+          _buildSettingCard(
+            icon: Icons.business_outlined,
+            iconColor: const Color(0xFF3B82F6),
+            title: 'Purchase Parties',
+            subtitle: 'Manage purchase party codes',
+            trailing: const Icon(Icons.chevron_right, color: Colors.grey),
+            onTap: () {
+              Navigator.pushNamed(context, '/purchase-parties');
+            },
+          ),
         ],
       ),
     );

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../models/party.dart';
 import '../../providers/party_provider.dart';
+import '../../theme/app_button_styles.dart';
 
 class AddEditPartyScreen extends StatefulWidget {
   final Party? party;
@@ -110,6 +111,7 @@ class _AddEditPartyScreenState extends State<AddEditPartyScreen> {
                   borderRadius: BorderRadius.circular(12),
                 ),
                 contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                prefixIcon: const Icon(Icons.person_outline),
               ),
               validator: (value) {
                 if (value == null || value.trim().isEmpty) {
@@ -171,14 +173,7 @@ class _AddEditPartyScreenState extends State<AddEditPartyScreen> {
             const SizedBox(height: 24),
             ElevatedButton(
               onPressed: _isSaving ? null : _saveParty,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Theme.of(context).colorScheme.primary,
-                foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(vertical: 16),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-              ),
+              style: AppButtonStyles.primaryElevated(context),
               child: _isSaving
                   ? const SizedBox(
                       height: 20,

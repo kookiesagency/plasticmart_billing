@@ -280,21 +280,8 @@ class _CreateInvoiceScreenState extends State<CreateInvoiceScreen> {
           title: Text(widget.invoiceId != null ? 'Edit Bill' : 'Create Bill'),
         ),
         body: Theme(
-          data: ThemeData(
-            brightness: theme.brightness,
-            scaffoldBackgroundColor: theme.scaffoldBackgroundColor,
-            cardColor: theme.cardColor,
+          data: theme.copyWith(
             canvasColor: theme.scaffoldBackgroundColor,
-            colorScheme: theme.colorScheme.copyWith(
-              primary: const Color(0xFF3B82F6),
-              onPrimary: Colors.white,
-              surface: theme.scaffoldBackgroundColor,
-            ),
-            textTheme: theme.textTheme,
-            inputDecorationTheme: theme.inputDecorationTheme,
-            elevatedButtonTheme: theme.elevatedButtonTheme,
-            outlinedButtonTheme: theme.outlinedButtonTheme,
-            textButtonTheme: theme.textButtonTheme,
           ),
           child: Stepper(
             type: StepperType.horizontal,
