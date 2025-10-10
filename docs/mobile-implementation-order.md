@@ -671,12 +671,22 @@ After completing all 10 steps, users should be able to:
 
 ## 📌 **Current Status**
 
-**Completed:** Steps 0-11 + UI/UX Polish (Authentication, Units, Parties, Items, Invoice Creation, Invoice Management, Payment Management, Party Report, PDF Generation & Sharing, Offline Bill Entry, Icon Standardization, Home Screen Dashboard, Light/Dark Theme)
-**Next Step:** Hindi and Urdu Localization
-**Mode:** All Core Features Implemented (Basic/Advanced mode removed)
+**Completed:** Steps 0-11 + UI/UX Polish + Basic Mode (Authentication, Units, Parties, Items, Invoice Creation, Invoice Management, Payment Management, Party Report, PDF Generation & Sharing, Offline Bill Entry, Icon Standardization, Home Screen Dashboard, Light/Dark Theme, Basic Mode Toggle)
+**Next Step:** Localization (Hindi & Urdu) - Priority 2
+**Mode:** Basic Mode implemented with toggle (enabled by default)
 **Pending from Step 5:** Date/status filters (not critical for MVP)
 
 **Recent Completions:**
+- **Priority 1: Basic Mode Implementation** ✅ (October 2025)
+  - BasicModeProvider with state management and persistence
+  - Basic Mode enabled by default for new users
+  - Dynamic bottom navigation (4 tabs in Basic Mode, 5 in Full Mode)
+  - Dashboard customized for Basic Mode (Add Item + Add Party quick actions only)
+  - Toggle switch in Settings with real-time updates
+  - Vertical button layout with large touch targets (48px padding)
+  - Custom colors: Sky Blue for Add Item, Amber for Add Party
+  - Files: basic_mode_provider.dart, home_screen.dart, dashboard_tab.dart, settings_screen.dart
+
 - **Step 10: Light/Dark Theme Implementation** ✅ (October 2025)
   - Complete dark mode support across all screens
   - ThemeProvider with state persistence
@@ -731,14 +741,43 @@ After completing all 10 steps, users should be able to:
 
 ## 📝 **Pending Tasks - Implementation Order**
 
-### **Priority 1: Basic Mode Restriction** 🔒
-**Status:** Next to implement
-- Reintroduce Basic Mode so it only exposes the Items and Party sections
-- Hide Bills, Dashboard, and other advanced features when Basic Mode is active
-- Implement toggle in Settings screen
-- Persist Basic Mode preference in SharedPreferences
-- Update bottom navigation to show/hide tabs based on mode
-- Ensure toggle updates navigation and state providers in real-time
+### ✅ **Priority 1: Basic Mode** 🔒 - COMPLETED
+**Status:** ✅ Completed (October 2025)
+
+**What was implemented:**
+- [x] Created `BasicModeProvider` with ChangeNotifier pattern for state management
+- [x] Basic Mode enabled by default (`_isBasicMode = true`)
+- [x] Persist Basic Mode preference in SharedPreferences
+- [x] Toggle switch in Settings screen (Appearance section)
+- [x] Dynamic bottom navigation tabs based on mode:
+  - **Basic Mode:** 4 tabs (Home, Items, Parties, Settings)
+  - **Full Mode:** 5 tabs (Home, Bills, Items, Parties, Settings)
+- [x] Dashboard Quick Actions customized for Basic Mode:
+  - Basic Mode: Shows only Add Item and Add Party buttons (vertical layout)
+  - Full Mode: Shows all 4 quick actions (Create Bill, Offline Bill, Add Party, Add Item)
+- [x] Real-time state updates when toggling between modes
+- [x] Reset selected tab to 0 when switching modes to prevent out-of-bounds errors
+- [x] Provider registered globally in MultiProvider
+
+**UI Features:**
+- [x] Toggle switch in Settings with blue accent color
+- [x] Descriptive subtitle showing current mode status
+- [x] Vertical layout for quick action buttons in Basic Mode (full-width with large touch targets)
+- [x] Custom colors: Sky Blue (#0EA5E9) for Add Item, Amber (#F59E0B) for Add Party
+- [x] Large button height (48px vertical padding, 40px icons, 18px font)
+
+**Files Modified:**
+- `mobile/lib/providers/basic_mode_provider.dart` (NEW FILE)
+- `mobile/lib/main.dart` - Added BasicModeProvider to MultiProvider
+- `mobile/lib/screens/home_screen.dart` - Dynamic tabs based on mode
+- `mobile/lib/screens/dashboard_tab.dart` - Conditional Quick Actions
+- `mobile/lib/screens/settings/settings_screen.dart` - Added Basic Mode toggle
+
+**Database:** Uses SharedPreferences for persistence (no database changes)
+
+**Testing:** ✅ Can toggle Basic/Full mode, tabs update dynamically, dashboard shows appropriate quick actions
+
+---
 
 ### **Priority 2: Localization (Hindi & Urdu)** 🌐
 **Status:** Pending
@@ -823,7 +862,7 @@ After completing all 10 steps, users should be able to:
 
 ## 🎯 **Current Status Summary**
 
-**✅ Completed:** All core features (Steps 0-11)
+**✅ Completed:** All core features (Steps 0-11) + Basic Mode
 - Authentication & Settings
 - Units, Parties, Items Management
 - Invoice Creation & Management
@@ -834,10 +873,11 @@ After completing all 10 steps, users should be able to:
 - Home Screen Dashboard
 - UI/UX Polish & Consistency
 - Light/Dark Theme (Complete) ✅
+- Basic Mode Toggle (Priority 1) ✅
 
 **🚧 In Progress:** None
 
-**📅 Next Up:** Basic Mode Restriction (Priority 1)
+**📅 Next Up:** Localization (Hindi & Urdu) - Priority 2
 
 ---
 
