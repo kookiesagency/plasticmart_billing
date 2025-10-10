@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../../providers/app_mode_provider.dart';
+
+import '../../providers/theme_provider.dart';
+import '../../providers/basic_mode_provider.dart';
 import '../../services/app_settings_service.dart';
+import '../../theme/app_button_styles.dart';
 import 'units_screen.dart';
 
 class SettingsScreen extends StatefulWidget {
@@ -54,12 +57,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
     showDialog(
       context: context,
-      builder: (context) => Dialog(
-        backgroundColor: Colors.white,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-        ),
-        child: Padding(
+      builder: (context) {
+        final theme = Theme.of(context);
+        final colorScheme = theme.colorScheme;
+        final isDarkTheme = theme.brightness == Brightness.dark;
+
+        return Dialog(
+          child: Padding(
           padding: const EdgeInsets.all(24),
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -70,7 +74,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 style: TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
-                  color: Colors.black87,
                 ),
               ),
               const SizedBox(height: 24),
@@ -78,31 +81,21 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 controller: _bundleRateController,
                 decoration: InputDecoration(
                   labelText: 'Bundle Rate',
-                  labelStyle: TextStyle(
-                    color: Colors.grey.shade600,
-                    fontSize: 14,
+                  labelStyle: theme.textTheme.bodySmall?.copyWith(
+                    color: isDarkTheme
+                        ? Colors.grey.shade400
+                        : Colors.grey.shade600,
                   ),
                   hintText: 'Enter default bundle rate',
-                  hintStyle: TextStyle(color: Colors.grey.shade400),
+                  hintStyle: theme.textTheme.bodySmall?.copyWith(
+                    color: isDarkTheme
+                        ? Colors.grey.shade600
+                        : Colors.grey.shade400,
+                  ),
                   prefixIcon: Icon(
                     Icons.currency_rupee,
-                    color: Theme.of(context).colorScheme.primary,
+                    color: colorScheme.primary,
                     size: 20,
-                  ),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide(color: Colors.grey.shade300, width: 1),
-                  ),
-                  enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide(color: Colors.grey.shade300, width: 1),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide(
-                      color: Theme.of(context).colorScheme.primary,
-                      width: 1,
-                    ),
                   ),
                   contentPadding: const EdgeInsets.symmetric(
                     horizontal: 16,
@@ -111,10 +104,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 ),
                 keyboardType: const TextInputType.numberWithOptions(decimal: true),
                 autofocus: true,
-                style: const TextStyle(
-                  fontSize: 16,
-                  color: Colors.black87,
-                ),
+                style: theme.textTheme.bodyLarge?.copyWith(fontSize: 16),
               ),
               const SizedBox(height: 24),
               Row(
@@ -123,7 +113,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   TextButton(
                     onPressed: () => Navigator.pop(context),
                     style: TextButton.styleFrom(
-                      foregroundColor: Colors.grey.shade700,
+                      foregroundColor: isDarkTheme
+                          ? Colors.grey.shade300
+                          : Colors.grey.shade700,
                       padding: const EdgeInsets.symmetric(
                         horizontal: 20,
                         vertical: 12,
@@ -138,20 +130,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     ),
                   ),
                   const SizedBox(width: 12),
-                  ElevatedButton(
+                  FilledButton(
                     onPressed: () => _saveBundleRate(),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Theme.of(context).colorScheme.primary,
-                      foregroundColor: Colors.white,
-                      elevation: 0,
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 24,
-                        vertical: 12,
-                      ),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                    ),
                     child: const Text(
                       'Save',
                       style: TextStyle(
@@ -165,7 +145,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
             ],
           ),
         ),
-      ),
+        );
+      },
     );
   }
 
@@ -221,47 +202,73 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final appMode = Provider.of<AppModeProvider>(context);
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final textTheme = theme.textTheme;
+    final isDarkTheme = theme.brightness == Brightness.dark;
+    final themeProvider = context.watch<ThemeProvider>();
+    final basicModeProvider = context.watch<BasicModeProvider>();
 
     return Container(
-      color: Colors.grey.shade50,
+      color: theme.scaffoldBackgroundColor,
       child: ListView(
         padding: const EdgeInsets.all(16),
         children: [
           Text(
-            'App Mode',
-            style: TextStyle(
+            'Appearance',
+            style: textTheme.labelLarge?.copyWith(
               fontSize: 14,
-              fontWeight: FontWeight.bold,
-              color: Colors.grey.shade700,
+              fontWeight: FontWeight.w600,
+              color: isDarkTheme ? Colors.grey.shade300 : Colors.grey.shade700,
             ),
           ),
           const SizedBox(height: 12),
           _buildSettingCard(
-            icon: Icons.settings_outlined,
+            icon: Icons.dark_mode_outlined,
             iconColor: const Color(0xFF8B5CF6),
-            title: 'Advanced Mode',
-            subtitle: appMode.isAdvancedMode
-                ? 'Advanced features enabled'
-                : 'Advanced features disabled',
+            title: 'Dark Mode',
+            subtitle: themeProvider.isDarkMode
+                ? 'Dark theme enabled'
+                : 'Light theme enabled',
             trailing: Transform.scale(
               scale: 0.8,
               child: Switch(
-                value: appMode.isAdvancedMode,
-                onChanged: (value) => appMode.toggleMode(),
-                materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                activeColor: Colors.white,
-                activeTrackColor: Theme.of(context).colorScheme.primary,
+                value: themeProvider.isDarkMode,
+                onChanged: themeProvider.toggleTheme,
+                activeColor: colorScheme.primary,
+                activeTrackColor: colorScheme.primary.withOpacity(0.5),
+                inactiveThumbColor: Colors.grey.shade400,
+                inactiveTrackColor: Colors.grey.shade300,
+              ),
+            ),
+          ),
+          const SizedBox(height: 12),
+          _buildSettingCard(
+            icon: Icons.visibility_outlined,
+            iconColor: const Color(0xFF3B82F6),
+            title: 'Basic Mode',
+            subtitle: basicModeProvider.isBasicMode
+                ? 'Simple mode - Manage items & parties only'
+                : 'Full mode - All features enabled',
+            trailing: Transform.scale(
+              scale: 0.8,
+              child: Switch(
+                value: basicModeProvider.isBasicMode,
+                onChanged: basicModeProvider.toggleBasicMode,
+                activeColor: colorScheme.primary,
+                activeTrackColor: colorScheme.primary.withOpacity(0.5),
+                inactiveThumbColor: Colors.grey.shade400,
+                inactiveTrackColor: Colors.grey.shade300,
               ),
             ),
           ),
           const SizedBox(height: 24),
           Text(
             'General Settings',
-            style: TextStyle(
+            style: textTheme.labelLarge?.copyWith(
               fontSize: 14,
-              fontWeight: FontWeight.bold,
-              color: Colors.grey.shade700,
+              fontWeight: FontWeight.w600,
+              color: isDarkTheme ? Colors.grey.shade300 : Colors.grey.shade700,
             ),
           ),
           const SizedBox(height: 12),
@@ -278,10 +285,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
           const SizedBox(height: 24),
           Text(
             'Master Data',
-            style: TextStyle(
+            style: textTheme.labelLarge?.copyWith(
               fontSize: 14,
-              fontWeight: FontWeight.bold,
-              color: Colors.grey.shade700,
+              fontWeight: FontWeight.w600,
+              color: isDarkTheme ? Colors.grey.shade300 : Colors.grey.shade700,
             ),
           ),
           const SizedBox(height: 12),
@@ -311,20 +318,27 @@ class _SettingsScreenState extends State<SettingsScreen> {
     Widget? trailing,
     VoidCallback? onTap,
   }) {
+    final theme = Theme.of(context);
+    final isDarkTheme = theme.brightness == Brightness.dark;
+    final cardColor = theme.cardColor;
+    final borderColor = isDarkTheme ? Colors.white.withOpacity(0.05) : Colors.grey.shade100;
+
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(12),
       child: Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: cardColor,
           borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: borderColor),
           boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.05),
-              blurRadius: 10,
-              offset: const Offset(0, 2),
-            ),
+            if (!isDarkTheme)
+              BoxShadow(
+                color: Colors.black.withOpacity(0.05),
+                blurRadius: 10,
+                offset: const Offset(0, 2),
+              ),
           ],
         ),
         child: Row(
@@ -333,7 +347,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               width: 40,
               height: 40,
               decoration: BoxDecoration(
-                color: iconColor.withOpacity(0.1),
+                color: iconColor.withOpacity(isDarkTheme ? 0.2 : 0.1),
                 borderRadius: BorderRadius.circular(10),
               ),
               child: Icon(
@@ -349,18 +363,18 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 children: [
                   Text(
                     title,
-                    style: const TextStyle(
-                      fontSize: 14,
+                    style: theme.textTheme.titleSmall?.copyWith(
                       fontWeight: FontWeight.w600,
-                      color: Colors.black87,
                     ),
                   ),
                   const SizedBox(height: 4),
                   Text(
                     subtitle,
-                    style: TextStyle(
+                    style: theme.textTheme.bodySmall?.copyWith(
                       fontSize: 12,
-                      color: Colors.grey.shade600,
+                      color: isDarkTheme
+                          ? Colors.grey.shade400
+                          : Colors.grey.shade600,
                     ),
                   ),
                 ],

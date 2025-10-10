@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../../config/supabase_config.dart';
 import '../../models/party.dart';
+import '../../theme/theme_helpers.dart';
+import '../../theme/app_button_styles.dart';
 import 'party_details_screen.dart';
 
 class PartyWeeklyReportScreen extends StatefulWidget {
@@ -166,7 +168,9 @@ class _PartyWeeklyReportScreenState extends State<PartyWeeklyReportScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    final colorScheme = theme.colorScheme;
 
     return Scaffold(
       appBar: AppBar(
@@ -184,14 +188,7 @@ class _PartyWeeklyReportScreenState extends State<PartyWeeklyReportScreen> {
                     width: double.infinity,
                     padding: const EdgeInsets.all(20),
                     decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        colors: [
-                          colorScheme.primary,
-                          colorScheme.primary.withOpacity(0.8),
-                        ],
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                      ),
+                      color: isDark ? const Color(0xFF3D6B5C) : colorScheme.primary,
                     ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -226,14 +223,7 @@ class _PartyWeeklyReportScreenState extends State<PartyWeeklyReportScreen> {
                         Container(
                           width: double.infinity,
                           padding: const EdgeInsets.all(16),
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(12),
-                            border: Border.all(
-                              color: Colors.grey.shade200,
-                              width: 1,
-                            ),
-                          ),
+                          decoration: ThemeHelpers.cardDecoration(context),
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
@@ -259,7 +249,7 @@ class _PartyWeeklyReportScreenState extends State<PartyWeeklyReportScreen> {
                         // Divider
                         Container(
                           height: 1,
-                          color: Colors.grey.shade300,
+                          color: ThemeHelpers.borderColor(context),
                         ),
                         const SizedBox(height: 20),
 
@@ -279,21 +269,21 @@ class _PartyWeeklyReportScreenState extends State<PartyWeeklyReportScreen> {
                             width: double.infinity,
                             padding: const EdgeInsets.all(16),
                             decoration: BoxDecoration(
-                              color: Colors.grey.shade50,
+                              color: isDark ? theme.scaffoldBackgroundColor : Colors.grey.shade50,
                               borderRadius: BorderRadius.circular(8),
                             ),
                             child: Text(
                               'No invoices for this week',
                               style: TextStyle(
                                 fontSize: 14,
-                                color: Colors.grey.shade600,
+                                color: ThemeHelpers.mutedTextColor(context),
                               ),
                             ),
                           )
                         else
                           Container(
                             decoration: BoxDecoration(
-                              color: Colors.grey.shade50,
+                              color: isDark ? theme.scaffoldBackgroundColor : Colors.grey.shade50,
                               borderRadius: BorderRadius.circular(12),
                             ),
                             child: Column(
@@ -308,7 +298,7 @@ class _PartyWeeklyReportScreenState extends State<PartyWeeklyReportScreen> {
                                   decoration: BoxDecoration(
                                     border: Border(
                                       bottom: index < _weeklyInvoices.length - 1
-                                          ? BorderSide(color: Colors.grey.shade200)
+                                          ? BorderSide(color: ThemeHelpers.borderColor(context))
                                           : BorderSide.none,
                                     ),
                                   ),
@@ -331,7 +321,7 @@ class _PartyWeeklyReportScreenState extends State<PartyWeeklyReportScreen> {
                                               DateFormat('dd/MM/yyyy').format(DateTime.parse(invoiceDate)),
                                               style: TextStyle(
                                                 fontSize: 12,
-                                                color: Colors.grey.shade600,
+                                                color: ThemeHelpers.mutedTextColor(context),
                                               ),
                                             ),
                                           ],
@@ -357,7 +347,7 @@ class _PartyWeeklyReportScreenState extends State<PartyWeeklyReportScreen> {
                         // Divider
                         Container(
                           height: 1,
-                          color: Colors.grey.shade300,
+                          color: ThemeHelpers.borderColor(context),
                         ),
                         const SizedBox(height: 20),
 
@@ -365,14 +355,7 @@ class _PartyWeeklyReportScreenState extends State<PartyWeeklyReportScreen> {
                         Container(
                           width: double.infinity,
                           padding: const EdgeInsets.all(16),
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(12),
-                            border: Border.all(
-                              color: Colors.grey.shade200,
-                              width: 1,
-                            ),
-                          ),
+                          decoration: ThemeHelpers.cardDecoration(context),
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
@@ -399,14 +382,7 @@ class _PartyWeeklyReportScreenState extends State<PartyWeeklyReportScreen> {
                         Container(
                           width: double.infinity,
                           padding: const EdgeInsets.all(16),
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(12),
-                            border: Border.all(
-                              color: Colors.grey.shade200,
-                              width: 1,
-                            ),
-                          ),
+                          decoration: ThemeHelpers.cardDecoration(context),
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
@@ -442,14 +418,7 @@ class _PartyWeeklyReportScreenState extends State<PartyWeeklyReportScreen> {
                                   ),
                                 );
                               },
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: Theme.of(context).colorScheme.primary,
-                                foregroundColor: Colors.white,
-                                padding: const EdgeInsets.symmetric(vertical: 16),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                              ),
+                              style: AppButtonStyles.primaryElevated(context),
                               child: const Text(
                                 'More Details',
                                 style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),

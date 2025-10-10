@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../models/item.dart';
 import '../../providers/item_provider.dart';
+import '../../theme/theme_helpers.dart';
+import '../../theme/app_button_styles.dart';
 import 'add_edit_item_screen.dart';
 
 class ViewItemScreen extends StatelessWidget {
@@ -11,11 +13,12 @@ class ViewItemScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-    final textTheme = Theme.of(context).textTheme;
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    final colorScheme = theme.colorScheme;
+    final textTheme = theme.textTheme;
 
     return Scaffold(
-      backgroundColor: Colors.white,
       appBar: AppBar(
         title: const Text('Item Details'),
       ),
@@ -29,22 +32,8 @@ class ViewItemScreen extends StatelessWidget {
               margin: const EdgeInsets.all(16),
               padding: const EdgeInsets.symmetric(vertical: 32, horizontal: 24),
               decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [
-                    colorScheme.primary,
-                    colorScheme.primary.withOpacity(0.8),
-                  ],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ),
+                color: isDark ? const Color(0xFF3D6B5C) : colorScheme.primary,
                 borderRadius: BorderRadius.circular(16),
-                boxShadow: [
-                  BoxShadow(
-                    color: colorScheme.primary.withOpacity(0.3),
-                    blurRadius: 12,
-                    offset: const Offset(0, 4),
-                  ),
-                ],
               ),
               child: Text(
                 item.name,
@@ -68,7 +57,7 @@ class ViewItemScreen extends StatelessWidget {
                     'Pricing',
                     style: textTheme.titleMedium?.copyWith(
                       fontWeight: FontWeight.bold,
-                      color: Colors.grey.shade700,
+                      color: ThemeHelpers.mutedTextColor(context),
                     ),
                   ),
                   const SizedBox(height: 12),
@@ -115,7 +104,7 @@ class ViewItemScreen extends StatelessWidget {
                     'Purchase',
                     style: textTheme.titleMedium?.copyWith(
                       fontWeight: FontWeight.bold,
-                      color: Colors.grey.shade700,
+                      color: ThemeHelpers.mutedTextColor(context),
                     ),
                   ),
                   const SizedBox(height: 12),
@@ -158,7 +147,7 @@ class ViewItemScreen extends StatelessWidget {
                       'Party-Specific Prices',
                       style: textTheme.titleMedium?.copyWith(
                         fontWeight: FontWeight.bold,
-                        color: Colors.grey.shade700,
+                        color: ThemeHelpers.mutedTextColor(context),
                       ),
                     ),
                     const SizedBox(height: 12),
@@ -187,7 +176,7 @@ class ViewItemScreen extends StatelessWidget {
                     'Additional Information',
                     style: textTheme.titleMedium?.copyWith(
                       fontWeight: FontWeight.bold,
-                      color: Colors.grey.shade700,
+                      color: ThemeHelpers.mutedTextColor(context),
                     ),
                   ),
                   const SizedBox(height: 12),
@@ -224,14 +213,14 @@ class ViewItemScreen extends StatelessWidget {
                     'Actions',
                     style: textTheme.titleMedium?.copyWith(
                       fontWeight: FontWeight.bold,
-                      color: Colors.grey.shade700,
+                      color: ThemeHelpers.mutedTextColor(context),
                     ),
                   ),
                   const SizedBox(height: 12),
                   Row(
                     children: [
                       Expanded(
-                        child: ElevatedButton.icon(
+                        child: ElevatedButton(
                           onPressed: () async {
                             await Navigator.push(
                               context,
@@ -244,49 +233,32 @@ class ViewItemScreen extends StatelessWidget {
                               Navigator.pop(context);
                             }
                           },
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: colorScheme.primary,
-                            foregroundColor: Colors.white,
+                          style: AppButtonStyles.primaryElevated(
+                            context,
                             padding: const EdgeInsets.symmetric(vertical: 14),
-                            elevation: 0,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
                           ),
-                          icon: const Icon(
-                            Icons.edit_outlined,
-                            size: 20,
-                            color: Colors.white,
-                          ),
-                          label: const Text(
+                          child: const Text(
                             'Edit',
                             style: TextStyle(
                               fontSize: 15,
                               fontWeight: FontWeight.w600,
-                              color: Colors.white,
                             ),
                           ),
                         ),
                       ),
                       const SizedBox(width: 12),
                       Expanded(
-                        child: ElevatedButton.icon(
+                        child: FilledButton(
                           onPressed: () => _showDeleteDialog(context),
-                          style: ElevatedButton.styleFrom(
+                          style: FilledButton.styleFrom(
                             backgroundColor: Colors.red,
                             foregroundColor: Colors.white,
                             padding: const EdgeInsets.symmetric(vertical: 14),
-                            elevation: 0,
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(12),
                             ),
                           ),
-                          icon: const Icon(
-                            Icons.delete_outlined,
-                            size: 20,
-                            color: Colors.white,
-                          ),
-                          label: const Text(
+                          child: const Text(
                             'Delete',
                             style: TextStyle(
                               fontSize: 15,
@@ -319,17 +291,7 @@ class ViewItemScreen extends StatelessWidget {
   }) {
     return Container(
       padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
+      decoration: ThemeHelpers.cardDecoration(context),
       child: Row(
         children: [
           Container(
@@ -354,7 +316,7 @@ class ViewItemScreen extends StatelessWidget {
                   title,
                   style: TextStyle(
                     fontSize: 12,
-                    color: Colors.grey.shade600,
+                    color: ThemeHelpers.mutedTextColor(context),
                     fontWeight: FontWeight.w500,
                   ),
                 ),
@@ -365,10 +327,10 @@ class ViewItemScreen extends StatelessWidget {
                   children: [
                     Text(
                       value,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
-                        color: Colors.black87,
+                        color: Theme.of(context).textTheme.bodyLarge?.color,
                       ),
                     ),
                     if (subtitle != null) ...[
@@ -377,7 +339,7 @@ class ViewItemScreen extends StatelessWidget {
                         subtitle,
                         style: TextStyle(
                           fontSize: 12,
-                          color: Colors.grey.shade600,
+                          color: ThemeHelpers.mutedTextColor(context),
                         ),
                       ),
                     ],
@@ -398,17 +360,7 @@ class ViewItemScreen extends StatelessWidget {
   }) {
     return Container(
       padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
+      decoration: ThemeHelpers.cardDecoration(context),
       child: Row(
         children: [
           Container(
@@ -433,7 +385,7 @@ class ViewItemScreen extends StatelessWidget {
                   partyName,
                   style: TextStyle(
                     fontSize: 12,
-                    color: Colors.grey.shade600,
+                    color: ThemeHelpers.mutedTextColor(context),
                     fontWeight: FontWeight.w500,
                   ),
                 ),
@@ -444,10 +396,10 @@ class ViewItemScreen extends StatelessWidget {
                   children: [
                     Text(
                       '₹${price.toStringAsFixed(2)}',
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
-                        color: Colors.black87,
+                        color: Theme.of(context).textTheme.bodyLarge?.color,
                       ),
                     ),
                     if (item.unit != null) ...[
@@ -456,7 +408,7 @@ class ViewItemScreen extends StatelessWidget {
                         'per ${item.unit!.name}',
                         style: TextStyle(
                           fontSize: 12,
-                          color: Colors.grey.shade600,
+                          color: ThemeHelpers.mutedTextColor(context),
                         ),
                       ),
                     ],
@@ -480,17 +432,7 @@ class ViewItemScreen extends StatelessWidget {
   }) {
     return Container(
       padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
+      decoration: ThemeHelpers.cardDecoration(context),
       child: Row(
         children: [
           Container(
@@ -515,17 +457,17 @@ class ViewItemScreen extends StatelessWidget {
                   title,
                   style: TextStyle(
                     fontSize: 12,
-                    color: Colors.grey.shade600,
+                    color: ThemeHelpers.mutedTextColor(context),
                     fontWeight: FontWeight.w500,
                   ),
                 ),
                 const SizedBox(height: 4),
                 Text(
                   mainRate,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
-                    color: Colors.black87,
+                    color: Theme.of(context).textTheme.bodyLarge?.color,
                   ),
                 ),
                 if (convertedRate != null) ...[
@@ -534,7 +476,7 @@ class ViewItemScreen extends StatelessWidget {
                     convertedRate,
                     style: TextStyle(
                       fontSize: 13,
-                      color: Colors.grey.shade600,
+                      color: ThemeHelpers.mutedTextColor(context),
                     ),
                   ),
                 ],
@@ -584,7 +526,6 @@ class ViewItemScreen extends StatelessWidget {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        backgroundColor: Colors.white,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         title: const Text('Delete Item'),
         content: Text('Are you sure you want to delete "${item.name}"?'),
