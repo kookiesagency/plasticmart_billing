@@ -59,7 +59,7 @@ This document outlines the development plan for the Smart Billing System. The pr
 
 ---
 
-## **Upcoming Features - Next Development Phase**
+## **Web App Status: ✅ Fully Complete (Except Draft Invoices)**
 
 ### **Feature Priority Matrix**
 
@@ -75,8 +75,46 @@ This document outlines the development plan for the Smart Billing System. The pr
 | 🟡 Medium | Weekly Mini Report | Medium | ✅ Completed |
 | 🟡 Medium | Purchase Party Dropdown | Low | ✅ Completed |
 | 🔴 High | Categories & Purchase Parties CRUD | Medium | ✅ Completed |
-| 🟡 Medium | Hindi and Urdu Localization | High | Pending |
+| 🟡 Medium | Hindi and Urdu Localization | High | ✅ Completed (`localization` branch) |
+| 🟡 Medium | Draft Invoices | Medium | ⏳ **Pending** |
 | 🟢 Low | AI Chat for Invoices | Very High | Future |
+
+---
+
+## 📝 **Pending Web Features**
+
+### **Draft Invoices** 💾 (Only Pending Feature)
+**Status:** Not started
+**Priority:** Medium
+
+**Description:** Save incomplete invoices and resume later
+
+**Features:**
+- [ ] Save invoice as draft while creating
+- [ ] Drafts list/section on invoices page
+- [ ] Resume editing draft invoice
+- [ ] Auto-save draft functionality (optional)
+- [ ] Delete drafts
+- [ ] Draft badge/indicator
+
+**Implementation:**
+- Add `is_draft` boolean column to invoices table
+- Filter out drafts from main invoice list by default
+- Create "Drafts" tab or section
+- Allow converting draft to final invoice
+- Handle validation differently for drafts (less strict)
+
+**Files to Create/Update:**
+- `database/add_is_draft_to_invoices.sql` - Add is_draft column
+- `web/src/app/(app)/invoices/page.tsx` - Add Drafts tab
+- `web/src/app/(app)/invoices/new/invoice-form.tsx` - Add "Save as Draft" button
+- `web/src/app/(app)/invoices/edit/[id]/page.tsx` - Handle draft editing
+
+**Note:** All other web features are complete. This is the only remaining feature for web app.
+
+---
+
+**Remaining tasks are for mobile app only.** See `mobile-roadmap.md` for mobile-specific pending features.
 
 ---
 
@@ -302,23 +340,29 @@ CREATE INDEX idx_items_purchase_party_id ON items(purchase_party_id);
 
 ---
 
-### **10. Hindi and Urud Localization Support** 🟡 Medium Priority
-**Description:** Add Hindi and Urud language support throughout the application with language toggle
+### **10. Hindi and Urdu Localization Support** 🟡 Medium Priority ✅ **COMPLETED**
+**Description:** Add Hindi and Urdu language support throughout the application with language toggle
 
-**Files to Edit:**
-- `web/src/app/layout.tsx` - Add language context provider
-- `web/src/lib/i18n/` (new folder) - Translation files
+**Status:** ✅ Implemented on `localization` branch (ready to merge)
+
+**Implementation:** Used next-intl for internationalization
+
+**Files Implemented:**
+- ✅ `web/src/app/layout.tsx` - Language context provider added
+- ✅ `web/src/lib/i18n/` - Translation files created
   - `en.json` - English translations
   - `hi.json` - Hindi translations
-- `web/src/components/layout/header.tsx` - Add language switcher button
-- All component files - Replace hardcoded text with translation keys
+  - `ur.json` - Urdu translations
+- ✅ `web/src/components/layout/header.tsx` - Language switcher implemented
+- ✅ All component files - Text replaced with translation keys
+- ✅ RTL support for Urdu language
 
 **Database Changes:**
 ```sql
 ALTER TABLE user_preferences ADD COLUMN language VARCHAR(5) DEFAULT 'en';
 ```
 
-**Implementation:** Use next-intl or react-i18next
+**Note:** Feature is complete and available in `localization` branch. Merge when ready to deploy.
 
 ---
 
@@ -517,101 +561,82 @@ CREATE INDEX idx_items_purchase_party_id ON items(purchase_party_id);
 
 ---
 
-### **Phase 0: Project Setup & Foundation**
+## ✅ **All Phases Complete**
 
-- [ ] **Initialize Next.js Project:** Set up a new Next.js application with TypeScript, Tailwind CSS, and the `app` router.
-- [ ] **Integrate Shadcn UI:** Install and configure Shadcn UI as the primary component library.
-- [ ] **Set up Supabase:** Create a new Supabase project, get API keys, and connect it to the application.
-- [ ] **Define Database Schema:** Write and execute the initial SQL script to create all necessary tables (`parties`, `items`, `invoices`, `payments`, `units`, etc.).
-
----
-
-### **Phase 1: Core Data Management**
-
-- [ ] **Unit Management (Settings Page):**
-    - Create a settings page.
-    - Build UI to perform full CRUD (Create, Read, Update, Delete) operations on `units` (e.g., PCS, DZ).
-    - Implement functionality to set a "Default Bundle Rate" in the settings.
-
-- [ ] **Party (Client) Management:**
-    - Build the Party List page (`/parties`).
-    - Implement a data table to display all parties.
-    - Create a form (dialog/modal) to add and edit parties, including the **party-specific bundle rate**.
-
-- [x] **Item Management:**
-    - [x] Build the Item List page (`/items`).
-    - [x] Implement a data table to display all items.
-    - [x] Create a form to add and edit items (`name`, `default_rate`, `unit`).
-    - [x] **Crucial:** Implement the UI to add/edit/remove **party-specific pricing** for each item.
-    - [x] **Enhanced:** Add inline editing with double-click functionality for all item fields.
-    - [x] **Enhanced:** Integrate full item creation within invoice form workflow.
+### **Phase 0: Project Setup & Foundation** ✅
+- ✅ Next.js Project initialized with TypeScript, Tailwind CSS, and app router
+- ✅ Shadcn UI integrated as primary component library
+- ✅ Supabase configured with API keys
+- ✅ Complete database schema implemented with all tables
 
 ---
 
-### **Phase 2: Invoice Creation & Logic**
-
-- [x] **Build the Invoice Form (`/invoices/new`):**
-    - [x] Design the main form for creating new invoices.
-    - [x] Add a searchable dropdown to select a `Party`.
-    - [x] On party selection, automatically fetch and populate their specific `bundle_rate`.
-    - [x] Create the dynamic "Invoice Items" table where users can add/remove line items.
-    - [x] For each line item:
-        - [x] Implement a searchable dropdown to select an `Item`.
-        - [x] The `Rate` field should auto-populate based on the selected party (using their special price if it exists, otherwise the default item price).
-        - [x] `Amount` should be calculated automatically (`QTY * Rate`).
-    - [x] The form should calculate and display `Sub-Total`, `Bundle Charge`, and `Grand Total` in real-time.
-    - [x] **Enhanced:** Smart item filtering and creation workflow within invoice form.
-    - [x] **Enhanced:** Drag-and-drop reordering for invoice items.
+### **Phase 1: Core Data Management** ✅
+- ✅ **Unit Management** - Full CRUD in Settings
+- ✅ **Party Management** - Complete with party-specific bundle rates
+- ✅ **Item Management** - Full CRUD with:
+  - ✅ Party-specific pricing
+  - ✅ Inline double-click editing
+  - ✅ Create item from invoice workflow
+  - ✅ Categories integration
+  - ✅ Purchase parties integration
 
 ---
 
-### **Phase 3: Invoice & Party Reporting**
-
-- [ ] **Invoice Listing & Management (`/invoices`):**
-    - Implement a data table to list all created invoices.
-    - Columns should include `Party Name`, `Date`, `Total`, `Amount Received`, `Amount Pending`, and `Status`.
-    - Add action buttons for `Edit`, `Download PDF`, and `Share`.
-
-- [ ] **Payment Management:**
-    - On the invoice view page, add an "Add Payment" button to allow recording partial or full payments against an invoice.
-    - Display a history of payments for each invoice.
-
-- [ ] **Party Report Page (`/parties/[id]`):**
-    - Create a detailed view for a single party.
-    - Display summary cards for their `Total Billed`, `Total Received`, and `Current Balance`.
-    - List all invoices associated with that party.
+### **Phase 2: Invoice Creation & Logic** ✅
+- ✅ **Invoice Form** - Complete implementation with:
+  - ✅ Party selection with auto-populated bundle rate
+  - ✅ Dynamic invoice items table
+  - ✅ Smart item filtering
+  - ✅ Automatic rate population (party-specific or default)
+  - ✅ Real-time calculations
+  - ✅ Drag-and-drop reordering
+  - ✅ Smart unit conversion
 
 ---
 
-### **Phase 4: Advanced Features & Finalization**
-
-- [ ] **PDF Generation:**
-    - Create a well-formatted, printable PDF component that resembles a traditional memo bill.
-    - Implement the "Download PDF" functionality.
-
-- [ ] **Public Shareable Invoice:**
-    - Create a public-facing page (`/invoice/[id]`) that displays invoice details without requiring a login and also give a download invoice to download pdf.
-    - The "Share" button should provide a link to this page.
-
-- [ ] **Import/Export Functionality:**
-    - Implement "Import from CSV" for the `items` list.
-    - Implement "Export to CSV/PDF" for party reports.
-
-- [ ] **Dashboard:**
-    - Build the main dashboard page.
-    - Include summary cards for overall bucsiness metrics (Total Revenue, Total Outstanding, etc.).
-    - Add filters to view stats by week, month, and year.
-    - Show a list of recent invoices.
-    - add logs page where we can we what we change the data like if someone update the invoice etc, something like activity tracking on all page
-    - show charts like total sales means invoice geenrated this month, week, year, and custom date, or you add use any other thing as well to show charts
-
-
-- [ ] **Authentication:**
-    - Build a simple login page for the system's users.
+### **Phase 3: Invoice & Party Reporting** ✅
+- ✅ **Invoice Listing** - Complete with all columns and actions
+- ✅ **Payment Management** - Full payment history and tracking
+- ✅ **Party Report Page** - Comprehensive party details with:
+  - ✅ Financial summary cards
+  - ✅ Invoice history
+  - ✅ Weekly mini reports
+  - ✅ Opening balance tracking
 
 ---
 
-### **Phase 5: Deployment**
+### **Phase 4: Advanced Features** ✅
+- ✅ **PDF Generation** - Professional invoice PDFs
+- ✅ **Public Shareable Invoice** - Public view with download
+- ✅ **Import/Export** - CSV import for items, export for reports
+- ✅ **Dashboard** - Complete with:
+  - ✅ Financial metrics (today, week, month, year)
+  - ✅ Charts and visualizations
+  - ✅ Recent invoices list
+  - ✅ Quick actions
+- ✅ **Activity Logs** - Complete tracking of all changes
+- ✅ **Authentication** - Login system implemented
 
-- [ ] **Final Testing:** Conduct end-to-end testing of all features.
-- [ ] **Deploy to Vercel:** Connect the repository to Vercel for continuous deployment. 
+---
+
+### **Phase 5: Deployment** ✅
+- ✅ End-to-end testing completed
+- ✅ Deployed to Vercel with continuous deployment
+- ✅ Production-ready
+
+---
+
+## 🎯 **Web App Status Summary**
+
+**Current State:** Production-ready with full feature set
+
+**Completed Features:** 95%+ of planned functionality
+- All core features implemented
+- All enhancement features completed
+- Categories & Purchase Parties system fully operational
+- Localization ready (in `localization` branch)
+
+**Pending:** Only Draft Invoices feature remaining (Medium priority)
+
+**Next:** Mobile app development continues with feature parity 
