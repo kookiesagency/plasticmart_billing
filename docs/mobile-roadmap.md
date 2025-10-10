@@ -334,16 +334,37 @@ This document outlines the development plan for the PlasticMart Mobile applicati
 
 ## 📝 **Pending Tasks - Future Development**
 
-### **High Priority:**
-1. **Dark Mode Implementation**
-   - Create ThemeProvider with ChangeNotifier
-   - Persist theme preference in SharedPreferences
-   - Update MaterialApp with themeMode property
-   - Implement light and dark ThemeData
-   - Update all screens to be dark mode compatible
-   - Settings toggle is already in place as placeholder
+### **✅ Recently Completed:**
+1. **Categories & Purchase Parties Management** ✅ **COMPLETED**
+   - **Status:** Fully implemented on web and mobile
+   - **Web:** ✅ Separate pages with full CRUD operations
+   - **Mobile:** ✅ Complete implementation
+     - ✅ Categories CRUD screen (`categories_screen.dart`)
+     - ✅ Purchase Parties CRUD screen (`purchase_parties_screen.dart`)
+     - ✅ Navigation added to app
+     - ✅ Active/Deleted tabs for both
+     - ✅ Category dropdown in Add/Edit Item screen
+     - ✅ Purchase party dropdown in Add/Edit Item screen
+     - ✅ Category display in items list
+     - ✅ Category filters implemented
+   - **Files Created:**
+     - ✅ Models, Services, Providers
+     - ✅ Screens with full UI
+     - ✅ Database tables and migrations
 
-2. **Hindi and Urdu Localization**
+2. **Dark Mode Implementation** ✅ **COMPLETED**
+   - ✅ ThemeProvider with ChangeNotifier created
+   - ✅ Theme persistence using SharedPreferences
+   - ✅ MaterialApp with dynamic themeMode
+   - ✅ Complete light and dark ThemeData
+   - ✅ All screens dark mode compatible
+   - ✅ Settings toggle functional
+   - ✅ Theme-aware colors throughout app
+
+---
+
+### **High Priority:**
+1. **Hindi and Urdu Localization**
    - Full language support with language switcher
    - Translate all UI text and messages
    - RTL support for Urdu
@@ -543,8 +564,9 @@ class UnitProvider extends ChangeNotifier { ... }
 - UI/UX Polish & Consistency
 
 ### **📅 Next Priority:**
-- **Dark Mode Implementation** - Settings toggle ready, needs full implementation
-- **Hindi and Urdu Localization** - Business requirement
+- **Hindi and Urdu Localization** - High priority business requirement
+- **Offline Mode** - Work without internet connection
+- **Advanced Reporting** - Charts, analytics, export features
 
 ### **🚀 Mobile App Status:**
 **100% Core Feature Complete** - The mobile app has full feature parity with the web application. All CRUD operations, invoicing, payments, PDF generation, and analytics are functional. Future development will focus on enhancements like dark mode, localization, offline mode, and AI/ML features based on user feedback and business priorities.

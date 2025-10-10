@@ -16,7 +16,7 @@
 
 ## 📱 Current Development Focus
 
-### **Web App Status**: ✅ Core features complete + Offline Invoice Support
+### **Web App Status**: ✅ Core features complete + Categories & Purchase Parties
 - ✅ Invoice creation with drag-and-drop reordering
 - ✅ Item management with inline editing (double-click)
 - ✅ Party-specific pricing system
@@ -26,6 +26,8 @@
 - ✅ OFFLINE badge display on invoice lists
 - ✅ Hide items/bundle sections for offline invoices
 - ✅ Payment management with `remark` field
+- ✅ **Categories CRUD** - Separate page with full management
+- ✅ **Purchase Parties CRUD** - Separate page with full management
 
 ### **Mobile App Status**: ✅ Basic Mode MVP Nearly Complete (Flutter)
 - ✅ Flutter SDK 3.27.1 installed globally at ~/development/flutter
@@ -50,11 +52,92 @@
   - ✅ Unified card design (white bg, grey borders, 16px radius)
   - ✅ Standardized button styling (12px radius, consistent padding)
   - ✅ OFFLINE badge for offline invoices
-- 📋 **Next Phase**: Home Screen Dashboard (business metrics & quick actions)
+  - ✅ **Full Dark Mode Support** - Complete theme implementation across all screens
+  - ✅ Dashboard Quick Actions redesigned (vertical icon/text layout)
+- ✅ **Categories and Purchase Parties Management**:
+  - ✅ Complete CRUD operations on web and mobile
+  - ✅ Models, services, and providers
+  - ✅ Mobile screens with Active/Deleted tabs
+  - ✅ Integration with items workflow
+- 📋 **Next Phase**: Hindi/Urdu Localization, Advanced Features
 
 ---
 
 ## 🔧 Recent Technical Work
+
+### **Categories & Purchase Parties Feature** (January 2025)
+
+**Web Implementation (`web/src/app/(app)/`):**
+- Created separate `/categories` page with full CRUD operations
+- Created separate `/purchase-parties` page with full CRUD operations
+- Moved category management from Settings to dedicated page
+- Implemented forwardRef pattern for component communication
+- Create buttons placed in header using `useImperativeHandle`
+- Added navigation links to sidebar (FolderTree, UserPlus icons)
+- Active/Deleted tabs for soft delete functionality
+- Inline editing with real-time Supabase sync
+
+**Files Created:**
+- `categories/category-manager.tsx` - Full category management component
+- `categories/category-columns.tsx` - DataTable column definitions
+- `categories/page.tsx` - Page wrapper with header actions
+- `purchase-parties/purchase-party-manager.tsx` - Purchase party management
+- `purchase-parties/columns.tsx` - DataTable columns
+- `purchase-parties/page.tsx` - Page wrapper with header actions
+- `purchase-parties/[id]/page.tsx` - Detail view page
+
+**Mobile Implementation:** ✅ **COMPLETED**
+- Created models: `ItemCategory`, `PurchaseParty`
+- Created services: `ItemCategoryService`, `PurchasePartyService`
+- Created providers: `ItemCategoryProvider`, `PurchasePartyProvider`
+- Created screens: `categories_screen.dart`, `purchase_parties_screen.dart`
+- Active/Deleted tabs with full CRUD operations
+- Integrated with items workflow (category dropdown, purchase party selection)
+- Navigation added to app
+
+**Database:**
+- SQL migrations created for both tables
+- Soft delete support with `deleted_at` column
+- Timestamps for `created_at` and `updated_at`
+
+### **Mobile Dark Mode Implementation** (January 2025) ✅ **COMPLETED**
+
+**Full Dark Theme Implementation:**
+- Created complete dark theme with ThemeProvider
+- Theme persistence using SharedPreferences
+- Settings toggle for Light/Dark mode switching
+- MaterialApp configured with dynamic themeMode
+- All screens updated to support both themes
+
+**Theme-Aware Components:**
+- Invoice screens (View, Create, Edit, Offline Bill)
+- Payment dialogs and forms
+- Dashboard and Quick Actions
+- Items, Parties, Settings screens
+- All cards, dialogs, and form fields
+- Consistent color scheme across app
+
+**Color System:**
+- Light theme: White backgrounds, light grey borders
+- Dark theme: Dark backgrounds, appropriate contrasts
+- Theme helpers for border colors, card colors
+- Status badges color-coded (Paid/Pending/Partial)
+- OFFLINE badge theme-aware
+
+**Dashboard Quick Actions Redesign:**
+- Changed layout from horizontal (Row) to vertical (Column)
+- Icon positioned on top, text below (centered)
+- Reduced icon size from 40 to 32
+- Reduced font size from 18 to 16
+- Fixed height of 120px per button
+- Eliminated vertical overflow text issues
+- Better visual hierarchy and touch targets
+
+**Technical Implementation:**
+- ThemeProvider with ChangeNotifier pattern
+- Proper use of `Theme.of(context)` throughout app
+- Consistent theme-aware color patterns
+- No hardcoded colors - all dynamic based on theme
 
 ### **Mobile UI/UX Standardization** (December 2025)
 
@@ -116,10 +199,12 @@
 - Real-time Updates: Instant Supabase sync with toast notifications
 
 ### **Git Branches**
-- **Current**: `mobile` branch (active development)
-- **Main**: Production-ready code with all latest merges
-- **Web**: Web-specific features (synced with mobile)
-- **Recent Commits**: Icon standardization, offline invoice fixes, units redesign
+- **Current**: `main` branch (active development for simultaneous web/mobile features)
+- **Main**: Production-ready code with all latest features
+- **Web**: Feature branch (merged to main when complete)
+- **Mobile**: Feature branch (merged to main when complete)
+- **Workflow**: For features spanning both web and mobile (like Categories/Purchase Parties), work directly on `main` branch
+- **Recent Commits**: Categories/Purchase Parties CRUD, dark mode improvements, Quick Actions redesign
 
 ---
 
@@ -183,10 +268,11 @@ plasticmart/
 - This prevents unnecessary deployments and gives control over timing
 
 **Branch Strategy:**
-- **`web`** branch: All web app development work
-- **`mobile`** branch: All mobile app development work (current)
-- **`main`** branch: Production-ready merged code
-- Work on feature branches, merge to main when complete and tested
+- **`main`** branch: Primary development branch for cross-platform features
+- **`web`** branch: Web-only features (merge to main when complete)
+- **`mobile`** branch: Mobile-only features (merge to main when complete)
+- **Workflow**: When building features simultaneously for web and mobile (e.g., Categories, Purchase Parties), work directly on `main` branch
+- Merge feature branches to main when complete and tested
 
 ### **Next Immediate Task: Home Screen Dashboard** 🏠
 

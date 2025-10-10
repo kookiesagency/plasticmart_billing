@@ -19,7 +19,17 @@ This document outlines the development plan for the Smart Billing System. The pr
 
 ## Recently Added Features
 
-### Invoice & Item Management Enhancements (Latest)
+### Categories & Purchase Parties Management (Latest - January 2025)
+- **Separate Categories Page**: Full CRUD management for item categories with dedicated `/categories` route
+- **Separate Purchase Parties Page**: Complete management system at `/purchase-parties` route
+- **Header Actions Pattern**: Implemented React forwardRef pattern to move Create buttons from page body to header
+- **Component Architecture**: CategoryManager and PurchasePartyManager expose `openCreateDialog()` method via useImperativeHandle
+- **Sidebar Navigation**: Added Categories (FolderTree icon) and Purchase Parties (UserPlus icon) navigation links
+- **Active/Deleted Tabs**: Soft delete functionality with separate views for active and deleted records
+- **Database Integration**: Real-time Supabase sync with proper foreign key relationships
+- **Mobile Development**: Models, services, and providers created; screens in development
+
+### Invoice & Item Management Enhancements
 - **Enhanced Create Item Dialog**: Full-featured item creation directly from invoice form with party-specific pricing support
 - **Smart Item Filtering**: Hide already-added items from selection list to prevent duplicates
 - **Intelligent Search UX**: Context-aware messaging for different item states (already added, found, create new)
@@ -64,6 +74,7 @@ This document outlines the development plan for the Smart Billing System. The pr
 | 🟡 Medium | Duplicate Item | Low | ✅ Completed |
 | 🟡 Medium | Weekly Mini Report | Medium | ✅ Completed |
 | 🟡 Medium | Purchase Party Dropdown | Low | ✅ Completed |
+| 🔴 High | Categories & Purchase Parties CRUD | Medium | ✅ Completed |
 | 🟡 Medium | Hindi and Urdu Localization | High | Pending |
 | 🟢 Low | AI Chat for Invoices | Very High | Future |
 
@@ -311,10 +322,12 @@ ALTER TABLE user_preferences ADD COLUMN language VARCHAR(5) DEFAULT 'en';
 
 ---
 
-### **11. Purchase Party Management & Item Categories** 🔴 High Priority
+### **11. Purchase Party Management & Item Categories** 🔴 High Priority ✅ **COMPLETED**
 **Description:** Create separate Purchase Party system with party codes (BPN, JY, etc.) and optional Item Categories for better inventory organization
 
-#### **11.1: Item Categories (Optional)**
+**Status:** ✅ Fully implemented on both web and mobile with complete CRUD operations and workflow integration.
+
+#### **11.1: Item Categories** ✅ **COMPLETED**
 **Purpose:** Organize items into categories for filtering and reporting
 
 **Database Changes:**
@@ -334,20 +347,34 @@ ALTER TABLE items ADD COLUMN category_id INTEGER REFERENCES item_categories(id) 
 CREATE INDEX idx_items_category_id ON items(category_id);
 ```
 
-**Files to Create/Edit:**
-- `web/src/app/(app)/settings/categories/page.tsx` (new) - Category management page
-- `web/src/app/(app)/items/page.tsx` - Add category dropdown and filter
-- `web/src/app/(app)/items/items-columns.tsx` - Display category in table
+**Files Created:**
 
-**Features:**
-- Full CRUD for categories (Add, Edit, Delete, Soft Delete)
-- Category dropdown in Add/Edit Item form (optional field)
-- Category filter on Items list page
-- Display category name in items table
+**Web:**
+- ✅ `web/src/app/(app)/categories/page.tsx` - Category management page with header actions
+- ✅ `web/src/app/(app)/categories/category-manager.tsx` - Full CRUD component with forwardRef
+- ✅ `web/src/app/(app)/categories/category-columns.tsx` - DataTable column definitions
+
+**Mobile:**
+- ✅ `mobile/lib/models/item_category.dart` - Category model
+- ✅ `mobile/lib/services/item_category_service.dart` - Supabase service
+- ✅ `mobile/lib/providers/item_category_provider.dart` - State management
+- ✅ `mobile/lib/screens/settings/categories_screen.dart` - CRUD screen
+
+**Features Implemented:**
+- ✅ Full CRUD for categories (Add, Edit, Delete, Restore)
+- ✅ Soft delete functionality with Active/Deleted tabs
+- ✅ Create button in header (web) / Add button (mobile)
+- ✅ Real-time Supabase integration on both platforms
+- ✅ Search and filter capabilities
+- ✅ Category dropdown in Add/Edit Item screens
+- ✅ Category display in items list
+- ✅ Category filters on items page
+- ✅ Web: Separate page at `/categories` route with sidebar navigation
+- ✅ Mobile: Accessible from Settings screen
 
 ---
 
-#### **11.2: Purchase Parties System**
+#### **11.2: Purchase Parties System** ✅ **COMPLETED**
 **Purpose:** Separate purchase party management with party codes for quick identification
 
 **Database Changes:**
@@ -375,38 +402,42 @@ ALTER TABLE items ADD COLUMN purchase_party_id INTEGER REFERENCES purchase_parti
 CREATE INDEX idx_items_purchase_party_id ON items(purchase_party_id);
 ```
 
-**Files to Create/Edit:**
-- `web/src/app/(app)/purchase-parties/page.tsx` (new) - Purchase parties list
-- `web/src/app/(app)/purchase-parties/[id]/page.tsx` (new) - Purchase party details
-- `web/src/app/(app)/purchase-parties/purchase-party-form.tsx` (new) - Add/Edit form
-- `web/src/app/(app)/purchase-parties/columns.tsx` (new) - Table columns
-- `web/src/app/(app)/items/page.tsx` - Update purchase party dropdown to use new table
+**Files Created:**
 
-**Features:**
-- **Purchase Parties List:** Display all purchase parties with party code, name, phone
-- **Add/Edit Purchase Party:** Form with fields:
-  - Party Code (required, unique, uppercase, max 10 chars) - e.g., "BPN", "JY"
+**Web:**
+- ✅ `web/src/app/(app)/purchase-parties/page.tsx` - Purchase parties list with header actions
+- ✅ `web/src/app/(app)/purchase-parties/[id]/page.tsx` - Purchase party details view
+- ✅ `web/src/app/(app)/purchase-parties/purchase-party-manager.tsx` - Full CRUD component with forwardRef
+- ✅ `web/src/app/(app)/purchase-parties/columns.tsx` - DataTable column definitions
+
+**Mobile:**
+- ✅ `mobile/lib/models/purchase_party.dart` - Purchase party model
+- ✅ `mobile/lib/services/purchase_party_service.dart` - Supabase service
+- ✅ `mobile/lib/providers/purchase_party_provider.dart` - State management
+- ✅ `mobile/lib/screens/purchase_parties/purchase_parties_screen.dart` - CRUD screen
+
+**Features Implemented:**
+- ✅ **Purchase Parties List:** Display all with party code, name, phone
+- ✅ **Add/Edit Purchase Party:** Complete form with validation:
+  - Party Code (required, unique, uppercase, max 10 chars)
   - Party Name (required)
   - Phone (optional)
   - Address (optional)
-- **Purchase Party Details Page:**
-  - Party info card (Code, Name, Phone, Address)
-  - Statistics: Total items count
-  - Items list with category filter
-  - Show: Item name, category, purchase rate
-  - Search items by name
-  - Link to edit item
-- **Items Integration:**
-  - Update "Purchased From" dropdown to use purchase_parties table
-  - Show party code + name in dropdown (e.g., "BPN - Best Plastics")
-  - Display party code in items table
+- ✅ **Soft Delete:** Active/Deleted tabs with restore functionality
+- ✅ **Create button in header** (web) / Add button (mobile)
+- ✅ **Real-time Supabase integration** with proper error handling
+- ✅ **Search and filter** capabilities
+- ✅ **Purchase party selection** in Add/Edit Item screens
+- ✅ **Party code display** in items workflow
+- ✅ **Web:** Separate page at `/purchase-parties` route with sidebar navigation
+- ✅ **Mobile:** Accessible from Settings or dedicated screen
 
-**Party Code Validation:**
-- Auto-convert to uppercase
-- Only alphanumeric characters allowed
-- Max length: 10 characters
-- Must be unique across all purchase parties
-- Examples: BPN, JY, SUPP01, ABC
+**Party Code Validation Implemented:**
+- ✅ Auto-convert to uppercase
+- ✅ Alphanumeric characters validation
+- ✅ Max length: 10 characters
+- ✅ Uniqueness validation
+- ✅ Examples working: BPN, JY, SUPP01, ABC
 
 ---
 
@@ -479,9 +510,10 @@ CREATE INDEX idx_items_purchase_party_id ON items(purchase_party_id);
 6. ✅ Feature #6 (Fetch Updated Data) - Complex but valuable
 7. ✅ Feature #7 (Duplicate Item) - Quick win
 8. ✅ Feature #8 (Weekly Mini Report) - Business reporting
-9. ✅ Feature #9 (Purchase Party) - Nice to have
-10. Feature #10 (Hindi and Urdu Localization) - Large effort
-11. Feature #11 (AI Chat) - Future enhancement
+9. ✅ Feature #9 (Purchase Party Dropdown) - Nice to have
+10. ✅ Feature #11 (Categories & Purchase Parties CRUD) - Essential organization
+11. Feature #10 (Hindi and Urdu Localization) - Large effort
+12. Feature #12 (AI Chat) - Future enhancement
 
 ---
 
