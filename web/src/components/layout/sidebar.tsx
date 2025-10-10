@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import Image from 'next/image'
 import { usePathname, useRouter } from 'next/navigation'
-import { Home, FileText, Users, Package, Settings, History } from 'lucide-react'
+import { Home, FileText, Users, Package, Settings, History, FolderTree, UserPlus } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useHeader } from './header-context'
 import { Button } from '../ui/button'
@@ -14,6 +14,8 @@ const navItems = [
   { href: '/invoices', label: 'Invoices', icon: FileText },
   { href: '/parties', label: 'Parties', icon: Users },
   { href: '/items', label: 'Items', icon: Package },
+  { href: '/categories', label: 'Categories', icon: FolderTree },
+  { href: '/purchase-parties', label: 'Purchase Parties', icon: UserPlus },
   { href: '/logs', label: 'Activity Logs', icon: History },
   { href: '/settings', label: 'Settings', icon: Settings },
 ]

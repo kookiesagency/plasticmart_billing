@@ -311,6 +311,141 @@ ALTER TABLE user_preferences ADD COLUMN language VARCHAR(5) DEFAULT 'en';
 
 ---
 
+### **11. Purchase Party Management & Item Categories** 🔴 High Priority
+**Description:** Create separate Purchase Party system with party codes (BPN, JY, etc.) and optional Item Categories for better inventory organization
+
+#### **11.1: Item Categories (Optional)**
+**Purpose:** Organize items into categories for filtering and reporting
+
+**Database Changes:**
+```sql
+-- Create item_categories table
+CREATE TABLE item_categories (
+  id SERIAL PRIMARY KEY,
+  name VARCHAR(100) NOT NULL UNIQUE,
+  description TEXT,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW(),
+  deleted_at TIMESTAMPTZ
+);
+
+-- Add category to items table
+ALTER TABLE items ADD COLUMN category_id INTEGER REFERENCES item_categories(id) ON DELETE SET NULL;
+CREATE INDEX idx_items_category_id ON items(category_id);
+```
+
+**Files to Create/Edit:**
+- `web/src/app/(app)/settings/categories/page.tsx` (new) - Category management page
+- `web/src/app/(app)/items/page.tsx` - Add category dropdown and filter
+- `web/src/app/(app)/items/items-columns.tsx` - Display category in table
+
+**Features:**
+- Full CRUD for categories (Add, Edit, Delete, Soft Delete)
+- Category dropdown in Add/Edit Item form (optional field)
+- Category filter on Items list page
+- Display category name in items table
+
+---
+
+#### **11.2: Purchase Parties System**
+**Purpose:** Separate purchase party management with party codes for quick identification
+
+**Database Changes:**
+```sql
+-- Create purchase_parties table
+CREATE TABLE purchase_parties (
+  id SERIAL PRIMARY KEY,
+  party_code VARCHAR(10) UNIQUE NOT NULL,
+  name VARCHAR(255) NOT NULL,
+  phone VARCHAR(20),
+  address TEXT,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW(),
+  deleted_at TIMESTAMPTZ
+);
+
+-- Create index for party_code searches
+CREATE INDEX idx_purchase_parties_code ON purchase_parties(party_code);
+CREATE INDEX idx_purchase_parties_deleted ON purchase_parties(deleted_at);
+
+-- Update items table - remove old purchase_party_id, add new reference
+ALTER TABLE items DROP CONSTRAINT IF EXISTS fk_items_purchase_party;
+ALTER TABLE items DROP COLUMN IF EXISTS purchase_party_id;
+ALTER TABLE items ADD COLUMN purchase_party_id INTEGER REFERENCES purchase_parties(id) ON DELETE SET NULL;
+CREATE INDEX idx_items_purchase_party_id ON items(purchase_party_id);
+```
+
+**Files to Create/Edit:**
+- `web/src/app/(app)/purchase-parties/page.tsx` (new) - Purchase parties list
+- `web/src/app/(app)/purchase-parties/[id]/page.tsx` (new) - Purchase party details
+- `web/src/app/(app)/purchase-parties/purchase-party-form.tsx` (new) - Add/Edit form
+- `web/src/app/(app)/purchase-parties/columns.tsx` (new) - Table columns
+- `web/src/app/(app)/items/page.tsx` - Update purchase party dropdown to use new table
+
+**Features:**
+- **Purchase Parties List:** Display all purchase parties with party code, name, phone
+- **Add/Edit Purchase Party:** Form with fields:
+  - Party Code (required, unique, uppercase, max 10 chars) - e.g., "BPN", "JY"
+  - Party Name (required)
+  - Phone (optional)
+  - Address (optional)
+- **Purchase Party Details Page:**
+  - Party info card (Code, Name, Phone, Address)
+  - Statistics: Total items count
+  - Items list with category filter
+  - Show: Item name, category, purchase rate
+  - Search items by name
+  - Link to edit item
+- **Items Integration:**
+  - Update "Purchased From" dropdown to use purchase_parties table
+  - Show party code + name in dropdown (e.g., "BPN - Best Plastics")
+  - Display party code in items table
+
+**Party Code Validation:**
+- Auto-convert to uppercase
+- Only alphanumeric characters allowed
+- Max length: 10 characters
+- Must be unique across all purchase parties
+- Examples: BPN, JY, SUPP01, ABC
+
+---
+
+#### **11.3: Purchase Party Items View with Category Filter**
+**Purpose:** View all items purchased from a specific party with category-based filtering
+
+**Features:**
+- Navigate from Purchase Parties list → Purchase Party Details
+- Display party information at top
+- Show statistics card: Total items from this party
+- Items table with columns:
+  - Item Name
+  - Category (if assigned)
+  - Purchase Rate
+  - Unit
+  - Actions (Edit, View)
+- Category filter dropdown:
+  - "All Categories" (default)
+  - Individual categories
+  - "Uncategorized" option
+- Search box to filter by item name
+- Click item → Navigate to item edit page
+
+**Files:**
+- `web/src/app/(app)/purchase-parties/[id]/page.tsx` - Main party details page
+- `web/src/components/purchase-parties/party-items-table.tsx` (new) - Items table component
+
+---
+
+#### **Implementation Order:**
+1. Create item_categories table and UI (Step 11.1)
+2. Create purchase_parties table and management UI (Step 11.2)
+3. Migrate existing items.purchase_party_id data to new table
+4. Build Purchase Party Details page with items list (Step 11.3)
+5. Add category filter to Purchase Party Items view
+6. Update all references from old parties.purchase_party to new purchase_parties table
+
+---
+
 ### **11. AI Chat for Invoice Creation** 🟢 Future Enhancement
 **Description:** ChatGPT integration to create invoices from uploaded images, Excel files, or text chat
 

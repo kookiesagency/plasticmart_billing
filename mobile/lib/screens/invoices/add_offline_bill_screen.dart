@@ -8,6 +8,7 @@ import '../../providers/party_provider.dart';
 import '../../providers/invoice_provider.dart';
 import '../../utils/date_picker_theme.dart';
 import '../../config/supabase_config.dart';
+import '../../theme/theme_helpers.dart';
 
 class AddOfflineBillScreen extends StatefulWidget {
   final int? invoiceId;
@@ -95,7 +96,7 @@ class _AddOfflineBillScreenState extends State<AddOfflineBillScreen> {
     final selectedParty = await showModalBottomSheet<Party>(
       context: context,
       isScrollControlled: true,
-      backgroundColor: Colors.white,
+      backgroundColor: Theme.of(context).cardColor,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(12)),
       ),
@@ -112,7 +113,7 @@ class _AddOfflineBillScreenState extends State<AddOfflineBillScreen> {
   Future<void> _showPaymentStatusSheet() async {
     final selectedStatus = await showModalBottomSheet<String>(
       context: context,
-      backgroundColor: Colors.white,
+      backgroundColor: Theme.of(context).cardColor,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(12)),
       ),
@@ -257,8 +258,9 @@ class _AddOfflineBillScreenState extends State<AddOfflineBillScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: theme.scaffoldBackgroundColor,
       appBar: AppBar(
         title: Text(_isEditMode ? 'Edit Offline Bill' : 'Add Offline Bill'),
         leading: IconButton(
@@ -545,11 +547,11 @@ class _PartySelectionBottomSheetState extends State<PartySelectionBottomSheet> {
                       prefixIcon: const Icon(Icons.search),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
-                        borderSide: BorderSide(color: Colors.grey.shade300, width: 1),
+                        borderSide: BorderSide(color: ThemeHelpers.borderColor(context), width: 1),
                       ),
                       enabledBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
-                        borderSide: BorderSide(color: Colors.grey.shade300, width: 1),
+                        borderSide: BorderSide(color: ThemeHelpers.borderColor(context), width: 1),
                       ),
                       focusedBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
@@ -575,14 +577,14 @@ class _PartySelectionBottomSheetState extends State<PartySelectionBottomSheet> {
                                 Icon(
                                   Icons.search_off,
                                   size: 64,
-                                  color: Colors.grey.shade400,
+                                  color: ThemeHelpers.mutedTextColor(context),
                                 ),
                                 const SizedBox(height: 16),
                                 Text(
                                   'No parties found',
                                   style: TextStyle(
                                     fontSize: 16,
-                                    color: Colors.grey.shade600,
+                                    color: ThemeHelpers.mutedTextColor(context),
                                   ),
                                 ),
                               ],
@@ -596,9 +598,9 @@ class _PartySelectionBottomSheetState extends State<PartySelectionBottomSheet> {
                               return Container(
                                 margin: const EdgeInsets.only(bottom: 8),
                                 decoration: BoxDecoration(
-                                  color: Colors.white,
+                                  color: Theme.of(context).cardColor,
                                   borderRadius: BorderRadius.circular(12),
-                                  border: Border.all(color: Colors.grey.shade300),
+                                  border: Border.all(color: ThemeHelpers.borderColor(context)),
                                 ),
                                 child: InkWell(
                                   onTap: () {
@@ -623,7 +625,7 @@ class _PartySelectionBottomSheetState extends State<PartySelectionBottomSheet> {
                                             'Phone: ${party.phone}',
                                             style: TextStyle(
                                               fontSize: 13,
-                                              color: Colors.grey.shade600,
+                                              color: ThemeHelpers.mutedTextColor(context),
                                             ),
                                           ),
                                         ],
@@ -692,12 +694,12 @@ class PaymentStatusBottomSheet extends StatelessWidget {
             return Container(
               margin: const EdgeInsets.only(bottom: 8),
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: Theme.of(context).cardColor,
                 borderRadius: BorderRadius.circular(12),
                 border: Border.all(
                   color: isSelected
                       ? Theme.of(context).colorScheme.primary
-                      : Colors.grey.shade300,
+                      : ThemeHelpers.borderColor(context),
                   width: isSelected ? 2 : 1,
                 ),
               ),

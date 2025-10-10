@@ -860,6 +860,150 @@ After completing all 10 steps, users should be able to:
 
 ---
 
+### **Priority 12: Purchase Party Management & Item Categories** 🔴 High Priority
+**Status:** Pending (New Feature - To be implemented)
+
+**Description:** Create separate Purchase Party system with party codes (BPN, JY, etc.) and optional Item Categories for better inventory organization
+
+#### **12.1: Item Categories (Optional)**
+**Purpose:** Organize items into categories for filtering and reporting
+
+**Database:** Uses `item_categories` table (synced with web)
+
+**What to Build:**
+- Create `models/item_category.dart` model
+- Create `services/item_category_service.dart` for Supabase operations
+- Create `screens/settings/categories_screen.dart` - Category management
+- Update `screens/items/add_edit_item_screen.dart` - Add category dropdown (optional)
+- Update `screens/items/items_screen.dart` - Add category filter
+- Display category in items list
+
+**Features:**
+- Full CRUD for categories (Add, Edit, Delete, Soft Delete)
+- Category dropdown in Add/Edit Item form (optional field)
+- Category filter on Items list screen
+- Display category name in items table
+- Theme-aware UI matching current app design
+
+---
+
+#### **12.2: Purchase Parties System**
+**Purpose:** Separate purchase party management with party codes for quick identification
+
+**Database:** Uses `purchase_parties` table (synced with web)
+
+**What to Build:**
+- Create `models/purchase_party.dart` model
+- Create `services/purchase_party_service.dart` for Supabase operations
+- Create `providers/purchase_party_provider.dart` for state management
+- Create `screens/purchase_parties/purchase_parties_screen.dart` - List screen
+- Create `screens/purchase_parties/add_edit_purchase_party_screen.dart` - Add/Edit form
+- Create `screens/purchase_parties/purchase_party_details_screen.dart` - Details with items list
+- Update `screens/items/add_edit_item_screen.dart` - Update purchase party dropdown
+
+**Features:**
+- **Purchase Parties List Screen:**
+  - Card-based layout with party code, name, phone
+  - Search functionality
+  - Pull-to-refresh
+  - Swipe to delete (soft delete)
+  - Navigate to details on tap
+
+- **Add/Edit Purchase Party Form:**
+  - Party Code field (required, unique, auto-uppercase, max 10 chars)
+    - Examples: "BPN", "JY", "SUPP01", "ABC"
+    - Validation: alphanumeric only, unique check
+  - Party Name field (required)
+  - Phone field (optional)
+  - Address field (optional, multiline)
+  - Theme-aware styling
+
+- **Purchase Party Details Screen:**
+  - Party info card (Code, Name, Phone, Address)
+  - Statistics card: Total items from this party
+  - Items list with category filter
+  - Show: Item name, category, purchase rate, unit
+  - Search items by name
+  - Tap item to navigate to edit screen
+
+**Party Code Validation:**
+- Auto-convert to uppercase
+- Only alphanumeric characters allowed
+- Max length: 10 characters
+- Must be unique across all purchase parties
+- Real-time validation with error messages
+
+---
+
+#### **12.3: Purchase Party Items View with Category Filter**
+**Purpose:** View all items purchased from a specific party with category-based filtering
+
+**Features:**
+- Navigate from Purchase Parties list → Purchase Party Details
+- Party information card at top (gradient header matching party details screen)
+- Statistics: Total items count from this party
+- Items table/cards showing:
+  - Item Name
+  - Category (if assigned) with color indicator
+  - Purchase Rate
+  - Unit
+  - Edit/View actions
+- Category filter dropdown (bottom sheet):
+  - "All Categories" (default)
+  - Individual categories with count
+  - "Uncategorized" option
+- Search box to filter by item name
+- Pull-to-refresh functionality
+- Empty state when no items found
+
+**UI/UX:**
+- Consistent with existing app design
+- White cards with grey borders (light mode)
+- Dark mode support
+- 16px radius for all cards
+- Smooth animations
+- Loading states
+
+---
+
+#### **Implementation Order (Mobile):**
+1. **Database Setup:** Use existing tables created for web
+2. **Models & Services:** Create Dart models and Supabase services
+3. **Item Categories UI:** Build category management screen
+4. **Purchase Parties List:** Build main purchase parties screen
+5. **Add/Edit Purchase Party:** Create form screen
+6. **Purchase Party Details:** Build details screen with items list
+7. **Category Filter:** Add filter functionality to items view
+8. **Items Integration:** Update item forms to use new purchase_parties table
+9. **Testing:** End-to-end testing on both light and dark themes
+
+**Files to Create:**
+- `mobile/lib/models/item_category.dart`
+- `mobile/lib/models/purchase_party.dart`
+- `mobile/lib/services/item_category_service.dart`
+- `mobile/lib/services/purchase_party_service.dart`
+- `mobile/lib/providers/purchase_party_provider.dart`
+- `mobile/lib/screens/settings/categories_screen.dart`
+- `mobile/lib/screens/purchase_parties/purchase_parties_screen.dart`
+- `mobile/lib/screens/purchase_parties/add_edit_purchase_party_screen.dart`
+- `mobile/lib/screens/purchase_parties/purchase_party_details_screen.dart`
+
+**Files to Update:**
+- `mobile/lib/screens/items/add_edit_item_screen.dart` - Category & purchase party dropdowns
+- `mobile/lib/screens/items/items_screen.dart` - Category filter
+- `mobile/lib/screens/home_screen.dart` - Add purchase parties tab (if needed)
+- `mobile/lib/screens/settings/settings_screen.dart` - Add categories link
+
+**Database Tables:** (Already created for web, mobile will reuse)
+- `item_categories` - Category management
+- `purchase_parties` - Purchase party management with codes
+- `items.category_id` - Link items to categories
+- `items.purchase_party_id` - Link items to purchase parties
+
+**Note:** This feature maintains full parity with web implementation and follows mobile app design patterns (bottom sheets, swipe gestures, pull-to-refresh, etc.)
+
+---
+
 ## 🎯 **Current Status Summary**
 
 **✅ Completed:** All core features (Steps 0-11) + Basic Mode
