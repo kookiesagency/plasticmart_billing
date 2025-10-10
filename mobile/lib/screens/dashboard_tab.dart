@@ -227,7 +227,8 @@ class _DashboardTabState extends State<DashboardTab> {
       borderRadius: BorderRadius.circular(12),
       child: Container(
         width: double.infinity,
-        padding: const EdgeInsets.symmetric(vertical: 48, horizontal: 24),
+        height: 120,
+        padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
           color: backgroundTint,
           borderRadius: BorderRadius.circular(12),
@@ -236,17 +237,19 @@ class _DashboardTabState extends State<DashboardTab> {
             width: 1,
           ),
         ),
-        child: Row(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(icon, color: color, size: 40),
-            const SizedBox(width: 20),
+            Icon(icon, color: color, size: 32),
+            const SizedBox(height: 12),
             Text(
               label,
               style: theme.textTheme.titleMedium?.copyWith(
                 color: color,
-                fontSize: 18,
+                fontSize: 16,
                 fontWeight: FontWeight.w600,
               ),
+              textAlign: TextAlign.center,
             ),
           ],
         ),

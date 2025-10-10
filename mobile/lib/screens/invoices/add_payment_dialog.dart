@@ -3,6 +3,7 @@ import 'package:intl/intl.dart';
 import '../../models/payment.dart';
 import '../../services/payment_service.dart';
 import '../../utils/date_picker_theme.dart';
+import '../../theme/app_button_styles.dart';
 
 class AddPaymentDialog extends StatefulWidget {
   final int invoiceId;
@@ -137,8 +138,10 @@ class _AddPaymentDialogState extends State<AddPaymentDialog> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
     return Dialog(
-      backgroundColor: Colors.white,
+      backgroundColor: theme.cardColor,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       child: SingleChildScrollView(
         child: Padding(
@@ -229,13 +232,9 @@ class _AddPaymentDialogState extends State<AddPaymentDialog> {
                     const SizedBox(width: 12),
                     ElevatedButton(
                       onPressed: _isLoading ? null : _savePayment,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Theme.of(context).colorScheme.primary,
-                        foregroundColor: Colors.white,
+                      style: AppButtonStyles.primaryElevated(
+                        context,
                         padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
                       ),
                       child: _isLoading
                           ? const SizedBox(

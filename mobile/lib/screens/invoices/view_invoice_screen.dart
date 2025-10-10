@@ -7,6 +7,8 @@ import '../../models/payment.dart';
 import '../../providers/invoice_provider.dart';
 import '../../services/payment_service.dart';
 import '../../services/pdf_service.dart';
+import '../../theme/theme_helpers.dart';
+import '../../theme/app_button_styles.dart';
 import 'create_invoice_screen.dart';
 import 'add_payment_dialog.dart';
 import 'add_offline_bill_screen.dart';
@@ -126,7 +128,8 @@ class _ViewInvoiceScreenState extends State<ViewInvoiceScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
 
     return PopScope(
       canPop: false,
@@ -136,7 +139,7 @@ class _ViewInvoiceScreenState extends State<ViewInvoiceScreen> {
         }
       },
       child: Scaffold(
-        backgroundColor: Colors.white,
+        backgroundColor: theme.scaffoldBackgroundColor,
         appBar: AppBar(
           leading: IconButton(
             icon: const Icon(Icons.arrow_back),
@@ -181,18 +184,18 @@ class _ViewInvoiceScreenState extends State<ViewInvoiceScreen> {
                   break;
               }
             },
-            color: Colors.white,
+            color: theme.cardColor,
             elevation: 2,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(12),
-              side: BorderSide(color: Colors.grey.shade200, width: 1),
+              side: BorderSide(color: ThemeHelpers.borderColor(context), width: 1),
             ),
             itemBuilder: (context) => [
               PopupMenuItem(
                 value: 'edit',
                 child: Row(
                   children: [
-                    Icon(Icons.edit_outlined, size: 20, color: Colors.grey.shade700),
+                    Icon(Icons.edit_outlined, size: 20, color: ThemeHelpers.mutedTextColor(context)),
                     const SizedBox(width: 12),
                     const Text('Edit', style: TextStyle(fontSize: 15)),
                   ],
@@ -225,9 +228,9 @@ class _ViewInvoiceScreenState extends State<ViewInvoiceScreen> {
                       Container(
                         padding: const EdgeInsets.all(16),
                         decoration: BoxDecoration(
-                          color: Colors.white,
+                          color: theme.cardColor,
                           borderRadius: BorderRadius.circular(16),
-                          border: Border.all(color: Colors.grey.shade200),
+                          border: Border.all(color: ThemeHelpers.borderColor(context)),
                         ),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -250,7 +253,7 @@ class _ViewInvoiceScreenState extends State<ViewInvoiceScreen> {
                                     Text(
                                       'Bill #${_invoice!.invoiceNumber ?? 'N/A'}',
                                       style: TextStyle(
-                                        color: Colors.grey.shade700,
+                                        color: ThemeHelpers.mutedTextColor(context),
                                         fontSize: 14,
                                       ),
                                     ),
@@ -281,13 +284,17 @@ class _ViewInvoiceScreenState extends State<ViewInvoiceScreen> {
                                           vertical: 4,
                                         ),
                                         decoration: BoxDecoration(
-                                          color: const Color(0xFFFFF7ED), // bg-orange-100
+                                          color: theme.brightness == Brightness.dark
+                                              ? Colors.orange.shade900.withOpacity(0.3)
+                                              : const Color(0xFFFFF7ED),
                                           borderRadius: BorderRadius.circular(6),
                                         ),
-                                        child: const Text(
+                                        child: Text(
                                           'OFFLINE',
                                           style: TextStyle(
-                                            color: Color(0xFFC2410C), // text-orange-700
+                                            color: theme.brightness == Brightness.dark
+                                                ? Colors.orange.shade300
+                                                : const Color(0xFFC2410C),
                                             fontSize: 10,
                                             fontWeight: FontWeight.bold,
                                             letterSpacing: 0.5,
@@ -302,12 +309,12 @@ class _ViewInvoiceScreenState extends State<ViewInvoiceScreen> {
                             const SizedBox(height: 16),
                             Row(
                               children: [
-                                Icon(Icons.calendar_today_outlined, size: 16, color: Colors.grey.shade600),
+                                Icon(Icons.calendar_today_outlined, size: 16, color: ThemeHelpers.mutedTextColor(context)),
                                 const SizedBox(width: 8),
                                 Text(
                                   _formatDate(_invoice!.invoiceDate),
                                   style: TextStyle(
-                                    color: Colors.grey.shade600,
+                                    color: ThemeHelpers.mutedTextColor(context),
                                     fontSize: 12,
                                   ),
                                 ),
@@ -317,12 +324,12 @@ class _ViewInvoiceScreenState extends State<ViewInvoiceScreen> {
                               const SizedBox(height: 8),
                               Row(
                                 children: [
-                                  Icon(Icons.access_time_outlined, size: 16, color: Colors.grey.shade600),
+                                  Icon(Icons.access_time_outlined, size: 16, color: ThemeHelpers.mutedTextColor(context)),
                                   const SizedBox(width: 8),
                                   Text(
                                     'Created: ${DateFormat('dd MMM yyyy, hh:mm a').format(_invoice!.createdAt!)}',
                                     style: TextStyle(
-                                      color: Colors.grey.shade600,
+                                      color: ThemeHelpers.mutedTextColor(context),
                                       fontSize: 12,
                                     ),
                                   ),
@@ -340,9 +347,9 @@ class _ViewInvoiceScreenState extends State<ViewInvoiceScreen> {
                         Container(
                           padding: const EdgeInsets.all(16),
                           decoration: BoxDecoration(
-                            color: Colors.white,
+                            color: theme.cardColor,
                             borderRadius: BorderRadius.circular(16),
-                            border: Border.all(color: Colors.grey.shade200),
+                            border: Border.all(color: ThemeHelpers.borderColor(context)),
                           ),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
@@ -368,7 +375,7 @@ class _ViewInvoiceScreenState extends State<ViewInvoiceScreen> {
                                           style: TextStyle(
                                             fontWeight: FontWeight.w500,
                                             fontSize: 14,
-                                            color: Colors.grey.shade700,
+                                            color: ThemeHelpers.mutedTextColor(context),
                                           ),
                                         ),
                                         Expanded(
@@ -387,7 +394,7 @@ class _ViewInvoiceScreenState extends State<ViewInvoiceScreen> {
                                               Text(
                                                 '${_formatNumber(item.quantity)} ${item.itemUnit ?? ''} × ₹${_formatNumber(item.rate)}',
                                                 style: TextStyle(
-                                                  color: Colors.grey.shade600,
+                                                  color: ThemeHelpers.mutedTextColor(context),
                                                   fontSize: 12,
                                                 ),
                                               ),
@@ -423,9 +430,9 @@ class _ViewInvoiceScreenState extends State<ViewInvoiceScreen> {
                       Container(
                         padding: const EdgeInsets.all(16),
                         decoration: BoxDecoration(
-                          color: Colors.white,
+                          color: theme.cardColor,
                           borderRadius: BorderRadius.circular(16),
-                          border: Border.all(color: Colors.grey.shade200),
+                          border: Border.all(color: ThemeHelpers.borderColor(context)),
                         ),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -442,13 +449,9 @@ class _ViewInvoiceScreenState extends State<ViewInvoiceScreen> {
                                 ),
                                 ElevatedButton(
                                   onPressed: () => _showAddPaymentDialog(),
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor: Theme.of(context).colorScheme.primary,
-                                    foregroundColor: Colors.white,
+                                  style: AppButtonStyles.primaryElevated(
+                                    context,
                                     padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(12),
-                                    ),
                                   ),
                                   child: const Text('Add', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
                                 ),
@@ -462,7 +465,7 @@ class _ViewInvoiceScreenState extends State<ViewInvoiceScreen> {
                                   child: Text(
                                     'No payments recorded',
                                     style: TextStyle(
-                                      color: Colors.grey.shade600,
+                                      color: ThemeHelpers.mutedTextColor(context),
                                       fontSize: 14,
                                     ),
                                   ),
@@ -491,7 +494,7 @@ class _ViewInvoiceScreenState extends State<ViewInvoiceScreen> {
                                         context: context,
                                         builder: (BuildContext context) {
                                           return AlertDialog(
-                                            backgroundColor: Colors.white,
+                                            backgroundColor: theme.cardColor,
                                             title: const Text('Delete Payment'),
                                             content: const Text('Are you sure you want to delete this payment?'),
                                             actions: [
@@ -514,9 +517,9 @@ class _ViewInvoiceScreenState extends State<ViewInvoiceScreen> {
                                     child: Container(
                                       margin: const EdgeInsets.only(bottom: 8),
                                       decoration: BoxDecoration(
-                                        color: Colors.white,
+                                        color: theme.cardColor,
                                         borderRadius: BorderRadius.circular(8),
-                                        border: Border.all(color: Colors.grey.shade200),
+                                        border: Border.all(color: ThemeHelpers.borderColor(context)),
                                       ),
                                       child: Padding(
                                         padding: const EdgeInsets.all(12),
@@ -531,14 +534,14 @@ class _ViewInvoiceScreenState extends State<ViewInvoiceScreen> {
                                                   _formatDate(payment.paymentDate),
                                                   style: TextStyle(
                                                     fontSize: 12,
-                                                    color: Colors.grey.shade600,
+                                                    color: ThemeHelpers.mutedTextColor(context),
                                                   ),
                                                 ),
                                                 InkWell(
                                                   onTap: () => _showAddPaymentDialog(paymentToEdit: payment),
                                                   child: Padding(
                                                     padding: const EdgeInsets.all(4),
-                                                    child: Icon(Icons.edit_outlined, size: 16, color: Colors.grey.shade600),
+                                                    child: Icon(Icons.edit_outlined, size: 16, color: ThemeHelpers.mutedTextColor(context)),
                                                   ),
                                                 ),
                                               ],
@@ -558,7 +561,7 @@ class _ViewInvoiceScreenState extends State<ViewInvoiceScreen> {
                                                 payment.remark!,
                                                 style: TextStyle(
                                                   fontSize: 12,
-                                                  color: Colors.grey.shade600,
+                                                  color: ThemeHelpers.mutedTextColor(context),
                                                 ),
                                               ),
                                             ],
@@ -576,9 +579,9 @@ class _ViewInvoiceScreenState extends State<ViewInvoiceScreen> {
                       Container(
                         padding: const EdgeInsets.all(16),
                         decoration: BoxDecoration(
-                          color: Colors.white,
+                          color: theme.cardColor,
                           borderRadius: BorderRadius.circular(16),
-                          border: Border.all(color: Colors.grey.shade200),
+                          border: Border.all(color: ThemeHelpers.borderColor(context)),
                         ),
                         child: Column(
                           children: [
@@ -661,13 +664,7 @@ class _ViewInvoiceScreenState extends State<ViewInvoiceScreen> {
                                         }
                                       }
                                     },
-                                    style: OutlinedButton.styleFrom(
-                                      padding: const EdgeInsets.symmetric(vertical: 16),
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(12),
-                                      ),
-                                      side: BorderSide(color: Theme.of(context).colorScheme.primary),
-                                    ),
+                                    style: AppButtonStyles.primaryOutlined(context),
                                     child: const Text('Share', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
                                   );
                                 },
@@ -695,14 +692,7 @@ class _ViewInvoiceScreenState extends State<ViewInvoiceScreen> {
                                     }
                                   }
                                 },
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: Theme.of(context).colorScheme.primary,
-                                  foregroundColor: Colors.white,
-                                  padding: const EdgeInsets.symmetric(vertical: 16),
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(12),
-                                  ),
-                                ),
+                                style: AppButtonStyles.primaryElevated(context),
                                 child: const Text('PDF', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
                               ),
                             ),
@@ -717,6 +707,7 @@ class _ViewInvoiceScreenState extends State<ViewInvoiceScreen> {
   }
 
   Widget _buildSummaryRow(String label, String value, bool isTotal) {
+    final theme = Theme.of(context);
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
@@ -725,7 +716,7 @@ class _ViewInvoiceScreenState extends State<ViewInvoiceScreen> {
           style: TextStyle(
             fontSize: isTotal ? 16 : 14,
             fontWeight: isTotal ? FontWeight.bold : FontWeight.normal,
-            color: isTotal ? Colors.black : Colors.grey.shade700,
+            color: isTotal ? null : ThemeHelpers.mutedTextColor(context),
           ),
         ),
         Text(
@@ -733,7 +724,7 @@ class _ViewInvoiceScreenState extends State<ViewInvoiceScreen> {
           style: TextStyle(
             fontSize: isTotal ? 18 : 14,
             fontWeight: FontWeight.bold,
-            color: isTotal ? Theme.of(context).colorScheme.primary : Colors.black87,
+            color: isTotal ? theme.colorScheme.primary : null,
           ),
         ),
       ],
@@ -806,7 +797,7 @@ class _ViewInvoiceScreenState extends State<ViewInvoiceScreen> {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        backgroundColor: Colors.white,
+        backgroundColor: Theme.of(context).cardColor,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         title: const Text('Delete Bill'),
         content: const Text('Are you sure you want to delete this bill?'),
