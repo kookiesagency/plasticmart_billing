@@ -283,7 +283,7 @@ For each new feature, follow this process:
 
 - **Web Roadmap:** `docs/roadmap.md`
 - **Project Context:** `docs/PROJECT-CONTEXT.md`
-- **Button Styling Guide:** `docs/mobile-button-styling-guide.md`
+- **Mobile Design System:** `docs/mobile-design-system.md` - Complete UI component guidelines
 - **Database Migrations:** `database/` folder
 
 ---
