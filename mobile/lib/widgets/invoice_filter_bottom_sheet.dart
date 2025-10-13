@@ -300,13 +300,14 @@ class _InvoiceFilterBottomSheetState extends State<InvoiceFilterBottomSheet> {
                     padding: const EdgeInsets.symmetric(vertical: 14),
                     side: BorderSide(
                       color: isDarkTheme
-                          ? Colors.white.withOpacity(0.3)
+                          ? Colors.white.withOpacity(0.5)
                           : Colors.grey.shade400,
-                      width: 1.5,
+                      width: 2,
                     ),
-                    foregroundColor: isDarkTheme
-                        ? Colors.white
-                        : Colors.grey.shade800,
+                    backgroundColor: isDarkTheme
+                        ? Colors.white.withOpacity(0.05)
+                        : Colors.transparent,
+                    foregroundColor: Colors.white,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),
@@ -326,24 +327,19 @@ class _InvoiceFilterBottomSheetState extends State<InvoiceFilterBottomSheet> {
                   onPressed: _applyFilters,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: theme.colorScheme.primary,
-                    foregroundColor: Colors.white,
+                    foregroundColor: isDarkTheme ? Colors.black : Colors.white,
                     elevation: 0,
                     padding: const EdgeInsets.symmetric(vertical: 14),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),
-                    textStyle: const TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.white,
-                    ),
                   ),
-                  child: const Text(
+                  child: Text(
                     'Apply Filters',
                     style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w600,
-                      color: Colors.white,
+                      color: isDarkTheme ? Colors.black : Colors.white,
                     ),
                   ),
                 ),
