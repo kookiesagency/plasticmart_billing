@@ -15,7 +15,7 @@ class ItemService {
             units(id, name),
             item_categories(id, name),
             purchase_parties!purchase_party_id(id, party_code, name),
-            item_party_prices(*, parties(name))
+            item_party_prices(*, purchase_parties(name))
           ''');
 
       final response = includeDeleted
