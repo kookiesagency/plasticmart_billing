@@ -122,10 +122,10 @@ export default function InvoiceDetailsPage() {
       .match({ id: paymentToDelete.id })
 
     if (error) {
-      toast.error('Failed to delete payment.')
+      toast.error(t('failedToDeletePayment'))
       console.error('Error deleting payment:', error)
     } else {
-      toast.success('Payment deleted successfully.')
+      toast.success(t('paymentDeletedSuccess'))
       await fetchInvoice()
     }
     setPaymentToDelete(null)
@@ -136,8 +136,8 @@ export default function InvoiceDetailsPage() {
     fetchInvoice()
   }, [params.id])
 
-  if (loading) return <div className="p-6">Loading invoice details...</div>
-  if (!invoice) return <div className="p-6">Invoice not found.</div>
+  if (loading) return <div className="p-6">{t('loadingInvoice')}</div>
+  if (!invoice) return <div className="p-6">{t('invoiceNotFound')}</div>
 
   const subTotal = invoice.invoice_items.reduce((acc, item) => acc + item.quantity * item.rate, 0);
 
@@ -155,7 +155,7 @@ export default function InvoiceDetailsPage() {
             <Button variant="ghost" size="icon" onClick={() => router.back()}>
               <ArrowLeft className="h-5 w-5" />
             </Button>
-            <span>Invoice - {invoice.invoice_number}</span>
+            <span>{t('invoice')} - {invoice.invoice_number}</span>
           </div>
         }
         actions={
@@ -165,7 +165,7 @@ export default function InvoiceDetailsPage() {
             </Badge>
             {invoice.status !== 'Paid' && (
               <>
-                <Button onClick={() => setIsPaymentModalOpen(true)}>Add Payment</Button>
+                <Button onClick={() => setIsPaymentModalOpen(true)}>{t('addPayment')}</Button>
                 <PaymentForm
                   invoiceId={parseInt(invoice.id)}
                   balanceDue={invoice.amount_pending}
@@ -181,13 +181,13 @@ export default function InvoiceDetailsPage() {
             {invoice.is_offline ? (
               <Button variant="outline" onClick={() => setIsQuickEditOpen(true)}>
                 <Pencil className="h-4 w-4" />
-                Edit Invoice
+                {t('editInvoice')}
               </Button>
             ) : (
               <Button variant="outline" asChild>
                 <Link href={`/invoices/edit/${invoice.id}`}>
                   <Pencil className="h-4 w-4" />
-                  Edit Invoice
+                  {t('editInvoice')}
                 </Link>
               </Button>
             )}
@@ -211,23 +211,23 @@ export default function InvoiceDetailsPage() {
         isOpen={!!paymentToDelete}
         onClose={() => setPaymentToDelete(null)}
         onConfirm={handleDeletePayment}
-        title={`Delete Payment of ${formatCurrency(paymentToDelete?.amount || 0)}?`}
-        description="This action cannot be undone."
+        title={t('deletePaymentConfirm').replace('{amount}', formatCurrency(paymentToDelete?.amount || 0))}
+        description={t('deleteConfirmMessage')}
       />
       <div className="grid md:grid-cols-3 gap-6">
         <div className="md:col-span-2 space-y-6">
           {!invoice.is_offline && (
             <Card>
-              <CardHeader><CardTitle>Items</CardTitle></CardHeader>
+              <CardHeader><CardTitle>{t('items')}</CardTitle></CardHeader>
               <CardContent>
                 <Table>
                   <TableHeader>
                     <TableRow className="bg-muted">
-                      <TableHead className="w-[50px]">#</TableHead>
-                      <TableHead>Item</TableHead>
-                      <TableHead>Quantity</TableHead>
-                      <TableHead className="text-right">Rate</TableHead>
-                      <TableHead className="text-right">Amount</TableHead>
+                      <TableHead className="w-[50px]">{t('numberSign')}</TableHead>
+                      <TableHead>{t('item')}</TableHead>
+                      <TableHead>{t('quantity')}</TableHead>
+                      <TableHead className="text-right">{t('rate')}</TableHead>
+                      <TableHead className="text-right">{t('amount')}</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -247,18 +247,18 @@ export default function InvoiceDetailsPage() {
           )}
 
           <Card>
-            <CardHeader><CardTitle>Payment History</CardTitle></CardHeader>
+            <CardHeader><CardTitle>{t('paymentHistory')}</CardTitle></CardHeader>
             <CardContent>
               {invoice.payments.length === 0 ? (
-                  <div className="p-6 text-center text-muted-foreground">No payments recorded.</div>
+                  <div className="p-6 text-center text-muted-foreground">{t('noPayments')}</div>
               ) : (
                 <Table>
                   <TableHeader>
                     <TableRow className="bg-muted">
-                      <TableHead className="text-left">Payment Date</TableHead>
-                      <TableHead className="text-left">Amount Paid</TableHead>
-                      <TableHead className="text-left">Remark</TableHead>
-                      <TableHead className="text-right w-[100px]">Actions</TableHead>
+                      <TableHead className="text-left">{t('paymentDate')}</TableHead>
+                      <TableHead className="text-left">{t('amountPaid')}</TableHead>
+                      <TableHead className="text-left">{t('remark')}</TableHead>
+                      <TableHead className="text-right w-[100px]">{t('actions')}</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -274,13 +274,13 @@ export default function InvoiceDetailsPage() {
                               <TooltipTrigger asChild>
                                 <Button variant="ghost" size="icon" onClick={() => setPaymentToEdit(payment)}><Pencil className="h-4 w-4" /></Button>
                               </TooltipTrigger>
-                              <TooltipContent><p>Edit Payment</p></TooltipContent>
+                              <TooltipContent><p>{t('editPayment')}</p></TooltipContent>
                             </Tooltip>
                             <Tooltip>
                               <TooltipTrigger asChild>
                                 <Button variant="ghost" size="icon" onClick={() => setPaymentToDelete(payment)}><Trash className="h-4 w-4 text-red-500" /></Button>
                               </TooltipTrigger>
-                              <TooltipContent><p>Delete Payment</p></TooltipContent>
+                              <TooltipContent><p>{t('deletePayment')}</p></TooltipContent>
                             </Tooltip>
                           </TableCell>
                         </TableRow>
@@ -296,10 +296,10 @@ export default function InvoiceDetailsPage() {
           <Card>
             <CardHeader>
               <div className="flex items-center justify-between">
-                <CardTitle>Billed To</CardTitle>
+                <CardTitle>{t('billedTo')}</CardTitle>
                 {invoice.is_offline && (
                   <Badge variant="secondary" className="bg-orange-100 text-orange-700">
-                    OFFLINE
+                    {t('offline')}
                   </Badge>
                 )}
               </div>
@@ -311,32 +311,32 @@ export default function InvoiceDetailsPage() {
           </Card>
           <Card>
             <CardHeader>
-              <CardTitle>Summary</CardTitle>
+              <CardTitle>{t('summary')}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               {!invoice.is_offline && (
                 <>
                   <div className="flex justify-between">
-                    <span>Subtotal</span>
+                    <span>{t('subtotal')}</span>
                     <span>{formatCurrency(subTotal)}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span>Bundle ({invoice.bundle_quantity})</span>
+                    <span>{t('bundle')} ({invoice.bundle_quantity})</span>
                     <span>{formatCurrency(invoice.bundle_charge)}</span>
                   </div>
                   <Separator />
                 </>
               )}
               <div className="flex justify-between font-bold text-xl">
-                <span>Total</span>
+                <span>{t('total')}</span>
                 <span>{formatCurrency(invoice.total_amount)}</span>
               </div>
               <div className="flex justify-between mt-4 pt-4 border-t">
-                <span >Paid</span>
+                <span >{t('paid')}</span>
                 <span className="text-green-600">{formatCurrency(invoice.amount_received)}</span>
               </div>
               <div className="flex justify-between text-lg">
-                <span className={invoice.amount_pending > 0 ? "text-destructive" : "text-green-600"}>Balance Due</span>
+                <span className={invoice.amount_pending > 0 ? "text-destructive" : "text-green-600"}>{t('balanceDue')}</span>
                 <span className={invoice.amount_pending > 0 ? "text-destructive" : "text-green-600"}>{formatCurrency(invoice.amount_pending)}</span>
               </div>
             </CardContent>

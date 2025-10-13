@@ -1,7 +1,9 @@
 {
-  "/[locale]/(app)/invoices/new/page": "app/[locale]/(app)/invoices/new/page.js",
-  "/[locale]/(app)/invoices/page": "app/[locale]/(app)/invoices/page.js",
+  "/_not-found/page": "app/_not-found/page.js",
+  "/favicon.ico/route": "app/favicon.ico/route.js",
   "/[locale]/(app)/page": "app/[locale]/(app)/page.js",
+  "/[locale]/(app)/invoices/new/page": "app/[locale]/(app)/invoices/new/page.js",
+  "/[locale]/(app)/parties/page": "app/[locale]/(app)/parties/page.js",
   "/[locale]/(app)/parties/[id]/page": "app/[locale]/(app)/parties/[id]/page.js",
-  "/[locale]/(app)/parties/page": "app/[locale]/(app)/parties/page.js"
+  "/[locale]/(app)/invoices/page": "app/[locale]/(app)/invoices/page.js"
 }
