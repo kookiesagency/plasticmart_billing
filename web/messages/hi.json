@@ -82,7 +82,12 @@
     "viewAction": "देखें",
     "editAction": "एडिट करें",
     "deleteAction": "डिलीट करें",
-    "actionsLabel": "एक्शन"
+    "actionsLabel": "एक्शन",
+    "lastUpdated": "लास्ट अपडेट",
+    "preparingDocument": "डॉक्यूमेंट तैयार हो रहा है...",
+    "whatsappMessage": "*नमस्ते {partyName}*,\n\n*{invoiceDate}* से आपका इनवॉयस यहाँ है।\n\nआप इसे यहाँ देख सकते हैं: {publicUrl}\n\nधन्यवाद!",
+    "viewPublicInvoice": "पब्लिक इनवॉयस देखें",
+    "shareOnWhatsApp": "व्हाट्सएप पर शेयर करें"
   },
   "items": {
     "title": "आइटम",

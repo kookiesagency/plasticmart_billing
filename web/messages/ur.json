@@ -82,7 +82,12 @@
     "viewAction": "دیکھیں",
     "editAction": "ایڈٹ کریں",
     "deleteAction": "ڈیلیٹ کریں",
-    "actionsLabel": "ایکشن"
+    "actionsLabel": "ایکشن",
+    "lastUpdated": "لاسٹ اپڈیٹ",
+    "preparingDocument": "ڈاکومنٹ تیار ہو رہا ہے...",
+    "whatsappMessage": "*السلام علیکم {partyName}*,\n\n*{invoiceDate}* سے آپ کا انوائس یہاں ہے۔\n\nآپ اسے یہاں دیکھ سکتے ہیں: {publicUrl}\n\nشکریہ!",
+    "viewPublicInvoice": "پبلک انوائس دیکھیں",
+    "shareOnWhatsApp": "واٹس ایپ پر شیئر کریں"
   },
   "items": {
     "title": "آئٹم",

@@ -82,7 +82,12 @@
     "viewAction": "View",
     "editAction": "Edit",
     "deleteAction": "Delete",
-    "actionsLabel": "Actions"
+    "actionsLabel": "Actions",
+    "lastUpdated": "Last Updated",
+    "preparingDocument": "Preparing document...",
+    "whatsappMessage": "*Hello {partyName}*,\n\nHere is your invoice from *{invoiceDate}*.\n\nYou can view it here: {publicUrl}\n\nThank you for your business!",
+    "viewPublicInvoice": "View Public Invoice",
+    "shareOnWhatsApp": "Share on WhatsApp"
   },
   "items": {
     "title": "Items",
