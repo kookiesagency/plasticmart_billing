@@ -34,9 +34,9 @@ export type Item = {
 }
 
 // Inline editable cell component
-const InlineEditableCell = ({ 
-  value, 
-  onSave, 
+const InlineEditableCell = ({
+  value,
+  onSave,
   type = 'text',
   formatValue = (val: any) => val,
   parseValue = (val: string) => val
@@ -119,7 +119,7 @@ const InlineEditableCell = ({
   }
 
   return (
-    <div 
+    <div
       className="cursor-pointer hover:bg-muted/50 p-1 rounded min-h-[32px] flex items-center"
       onDoubleClick={() => setIsEditing(true)}
     >
@@ -193,50 +193,6 @@ export const columns = (
     ),
   },
   {
-    accessorKey: 'item_categories.name',
-    header: ({ column }) => (
-        <div
-            className="flex items-center cursor-pointer"
-            onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
-        >
-            Category
-            <ArrowUpDown className="ml-2 h-4 w-4" />
-        </div>
-    ),
-    cell: ({ row }) => row.original.item_categories?.name ?? '-',
-  },
-  {
-    accessorKey: 'purchase_party.party_code',
-    header: ({ column }) => (
-        <div
-            className="flex items-center cursor-pointer"
-            onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
-        >
-            Purchase Party
-            <ArrowUpDown className="ml-2 h-4 w-4" />
-        </div>
-    ),
-    cell: ({ row }) => {
-      const party = row.original.purchase_party
-      return party ? (
-        <span className="font-mono font-semibold">{party.party_code}</span>
-      ) : '-'
-    },
-  },
-  {
-    accessorKey: 'units.name',
-    header: ({ column }) => (
-        <div
-            className="flex items-center cursor-pointer"
-            onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
-        >
-            Unit
-            <ArrowUpDown className="ml-2 h-4 w-4" />
-        </div>
-    ),
-    cell: ({ row }) => row.original.units?.name ?? 'N/A',
-  },
-  {
     accessorKey: 'default_rate',
     header: ({ column }) => (
         <div
@@ -253,7 +209,7 @@ export const columns = (
         style: "currency",
         currency: "INR",
       }).format(amount)
- 
+
       return (
         <InlineEditableCell
           value={amount}
@@ -289,7 +245,7 @@ export const columns = (
           />
         )
       }
-      
+
       return (
         <InlineEditableCell
           value={Number(amount)}
@@ -300,6 +256,55 @@ export const columns = (
         />
       )
     },
+  },
+  {
+    accessorKey: 'units.name',
+    header: ({ column }) => (
+        <div
+            className="flex items-center cursor-pointer"
+            onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
+        >
+            Unit
+            <ArrowUpDown className="ml-2 h-4 w-4" />
+        </div>
+    ),
+    cell: ({ row }) => row.original.units?.name ?? 'N/A',
+  },
+  {
+    accessorKey: 'purchase_party.party_code',
+    header: ({ column }) => (
+        <div
+            className="flex items-center cursor-pointer"
+            onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
+        >
+            Purchase Party
+            <ArrowUpDown className="ml-2 h-4 w-4" />
+        </div>
+    ),
+    cell: ({ row }) => {
+      const party = row.original.purchase_party
+      if (!party) return '-'
+
+      // Show party code if available, otherwise show party name
+      return party.party_code ? (
+        <span className="font-mono font-semibold">{party.party_code}</span>
+      ) : (
+        <span>{party.name}</span>
+      )
+    },
+  },
+  {
+    accessorKey: 'item_categories.name',
+    header: ({ column }) => (
+        <div
+            className="flex items-center cursor-pointer"
+            onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
+        >
+            Category
+            <ArrowUpDown className="ml-2 h-4 w-4" />
+        </div>
+    ),
+    cell: ({ row }) => row.original.item_categories?.name ?? '-',
   },
   {
     accessorKey: 'created_at',

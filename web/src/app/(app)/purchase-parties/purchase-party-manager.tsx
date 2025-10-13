@@ -386,6 +386,15 @@ const PurchasePartyManager = forwardRef<PurchasePartyManagerRef>((props, ref) =>
       enableHiding: false,
     },
     {
+      accessorKey: 'name',
+      header: ({ column }) => (
+        <div className="flex items-center cursor-pointer" onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}>
+          Name
+          <ArrowUpDown className="ml-2 h-4 w-4" />
+        </div>
+      ),
+    },
+    {
       accessorKey: 'party_code',
       header: ({ column }) => (
         <div className="flex items-center cursor-pointer" onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}>
@@ -394,15 +403,6 @@ const PurchasePartyManager = forwardRef<PurchasePartyManagerRef>((props, ref) =>
         </div>
       ),
       cell: ({ row }) => <span className="font-mono font-semibold">{row.original.party_code}</span>,
-    },
-    {
-      accessorKey: 'name',
-      header: ({ column }) => (
-        <div className="flex items-center cursor-pointer" onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}>
-          Name
-          <ArrowUpDown className="ml-2 h-4 w-4" />
-        </div>
-      ),
     },
     {
       accessorKey: 'deleted_at',
@@ -509,6 +509,19 @@ const PurchasePartyManager = forwardRef<PurchasePartyManagerRef>((props, ref) =>
               <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
                 <FormField
                   control={form.control}
+                  name="name"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Party Name</FormLabel>
+                      <FormControl>
+                        <Input placeholder="e.g., Best Plastics Network" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
                   name="party_code"
                   render={({ field }) => (
                     <FormItem>
@@ -523,21 +536,7 @@ const PurchasePartyManager = forwardRef<PurchasePartyManagerRef>((props, ref) =>
                             const upperValue = e.target.value.toUpperCase()
                             field.onChange(upperValue)
                           }}
-                          disabled={!!editingParty}
                         />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="name"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Party Name</FormLabel>
-                      <FormControl>
-                        <Input placeholder="e.g., Best Plastics Network" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>

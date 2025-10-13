@@ -14,7 +14,7 @@ import {
 } from '@/components/ui/table'
 import { formatDistanceToNow } from 'date-fns'
 import Link from 'next/link'
-import { CheckCircle, Pencil, Trash, Undo, Trash2, Monitor, Smartphone } from 'lucide-react'
+import { CheckCircle, Pencil, Trash, Undo, Trash2, Monitor, Smartphone, Info } from 'lucide-react'
 import { format, isToday, isYesterday } from 'date-fns'
 import { useState, useEffect, useRef } from 'react'
 import { Input } from '@/components/ui/input'
@@ -28,6 +28,13 @@ import { Checkbox } from '@/components/ui/checkbox'
 import React from 'react'
 import { toast } from 'sonner'
 import { ConfirmationDialog } from '@/components/confirmation-dialog'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
 
 type ActivityLog = {
   id: number;
@@ -43,20 +50,28 @@ type ActivityLog = {
   };
 };
 
+function formatValue(value: any): string {
+  if (value === null || value === undefined) return 'null';
+  if (typeof value === 'boolean') return value ? 'true' : 'false';
+  if (typeof value === 'object') return JSON.stringify(value);
+  return String(value);
+}
+
 function getChanges(oldData: any, newData: any): string[] {
   if (!oldData || !newData) return [];
-  
+
   const changes = [];
   const allKeys = new Set([...Object.keys(oldData), ...Object.keys(newData)]);
 
   for (const key of allKeys) {
-    if (['created_at', 'updated_at', 'deleted_at'].includes(key)) continue;
+    if (['created_at', 'deleted_at'].includes(key)) continue;
 
     const oldValue = oldData[key];
     const newValue = newData[key];
 
     if (oldValue !== newValue) {
-      changes.push(`Changed <strong>${key}</strong> from "<em>${oldValue}</em>" to "<em>${newValue}</em>"`);
+      const formattedKey = key.replace(/_/g, ' ');
+      changes.push(`Changed <strong>${formattedKey}</strong> from "<em>${formatValue(oldValue)}</em>" to "<em>${formatValue(newValue)}</em>"`);
     }
   }
   return changes;
@@ -86,12 +101,15 @@ function formatLogMessage(log: ActivityLog) {
     }
     case 'DELETE':
       return `Deleted ${targetName}: ${getTargetIdentifier()}`;
-    case 'UPDATE':
+    case 'UPDATE': {
       const changes = getChanges(details.old_data, details.new_data);
-      if (changes.length > 0) {
+      if (changes.length > 0 && changes.length <= 2) {
+        // Show changes inline if there are only 1-2 changes
         return `Updated ${targetName} <a href="${targetLink}" class="text-blue-500 hover:underline">${getTargetIdentifier()}</a>: <ul>${changes.map(c => `<li class='ml-4 list-disc'>${c}</li>`).join('')}</ul>`;
       }
-      return `Updated ${targetName} <a href="${targetLink}" class="text-blue-500 hover:underline">${getTargetIdentifier()}</a> (no displayable changes).`;
+      // For more than 2 changes or complex data, just show summary
+      return `Updated ${targetName} <a href="${targetLink}" class="text-blue-500 hover:underline">${getTargetIdentifier()}</a>`;
+    }
     default:
       return `An action (${action}) was performed on ${targetName}.`;
   }
@@ -114,6 +132,7 @@ export default function LogsPage() {
   const [permanentDeleteId, setPermanentDeleteId] = useState<number | null>(null);
   const [bulkPermanentDeleteIds, setBulkPermanentDeleteIds] = useState<number[] | null>(null);
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
+  const [detailsLog, setDetailsLog] = useState<ActivityLog | null>(null);
 
   useEffect(() => {
     const fetchLogs = async () => {
@@ -483,9 +502,7 @@ export default function LogsPage() {
                           <TableHead>Activity</TableHead>
                           <TableHead>User</TableHead>
                           <TableHead className="text-right">When</TableHead>
-                          {tab === 'deleted' && (
-                            <TableHead>Actions</TableHead>
-                          )}
+                          <TableHead className="text-right">Actions</TableHead>
                         </TableRow>
                       </TableHeader>
                       <TableBody>
@@ -527,16 +544,28 @@ export default function LogsPage() {
                               <TableCell className="text-right text-sm text-muted-foreground">
                                 {formatDistanceToNow(new Date(log.created_at), { addSuffix: true })}
                               </TableCell>
-                              {tab === 'deleted' && (
-                                <TableCell className="text-right">
-                                  <Button variant="outline" size="icon" onClick={() => handleRestore(log.id)}>
-                                    <Undo className="h-4 w-4" />
+                              <TableCell className="text-right">
+                                {tab === 'active' ? (
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() => setDetailsLog(log)}
+                                    className="h-8"
+                                  >
+                                    <Info className="h-4 w-4 mr-1" />
+                                    Details
                                   </Button>
-                                  <Button variant="ghost" size="icon" onClick={() => { setPermanentDeleteId(log.id); setIsConfirmOpen(true); }}>
-                                    <Trash className="h-4 w-4 text-red-500" />
-                                  </Button>
-                                </TableCell>
-                              )}
+                                ) : (
+                                  <div className="flex gap-1 justify-end">
+                                    <Button variant="outline" size="icon" onClick={() => handleRestore(log.id)}>
+                                      <Undo className="h-4 w-4" />
+                                    </Button>
+                                    <Button variant="ghost" size="icon" onClick={() => { setPermanentDeleteId(log.id); setIsConfirmOpen(true); }}>
+                                      <Trash className="h-4 w-4 text-red-500" />
+                                    </Button>
+                                  </div>
+                                )}
+                              </TableCell>
                             </TableRow>
                           );
                         })}
@@ -569,6 +598,119 @@ export default function LogsPage() {
           </div>
         </CardContent>
       </Card>
+
+      {/* Details Dialog */}
+      <Dialog open={!!detailsLog} onOpenChange={(open) => !open && setDetailsLog(null)}>
+        <DialogContent className="max-w-3xl max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Activity Log Details</DialogTitle>
+            <DialogDescription>
+              Detailed information about this activity
+            </DialogDescription>
+          </DialogHeader>
+          {detailsLog && (
+            <div className="space-y-4">
+              {/* Basic Info */}
+              <div className="grid grid-cols-2 gap-4 p-4 bg-muted rounded-lg">
+                <div>
+                  <div className="text-sm font-medium text-muted-foreground">Action</div>
+                  <div className="text-lg font-semibold capitalize">{detailsLog.action.toLowerCase()}</div>
+                </div>
+                <div>
+                  <div className="text-sm font-medium text-muted-foreground">Table</div>
+                  <div className="text-lg font-semibold capitalize">{detailsLog.target_table.replace(/_/g, ' ')}</div>
+                </div>
+                <div className="col-span-2">
+                  <div className="text-sm font-medium text-muted-foreground">User</div>
+                  <div className="text-base font-semibold truncate" title={detailsLog.user_email || 'System'}>
+                    {detailsLog.user_email || 'System'}
+                  </div>
+                </div>
+                <div>
+                  <div className="text-sm font-medium text-muted-foreground">Platform</div>
+                  <div className="text-lg font-semibold flex items-center gap-2">
+                    {detailsLog.platform === 'mobile' ? (
+                      <><Smartphone className="h-4 w-4" /> Mobile</>
+                    ) : (
+                      <><Monitor className="h-4 w-4" /> Web</>
+                    )}
+                  </div>
+                </div>
+                <div>
+                  <div className="text-sm font-medium text-muted-foreground">Time</div>
+                  <div className="text-base font-semibold">{format(new Date(detailsLog.created_at), 'PPpp')}</div>
+                </div>
+              </div>
+
+              {/* Changes */}
+              {detailsLog.action === 'UPDATE' && detailsLog.details.old_data && detailsLog.details.new_data && (() => {
+                const changes = Object.keys({ ...detailsLog.details.old_data, ...detailsLog.details.new_data })
+                  .filter(key => !['created_at', 'deleted_at', 'id'].includes(key))
+                  .filter(key => {
+                    const oldValue = detailsLog.details.old_data?.[key];
+                    const newValue = detailsLog.details.new_data?.[key];
+                    return oldValue !== newValue;
+                  });
+
+                if (changes.length === 0) return null;
+
+                return (
+                  <div>
+                    <h3 className="text-lg font-semibold mb-3">Changes</h3>
+                    <div className="space-y-3">
+                      {changes.map((key) => {
+                        const oldValue = detailsLog.details.old_data?.[key];
+                        const newValue = detailsLog.details.new_data?.[key];
+                        return (
+                          <div key={key} className="border rounded-lg overflow-hidden">
+                            <div className="bg-muted px-4 py-2 font-medium capitalize border-b">
+                              {key.replace(/_/g, ' ')}
+                            </div>
+                            <div className="grid grid-cols-2 divide-x">
+                              <div className="p-4">
+                                <div className="text-xs font-medium text-muted-foreground uppercase mb-2">Before</div>
+                                <div className="font-mono text-sm bg-red-50 dark:bg-red-950/20 text-red-900 dark:text-red-100 p-3 rounded border border-red-200 dark:border-red-900">
+                                  {formatValue(oldValue)}
+                                </div>
+                              </div>
+                              <div className="p-4">
+                                <div className="text-xs font-medium text-muted-foreground uppercase mb-2">After</div>
+                                <div className="font-mono text-sm bg-green-50 dark:bg-green-950/20 text-green-900 dark:text-green-100 p-3 rounded border border-green-200 dark:border-green-900">
+                                  {formatValue(newValue)}
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                );
+              })()}
+
+              {/* New Data for INSERT */}
+              {detailsLog.action === 'INSERT' && detailsLog.details.new_data && (
+                <div>
+                  <h3 className="text-lg font-semibold mb-2">Created Data</h3>
+                  <div className="p-4 bg-muted rounded-lg font-mono text-sm">
+                    <pre className="whitespace-pre-wrap">{JSON.stringify(detailsLog.details.new_data, null, 2)}</pre>
+                  </div>
+                </div>
+              )}
+
+              {/* Old Data for DELETE */}
+              {detailsLog.action === 'DELETE' && detailsLog.details.old_data && (
+                <div>
+                  <h3 className="text-lg font-semibold mb-2">Deleted Data</h3>
+                  <div className="p-4 bg-muted rounded-lg font-mono text-sm">
+                    <pre className="whitespace-pre-wrap">{JSON.stringify(detailsLog.details.old_data, null, 2)}</pre>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </>
   );
 }

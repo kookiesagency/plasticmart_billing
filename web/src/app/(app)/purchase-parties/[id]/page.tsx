@@ -63,6 +63,19 @@ const itemColumns: ColumnDef<Item>[] = [
     cell: ({ row }) => row.original.item_categories?.name || '-',
   },
   {
+    accessorKey: 'default_rate',
+    header: ({ column }) => (
+      <div
+        className="flex items-center cursor-pointer"
+        onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
+      >
+        Rate
+        <ArrowUpDown className="ml-2 h-4 w-4" />
+      </div>
+    ),
+    cell: ({ row }) => formatCurrency(row.original.default_rate),
+  },
+  {
     accessorKey: 'purchase_rate',
     header: ({ column }) => (
       <div
@@ -173,11 +186,9 @@ export default function PurchasePartyDetailsPage() {
           <div className="rounded-lg border bg-card text-card-foreground shadow-sm p-6">
             <h3 className="text-sm font-medium text-muted-foreground mb-2">Total Items</h3>
             <p className="text-2xl font-bold">{filteredItems.length}</p>
-            {selectedCategoryId !== 'all' && (
-              <p className="text-xs text-muted-foreground mt-1">
-                Filtered from {party.items.length} total
-              </p>
-            )}
+            <p className="text-xs text-muted-foreground mt-1 min-h-[16px]">
+              {selectedCategoryId !== 'all' && `Filtered from ${party.items.length} total`}
+            </p>
           </div>
         </div>
 

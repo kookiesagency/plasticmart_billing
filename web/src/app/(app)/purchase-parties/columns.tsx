@@ -45,6 +45,15 @@ export const columns = ({ onEdit, onDelete }: ColumnsProps): ColumnDef<PurchaseP
     enableHiding: false,
   },
   {
+    accessorKey: 'name',
+    header: ({ column }) => (
+      <div className="flex items-center cursor-pointer" onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}>
+        Name
+        <ArrowUpDown className="ml-2 h-4 w-4" />
+      </div>
+    ),
+  },
+  {
     accessorKey: 'party_code',
     header: ({ column }) => (
       <div className="flex items-center cursor-pointer" onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}>
@@ -53,15 +62,6 @@ export const columns = ({ onEdit, onDelete }: ColumnsProps): ColumnDef<PurchaseP
       </div>
     ),
     cell: ({ row }) => <span className="font-mono font-semibold">{row.original.party_code}</span>,
-  },
-  {
-    accessorKey: 'name',
-    header: ({ column }) => (
-      <div className="flex items-center cursor-pointer" onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}>
-        Name
-        <ArrowUpDown className="ml-2 h-4 w-4" />
-      </div>
-    ),
   },
   {
     accessorKey: 'item_count',
