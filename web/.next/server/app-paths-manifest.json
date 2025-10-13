@@ -1,9 +1,19 @@
 {
-  "/favicon.ico/route": "app/favicon.ico/route.js",
   "/_not-found/page": "app/_not-found/page.js",
-  "/[locale]/(app)/parties/page": "app/[locale]/(app)/parties/page.js",
-  "/[locale]/(app)/parties/[id]/page": "app/[locale]/(app)/parties/[id]/page.js",
-  "/[locale]/(app)/invoices/page": "app/[locale]/(app)/invoices/page.js",
+  "/favicon.ico/route": "app/favicon.ico/route.js",
+  "/login/page": "app/login/page.js",
+  "/(public)/invoices/view/[public_id]/page": "app/(public)/invoices/view/[public_id]/page.js",
+  "/[locale]/(app)/invoices/edit/[id]/page": "app/[locale]/(app)/invoices/edit/[id]/page.js",
   "/[locale]/(app)/invoices/new/page": "app/[locale]/(app)/invoices/new/page.js",
-  "/[locale]/(app)/page": "app/[locale]/(app)/page.js"
+  "/[locale]/(app)/logs/page": "app/[locale]/(app)/logs/page.js",
+  "/[locale]/(app)/page": "app/[locale]/(app)/page.js",
+  "/[locale]/(app)/parties/[id]/page": "app/[locale]/(app)/parties/[id]/page.js",
+  "/[locale]/(app)/items/page": "app/[locale]/(app)/items/page.js",
+  "/[locale]/(app)/parties/page": "app/[locale]/(app)/parties/page.js",
+  "/[locale]/(app)/settings/page": "app/[locale]/(app)/settings/page.js",
+  "/[locale]/(app)/categories/page": "app/[locale]/(app)/categories/page.js",
+  "/[locale]/(app)/purchase-parties/[id]/page": "app/[locale]/(app)/purchase-parties/[id]/page.js",
+  "/[locale]/(app)/purchase-parties/page": "app/[locale]/(app)/purchase-parties/page.js",
+  "/[locale]/(app)/invoices/page": "app/[locale]/(app)/invoices/page.js",
+  "/[locale]/(app)/invoices/[id]/page": "app/[locale]/(app)/invoices/[id]/page.js"
 }

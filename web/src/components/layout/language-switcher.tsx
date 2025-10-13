@@ -29,7 +29,6 @@ export function LanguageSwitcher() {
   function onSelectLanguage(locale: string) {
     startTransition(() => {
       router.replace(
-        // @ts-expect-error -- TypeScript will validate that only known locales are used
         pathname,
         { locale }
       );
