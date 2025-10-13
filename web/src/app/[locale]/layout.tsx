@@ -42,6 +42,7 @@ export default async function LocaleLayout({
           geist.variable,
           locale === 'ur' && "text-lg"
         )}
+        suppressHydrationWarning
       >
         <NextIntlClientProvider messages={messages}>
           {children}
