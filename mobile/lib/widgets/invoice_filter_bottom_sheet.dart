@@ -121,10 +121,11 @@ class _InvoiceFilterBottomSheetState extends State<InvoiceFilterBottomSheet> {
         borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
       ),
       padding: const EdgeInsets.all(24),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
+      child: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
           // Header
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -346,7 +347,9 @@ class _InvoiceFilterBottomSheetState extends State<InvoiceFilterBottomSheet> {
               ),
             ],
           ),
+          const SizedBox(height: 24), // Add bottom padding
         ],
+      ),
       ),
     );
   }
