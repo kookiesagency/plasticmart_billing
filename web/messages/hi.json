@@ -143,7 +143,13 @@
     "itemCreatedSuccess": "आइटम सफलतापूर्वक बनाया गया!",
     "partyAlreadyHasPrice": "इस पार्टी के पास पहले से स्पेसिफिक रेट है।",
     "pleaseAddAtLeastOneItem": "कृपया कम से कम एक आइटम ऐड करें।",
-    "partyIsRequired": "पार्टी जरूरी है।"
+    "partyIsRequired": "पार्टी जरूरी है।",
+    "searchPartyPlaceholder": "पार्टी सर्च करें...",
+    "noItemsFoundGeneric": "कोई आइटम नहीं मिला।",
+    "itemNamePlaceholder": "जैसे, प्लास्टिक की बोतल",
+    "enterPurchaseRate": "जैसे, 100",
+    "unknownParty": "अज्ञात पार्टी",
+    "failedToFetchInvoice": "इनवॉयस डेटा फेच करने में फेल: {error}"
   },
   "items": {
     "title": "आइटम",

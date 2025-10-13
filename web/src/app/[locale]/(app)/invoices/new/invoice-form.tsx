@@ -8,6 +8,7 @@ import { toast } from 'sonner'
 import { CalendarIcon, Check, ChevronsUpDown, Trash, PlusCircle, Move } from 'lucide-react'
 import { format } from 'date-fns'
 import { useRouter } from 'next/navigation'
+import { useTranslations } from 'next-intl'
 import React from 'react'
 import {
   DndContext,
@@ -100,6 +101,7 @@ function SortableRow({ id, index, children }: { id: string, index: number, child
 }
 
 export function InvoiceForm({ invoiceId }: { invoiceId?: string }) {
+  const t = useTranslations('invoices')
   const router = useRouter()
   const supabase = createClient()
   const [partiesData, setPartiesData] = useState<Party[]>([])
@@ -217,7 +219,7 @@ export function InvoiceForm({ invoiceId }: { invoiceId?: string }) {
               .map((it: { position?: number; [key: string]: unknown }, idx: number) => ({ ...it, position: typeof it.position === 'number' ? it.position : idx })),
           })
         } else if (error) {
-          toast.error('Failed to fetch invoice data: ' + error.message)
+          toast.error(t('failedToFetchInvoice').replace('{error}', error.message))
         }
       }
     }
@@ -287,7 +289,7 @@ export function InvoiceForm({ invoiceId }: { invoiceId?: string }) {
     if (isSubmitting) return // Prevent double submission
 
     if (!isPartyLocked && !values.party_id) {
-      form.setError('party_id', { message: 'Party is required.' })
+      form.setError('party_id', { message: t('partyIsRequired') })
       return
     }
 
@@ -299,13 +301,13 @@ export function InvoiceForm({ invoiceId }: { invoiceId?: string }) {
 
     const party = partiesData.find(p => p.id === values.party_id);
     if (!party && !isPartyLocked) {
-        return toast.error("Could not find active party details to save.");
+        return toast.error(t('couldNotFindParty'));
     }
 
     const partyNameToSave = isPartyLocked ? snapshottedPartyName : party?.name;
 
     if (!partyNameToSave) {
-        return toast.error("Could not determine party name to save.");
+        return toast.error(t('couldNotDeterminePartyName'));
     }
 
     const snapshotData = {
@@ -350,10 +352,10 @@ export function InvoiceForm({ invoiceId }: { invoiceId?: string }) {
     }
 
     if (error) {
-      toast.error('Failed to save invoice: ' + error.message)
+      toast.error(t('failedToSaveInvoice').replace('{error}', error.message))
       setIsSubmitting(false)
     } else {
-      toast.success(`Invoice ${invoiceId ? 'updated' : 'created'} successfully!`)
+      toast.success(invoiceId ? t('invoiceUpdatedSuccess') : t('invoiceCreatedSuccess'))
       router.push('/invoices')
       // Don't reset isSubmitting here as we're navigating away
     }
@@ -368,18 +370,18 @@ export function InvoiceForm({ invoiceId }: { invoiceId?: string }) {
           <div className="md:col-span-2 space-y-8">
             {/* Invoice Details Section */}
             <div className="space-y-4">
-              <h3 className="text-lg font-medium">Invoice Details</h3>
+              <h3 className="text-lg font-medium">{t('invoiceDetails')}</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <FormField
                   control={form.control}
                   name="party_id"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Party / Client</FormLabel>
+                      <FormLabel>{t('partyClient')}</FormLabel>
                       {isPartyLocked && snapshottedPartyName ? (
                         <div className="flex items-center justify-between p-2 border rounded-md h-9">
                           <span className="font-semibold text-sm">{snapshottedPartyName}</span>
-                          <Button variant="ghost" size="sm" onClick={() => setIsPartyLocked(false)}>Change</Button>
+                          <Button variant="ghost" size="sm" onClick={() => setIsPartyLocked(false)}>{t('change')}</Button>
                         </div>
                       ) : (
                         <Popover open={isPartyPopoverOpen} onOpenChange={setIsPartyPopoverOpen}>
@@ -387,15 +389,15 @@ export function InvoiceForm({ invoiceId }: { invoiceId?: string }) {
                               <Button variant="outline" role="combobox" aria-expanded={isPartyPopoverOpen} className="w-full justify-between">
                                 {field.value
                                   ? (partiesData.find((p) => p.id === field.value)?.name || snapshottedPartyName)
-                                  : "Select party"}
+                                  : t('selectParty')}
                                 <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                               </Button>
                           </PopoverTrigger>
                           <PopoverContent className="p-0" style={{ width: 'var(--radix-popover-trigger-width)' }}>
                             <Command>
-                              <CommandInput placeholder="Search party..." />
+                              <CommandInput placeholder={t('searchPartyPlaceholder')} />
                               <CommandList>
-                                <CommandEmpty>No party found.</CommandEmpty>
+                                <CommandEmpty>{t('noPartyFound')}</CommandEmpty>
                                 <CommandGroup>
                                   {partiesData.map((p) => (
                                     <CommandItem value={p.name} key={p.id} onSelect={() => {
@@ -421,11 +423,11 @@ export function InvoiceForm({ invoiceId }: { invoiceId?: string }) {
                   name="invoice_date"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Invoice Date</FormLabel>
+                      <FormLabel>{t('invoiceDate')}</FormLabel>
                       <Popover>
                         <PopoverTrigger asChild>
                           <Button variant={'outline'} className={cn('w-full pl-3 text-left font-normal', !field.value && 'text-muted-foreground')}>
-                            {field.value ? format(parseLocalDate(field.value), 'dd/MM/yyyy') : <span>Pick a date</span>}
+                            {field.value ? format(parseLocalDate(field.value), 'dd/MM/yyyy') : <span>{t('pickADate')}</span>}
                             <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
                           </Button>
                         </PopoverTrigger>
@@ -449,10 +451,10 @@ export function InvoiceForm({ invoiceId }: { invoiceId?: string }) {
             {/* Invoice Items Section */}
             <div className="space-y-4">
               <div className="flex justify-between items-center">
-                <h3 className="text-lg font-medium">Invoice Items</h3>
+                <h3 className="text-lg font-medium">{t('invoiceItems')}</h3>
                 <Button type="button" variant="outline" onClick={() => setIsAddItemDialogOpen(true)}>
                   <PlusCircle className="mr-2 h-4 w-4" />
-                  Add Item
+                  {t('addItem')}
                 </Button>
               </div>
               <div className="border rounded-md">
@@ -473,12 +475,12 @@ export function InvoiceForm({ invoiceId }: { invoiceId?: string }) {
                       <TableHeader>
                         <TableRow>
                           <TableHead></TableHead>
-                          <TableHead style={{ width: 40, paddingLeft: 8, paddingRight: 8 }}>No</TableHead>
-                          <TableHead>Item</TableHead>
-                          <TableHead className="w-[80px] text-left">Qty</TableHead>
-                          <TableHead className="w-[60px] text-left">Unit</TableHead>
-                          <TableHead className="w-[100px] text-left">Rate</TableHead>
-                          <TableHead className="text-right">Amount</TableHead>
+                          <TableHead style={{ width: 40, paddingLeft: 8, paddingRight: 8 }}>{t('no')}</TableHead>
+                          <TableHead>{t('item')}</TableHead>
+                          <TableHead className="w-[80px] text-left">{t('qty')}</TableHead>
+                          <TableHead className="w-[60px] text-left">{t('unit')}</TableHead>
+                          <TableHead className="w-[100px] text-left">{t('rate')}</TableHead>
+                          <TableHead className="text-right">{t('amount')}</TableHead>
                           <TableHead className="w-[50px]"></TableHead>
                         </TableRow>
                       </TableHeader>
@@ -551,7 +553,7 @@ export function InvoiceForm({ invoiceId }: { invoiceId?: string }) {
                                         onValueChange={handleUnitChange}
                                       >
                                         <SelectTrigger className="w-full h-9 text-left">
-                                          <SelectValue placeholder="Select unit" />
+                                          <SelectValue placeholder={t('selectUnit')} />
                                         </SelectTrigger>
                                         <SelectContent>
                                           {unitsData.map(unit => (
@@ -604,10 +606,10 @@ export function InvoiceForm({ invoiceId }: { invoiceId?: string }) {
                         ) : (
                           <TableRow>
                             <TableCell colSpan={8} className="text-center h-48">
-                              <p className="mb-4">No items have been added yet.</p>
+                              <p className="mb-4">{t('noItemsAdded')}</p>
                               <Button type="button" onClick={() => setIsAddItemDialogOpen(true)}>
                                 <PlusCircle className="mr-2 h-4 w-4" />
-                                Add First Item
+                                {t('addFirstItem')}
                               </Button>
                             </TableCell>
                           </TableRow>
@@ -625,51 +627,51 @@ export function InvoiceForm({ invoiceId }: { invoiceId?: string }) {
             <div className="sticky top-20 space-y-8">
               {/* Summary Section */}
               <div className="space-y-4">
-                <h3 className="text-lg font-medium">Summary</h3>
+                <h3 className="text-lg font-medium">{t('summary')}</h3>
                 <div className="space-y-2 rounded-md border p-4">
                   <div className="flex justify-between">
-                    <span>Sub-Total</span>
+                    <span>{t('subTotal')}</span>
                     <span>{formatCurrency(subTotal)}</span>
                   </div>
                   <Separator />
                   <div className="space-y-2">
                     <div className="flex justify-between items-center">
-                      <FormLabel>Bundle Qty</FormLabel>
+                      <FormLabel>{t('bundleQty')}</FormLabel>
                       <FormField
                         control={form.control}
                         name="bundle_quantity"
                         render={({ field }) => (
                           <FormItem>
                             <FormControl>
-                              <Input {...field} type="number" className="w-24 text-right" placeholder="Qty" onWheel={e => (e.target as HTMLInputElement).blur()} />
+                              <Input {...field} type="number" className="w-24 text-right" placeholder={t('qty')} onWheel={e => (e.target as HTMLInputElement).blur()} />
                             </FormControl>
                           </FormItem>
                         )}
                       />
                     </div>
                     <div className="flex justify-between items-center">
-                      <FormLabel>Bundle Rate</FormLabel>
+                      <FormLabel>{t('bundleRate')}</FormLabel>
                       <FormField
                         control={form.control}
                         name="bundle_rate"
                         render={({ field }) => (
                           <FormItem>
                             <FormControl>
-                              <Input {...field} type="number" className="w-24 text-right" placeholder="Rate" onWheel={e => (e.target as HTMLInputElement).blur()} />
+                              <Input {...field} type="number" className="w-24 text-right" placeholder={t('rate')} onWheel={e => (e.target as HTMLInputElement).blur()} />
                             </FormControl>
                           </FormItem>
                         )}
                       />
                     </div>
                     <div className="flex items-center justify-between">
-                      <FormLabel>Total Bundle Charge</FormLabel>
+                      <FormLabel>{t('totalBundleCharge')}</FormLabel>
                       <FormField
                         control={form.control}
                         name="bundle_charge"
                         render={({ field }) => (
                           <FormItem>
                             <FormControl>
-                              <Input {...field} type="number" className="w-24 text-right font-semibold" placeholder="Total" onWheel={e => (e.target as HTMLInputElement).blur()} />
+                              <Input {...field} type="number" className="w-24 text-right font-semibold" placeholder={t('total')} onWheel={e => (e.target as HTMLInputElement).blur()} />
                             </FormControl>
                           </FormItem>
                         )}
@@ -678,19 +680,19 @@ export function InvoiceForm({ invoiceId }: { invoiceId?: string }) {
                   </div>
                   <Separator />
                   <div className="flex justify-between font-semibold text-lg">
-                    <span>Grand Total</span>
+                    <span>{t('grandTotal')}</span>
                     <span>{formatCurrency(grandTotal)}</span>
                   </div>
                 </div>
               </div>
               <Button type="submit" className="w-full" disabled={isSubmitting}>
-                {isSubmitting ? 'Saving...' : 'Save Invoice'}
+                {isSubmitting ? t('saving') : t('saveInvoice')}
               </Button>
             </div>
           </div>
         </div>
       </form>
-      <AddItemDialog 
+      <AddItemDialog
         isOpen={isAddItemDialogOpen}
         onOpenChange={setIsAddItemDialogOpen}
         itemsData={itemsData}
@@ -699,6 +701,7 @@ export function InvoiceForm({ invoiceId }: { invoiceId?: string }) {
         itemSearch={itemSearch}
         setItemSearch={setItemSearch}
         fields={fields}
+        t={t}
         onItemsRefresh={() => {
           // Refresh items data
           const fetchItems = async () => {
@@ -724,10 +727,11 @@ type AddItemDialogProps = {
   itemSearch: string;
   setItemSearch: (value: string) => void;
   fields: { item_id: number | null }[];
+  t: (key: string) => string;
   onItemsRefresh: () => void;
 }
 
-const AddItemDialog = ({ isOpen, onOpenChange, itemsData, quickAddItem, getItemPrice, itemSearch, setItemSearch, fields, onItemsRefresh }: AddItemDialogProps) => {
+const AddItemDialog = ({ isOpen, onOpenChange, itemsData, quickAddItem, getItemPrice, itemSearch, setItemSearch, fields, t, onItemsRefresh }: AddItemDialogProps) => {
   const [highlightedIndex, setHighlightedIndex] = useState<number | null>(null);
   const [isCreateItemDialogOpen, setIsCreateItemDialogOpen] = useState(false);
   const [itemNameForCreation, setItemNameForCreation] = useState('');
@@ -815,11 +819,11 @@ const AddItemDialog = ({ isOpen, onOpenChange, itemsData, quickAddItem, getItemP
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-3xl">
         <DialogHeader>
-        <DialogTitle>Add Items to Invoice</DialogTitle>
+        <DialogTitle>{t('addItemsToInvoice')}</DialogTitle>
         </DialogHeader>
         <div className="flex flex-col gap-4 py-4">
-          <Input 
-            placeholder="Search items and press Enter to add..." 
+          <Input
+            placeholder={t('searchItemsPlaceholder')}
             value={itemSearch}
             onChange={e => setItemSearch(e.target.value)}
             onKeyDown={handleKeyDown}
@@ -828,8 +832,8 @@ const AddItemDialog = ({ isOpen, onOpenChange, itemsData, quickAddItem, getItemP
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Item</TableHead>
-                  <TableHead className="text-right">Price</TableHead>
+                  <TableHead>{t('item')}</TableHead>
+                  <TableHead className="text-right">{t('price')}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -851,15 +855,15 @@ const AddItemDialog = ({ isOpen, onOpenChange, itemsData, quickAddItem, getItemP
                         isExactMatchAlreadyAdded ? (
                           <div className="flex flex-col items-center gap-4 py-6">
                             <p className="text-muted-foreground text-sm">
-                              &quot;{itemSearch}&quot; is already added to this invoice
+                              {t('itemAlreadyAdded').replace('{itemName}', itemSearch)}
                             </p>
                             <p className="text-xs text-muted-foreground">
-                              You can modify the quantity or rate in the invoice items table above
+                              {t('modifyInTable')}
                             </p>
                           </div>
                         ) : exactMatch ? (
                           <div className="flex flex-col items-center gap-4 py-6">
-                            <p className="text-muted-foreground text-sm">&quot;{itemSearch}&quot; found!</p>
+                            <p className="text-muted-foreground text-sm">{t('itemFound').replace('{itemName}', itemSearch)}</p>
                             <Button
                               variant="default"
                               size="default"
@@ -867,12 +871,12 @@ const AddItemDialog = ({ isOpen, onOpenChange, itemsData, quickAddItem, getItemP
                               className="min-w-[200px] h-10"
                             >
                               <PlusCircle className="mr-2 h-4 w-4" />
-                              Add &quot;{itemSearch}&quot; to invoice
+                              {t('addToInvoice').replace('{itemName}', itemSearch)}
                             </Button>
                           </div>
                         ) : (
                           <div className="flex flex-col items-center gap-4 py-6">
-                            <p className="text-muted-foreground text-sm">No items found for &quot;{itemSearch}&quot;</p>
+                            <p className="text-muted-foreground text-sm">{t('noItemsFound').replace('{searchTerm}', itemSearch)}</p>
                             <Button
                               variant="outline"
                               size="default"
@@ -880,12 +884,12 @@ const AddItemDialog = ({ isOpen, onOpenChange, itemsData, quickAddItem, getItemP
                               className="min-w-[200px] h-10 bg-slate-900 text-white border-slate-900 hover:bg-slate-800 hover:border-slate-800 hover:text-white"
                             >
                               <PlusCircle className="mr-2 h-4 w-4" />
-                              Create &quot;{itemSearch}&quot; as new item
+                              {t('createNewItem').replace('{itemName}', itemSearch)}
                             </Button>
                           </div>
                         )
                       ) : (
-                        "No items found."
+                        t('noItemsFoundGeneric')
                       )}
                     </TableCell>
                   </TableRow>
@@ -895,7 +899,7 @@ const AddItemDialog = ({ isOpen, onOpenChange, itemsData, quickAddItem, getItemP
           </div>
         </div>
         <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)}>Close</Button>
+          <Button variant="outline" onClick={() => onOpenChange(false)}>{t('close')}</Button>
         </DialogFooter>
       </DialogContent>
       <CreateItemDialog
@@ -906,6 +910,7 @@ const AddItemDialog = ({ isOpen, onOpenChange, itemsData, quickAddItem, getItemP
           setIsCreateItemDialogOpen(false);
         }}
         initialName={itemNameForCreation}
+        t={t}
       />
     </Dialog>
   )
@@ -934,12 +939,14 @@ const CreateItemDialog = ({
   isOpen,
   onOpenChange,
   onItemCreated,
-  initialName = ''
+  initialName = '',
+  t
 }: {
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
   onItemCreated: () => void;
   initialName?: string;
+  t: (key: string) => string;
 }) => {
   const supabase = createClient();
   const [units, setUnits] = useState<Unit[]>([]);
@@ -999,7 +1006,7 @@ const CreateItemDialog = ({
   const onSubmit = async (values: z.infer<typeof itemSchema>) => {
     const trimmedName = values.name.trim()
     if (!trimmedName) {
-      return toast.error('Item name cannot be empty.')
+      return toast.error(t('itemNameCannotBeEmpty'))
     }
 
     // Fetch all items and check for normalized duplicate
@@ -1008,7 +1015,7 @@ const CreateItemDialog = ({
       .select('id, name, deleted_at')
 
     if (checkError) {
-      return toast.error('Error checking for duplicate item: ' + checkError.message)
+      return toast.error(t('errorCheckingDuplicate').replace('{error}', checkError.message))
     }
 
     // Check if an item with the same normalized name exists
@@ -1016,25 +1023,25 @@ const CreateItemDialog = ({
     const duplicate = allItems.find(item => normalizeName(item.name) === normalizedNew)
     if (duplicate) {
       if (duplicate.deleted_at) {
-        return toast.error('An item with this name exists in the "Deleted" tab. Please restore it or use a different name.')
+        return toast.error(t('itemExistsInDeleted'))
       }
-      return toast.error('An item with this name already exists.')
+      return toast.error(t('itemAlreadyExists'))
     }
 
     const { party_prices, ...itemData } = { ...values, name: trimmedName }
 
     const { data, error } = await supabase.from('items').insert(itemData).select('id').single()
-    if (error) return toast.error('Failed to create item: ' + error.message)
+    if (error) return toast.error(t('failedToCreateItem').replace('{error}', error.message))
 
     const itemId = data.id
 
     if (party_prices && party_prices.length > 0) {
       const pricesToInsert = party_prices.map(pp => ({ ...pp, item_id: itemId }))
       const { error: insertPricesError } = await supabase.from('item_party_prices').insert(pricesToInsert)
-      if (insertPricesError) return toast.error('Failed to save party prices: ' + insertPricesError.message)
+      if (insertPricesError) return toast.error(t('failedToSavePartyPrices').replace('{error}', insertPricesError.message))
     }
 
-    toast.success('Item created successfully!')
+    toast.success(t('itemCreatedSuccess'))
     onItemCreated()
     onOpenChange(false)
 
@@ -1044,7 +1051,7 @@ const CreateItemDialog = ({
 
   const handlePartySelectForPrice = (partyId: number) => {
     if (fields.some(f => f.party_id === partyId)) {
-        return toast.error('This party already has a specific price.')
+        return toast.error(t('partyAlreadyHasPrice'))
     }
     append({ party_id: partyId, price: 0 })
     setPartySearch('')
@@ -1055,7 +1062,7 @@ const CreateItemDialog = ({
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[625px]">
         <DialogHeader>
-          <DialogTitle>Create Item</DialogTitle>
+          <DialogTitle>{t('createItem')}</DialogTitle>
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
@@ -1064,9 +1071,9 @@ const CreateItemDialog = ({
               name="name"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Item Name</FormLabel>
+                  <FormLabel>{t('itemName')}</FormLabel>
                   <FormControl>
-                    <Input placeholder="e.g. Plastic Bottle" {...field} />
+                    <Input placeholder={t('itemNamePlaceholder')} {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -1078,11 +1085,11 @@ const CreateItemDialog = ({
                 name="default_rate"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Rate</FormLabel>
+                    <FormLabel>{t('rate')}</FormLabel>
                     <FormControl>
                       <Input
                         type="number"
-                        placeholder="Enter rate"
+                        placeholder={t('enterRate')}
                         {...field}
                         onChange={e => {
                           const value = parseFloat(e.target.value)
@@ -1100,9 +1107,9 @@ const CreateItemDialog = ({
                 name="purchase_rate"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Purchase Rate <span className="text-muted-foreground font-normal">(optional)</span></FormLabel>
+                    <FormLabel>{t('purchaseRate')} <span className="text-muted-foreground font-normal">({t('optional')})</span></FormLabel>
                     <FormControl>
-                      <Input type="number" step="0.01" min={0} placeholder="e.g. 100" value={field.value ?? ''} onChange={field.onChange} />
+                      <Input type="number" step="0.01" min={0} placeholder={t('enterPurchaseRate')} value={field.value ?? ''} onChange={field.onChange} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -1113,7 +1120,7 @@ const CreateItemDialog = ({
                 name="unit_id"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Unit</FormLabel>
+                    <FormLabel>{t('unit')}</FormLabel>
                     <Popover>
                       <PopoverTrigger asChild>
                         <Button
@@ -1132,7 +1139,7 @@ const CreateItemDialog = ({
                             ? units.find(
                                 (unit) => unit.id === field.value
                               )?.name
-                            : "Select a unit"}
+                            : t('selectUnit')}
                           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                         </Button>
                       </PopoverTrigger>
@@ -1142,8 +1149,8 @@ const CreateItemDialog = ({
                         style={unitPopoverWidth ? { width: unitPopoverWidth } : {}}
                       >
                         <Command>
-                          <CommandInput placeholder="Search unit..." />
-                          <CommandEmpty>No unit found.</CommandEmpty>
+                          <CommandInput placeholder={t('searchUnit')} />
+                          <CommandEmpty>{t('noUnitFound')}</CommandEmpty>
                           <CommandGroup>
                             <CommandList>
                               {units.map((unit) => (
@@ -1177,7 +1184,7 @@ const CreateItemDialog = ({
             </div>
 
             <div>
-              <h4 className="text-sm font-medium mb-2">Party-Specific Prices</h4>
+              <h4 className="text-sm font-medium mb-2">{t('partySpecificPrices')}</h4>
               <div className="mt-4">
                 <Popover open={isPartySearchOpen} onOpenChange={setIsPartySearchOpen}>
                   <PopoverTrigger asChild>
@@ -1192,7 +1199,7 @@ const CreateItemDialog = ({
                       aria-expanded={isPartySearchOpen}
                       data-placeholder={fields.length === 0 ? true : undefined}
                     >
-                      Select party to add price...
+                      {t('selectPartyToAdd')}
                       <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                     </Button>
                   </PopoverTrigger>
@@ -1203,7 +1210,7 @@ const CreateItemDialog = ({
                   >
                     <Command>
                       <CommandInput
-                        placeholder="Search party..."
+                        placeholder={t('searchPartyPlaceholder')}
                         value={partySearch}
                         onValueChange={setPartySearch}
                         onKeyDown={(e) => {
@@ -1214,7 +1221,7 @@ const CreateItemDialog = ({
                         }}
                       />
                       <CommandList>
-                        <CommandEmpty>No party found.</CommandEmpty>
+                        <CommandEmpty>{t('noPartyFound')}</CommandEmpty>
                         <CommandGroup>
                           {filteredPartiesForSearch.map((party) => (
                             <CommandItem
@@ -1236,14 +1243,14 @@ const CreateItemDialog = ({
                   <table className="w-full text-sm">
                     <thead>
                       <tr className="bg-muted text-muted-foreground">
-                        <th className="text-left px-3 py-2 font-medium text-xs">Party Name</th>
-                        <th className="text-left px-3 py-2 font-medium text-xs">Rate</th>
-                        <th className="text-center px-3 py-2 font-medium text-xs">Action</th>
+                        <th className="text-left px-3 py-2 font-medium text-xs">{t('partyName')}</th>
+                        <th className="text-left px-3 py-2 font-medium text-xs">{t('rate')}</th>
+                        <th className="text-center px-3 py-2 font-medium text-xs">{t('action')}</th>
                       </tr>
                     </thead>
                     <tbody>
                       {fields.map((field, index) => {
-                        const partyName = parties.find(p => p.id === field.party_id)?.name || 'Unknown Party'
+                        const partyName = parties.find(p => p.id === field.party_id)?.name || t('unknownParty')
                         return (
                           <tr key={field.id} className="border-t">
                             <td className="px-3 py-2 align-middle">
@@ -1258,7 +1265,7 @@ const CreateItemDialog = ({
                                     type="number"
                                     {...priceField}
                                     className="w-32"
-                                    placeholder="Price"
+                                    placeholder={t('price')}
                                   />
                                 )}
                               />
@@ -1270,7 +1277,7 @@ const CreateItemDialog = ({
                                     <Trash className="h-4 w-4 text-red-500" />
                                   </Button>
                                 </TooltipTrigger>
-                                <TooltipContent>Remove party price</TooltipContent>
+                                <TooltipContent>{t('removePartyPrice')}</TooltipContent>
                               </Tooltip>
                             </td>
                           </tr>
@@ -1283,8 +1290,8 @@ const CreateItemDialog = ({
             </div>
 
             <DialogFooter>
-              <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>
-              <Button type="submit" disabled={form.formState.isSubmitting}>Save changes</Button>
+              <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>{t('cancel')}</Button>
+              <Button type="submit" disabled={form.formState.isSubmitting}>{t('saveChanges')}</Button>
             </DialogFooter>
           </form>
         </Form>

@@ -143,7 +143,13 @@
     "itemCreatedSuccess": "آئٹم کامیابی سے بنایا گیا!",
     "partyAlreadyHasPrice": "اس پارٹی کے پاس پہلے سے سپیسیفک ریٹ ہے۔",
     "pleaseAddAtLeastOneItem": "براہ کرم کم از کم ایک آئٹم ایڈ کریں۔",
-    "partyIsRequired": "پارٹی ضروری ہے۔"
+    "partyIsRequired": "پارٹی ضروری ہے۔",
+    "searchPartyPlaceholder": "پارٹی سرچ کریں...",
+    "noItemsFoundGeneric": "کوئی آئٹم نہیں ملا۔",
+    "itemNamePlaceholder": "جیسے، پلاسٹک کی بوتل",
+    "enterPurchaseRate": "جیسے، 100",
+    "unknownParty": "نامعلوم پارٹی",
+    "failedToFetchInvoice": "انوائس ڈیٹا فیچ کرنے میں فیل: {error}"
   },
   "items": {
     "title": "آئٹم",

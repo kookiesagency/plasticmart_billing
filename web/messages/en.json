@@ -143,7 +143,13 @@
     "itemCreatedSuccess": "Item created successfully!",
     "partyAlreadyHasPrice": "This party already has a specific price.",
     "pleaseAddAtLeastOneItem": "Please add at least one item.",
-    "partyIsRequired": "Party is required."
+    "partyIsRequired": "Party is required.",
+    "searchPartyPlaceholder": "Search party...",
+    "noItemsFoundGeneric": "No items found.",
+    "itemNamePlaceholder": "e.g. Plastic Bottle",
+    "enterPurchaseRate": "e.g. 100",
+    "unknownParty": "Unknown Party",
+    "failedToFetchInvoice": "Failed to fetch invoice data: {error}"
   },
   "items": {
     "title": "Items",
