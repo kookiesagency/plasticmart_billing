@@ -67,14 +67,14 @@ export default function PartyManager() {
     const { data: existingParty, error: checkError } = await query.maybeSingle()
 
     if (checkError) {
-      return toast.error('Validation check failed: ' + checkError.message)
+      return toast.error(t('validationCheckFailed').replace('{error}', checkError.message))
     }
 
     if (existingParty) {
       if (existingParty.deleted_at) {
-        return toast.error('A party with this name is currently deleted. Please restore it from the deleted tab.')
+        return toast.error(t('partyDeletedRestore'))
       } else {
-        return toast.error('A party with this name already exists.')
+        return toast.error(t('partyAlreadyExists'))
       }
     }
 
@@ -89,9 +89,9 @@ export default function PartyManager() {
     }
 
     if (error) {
-      toast.error(`Failed to save party: ${error.message}`)
+      toast.error(t('failedToSaveParty').replace('{error}', error.message))
     } else {
-      toast.success(`Party ${partyId ? 'updated' : 'created'} successfully.`)
+      toast.success(partyId ? t('partyUpdatedSuccess') : t('partyCreatedSuccess'))
       closePartyForm()
     }
   }
@@ -105,9 +105,9 @@ export default function PartyManager() {
     if (!partyToDelete) return
     const { error } = await supabase.from('parties').update({ deleted_at: new Date().toISOString() }).eq('id', partyToDelete)
     if (error) {
-      toast.error('Failed to delete party: ' + error.message)
+      toast.error(t('failedToDeleteParty').replace('{error}', error.message))
     } else {
-      toast.success('Party deleted successfully!')
+      toast.success(t('partyDeletedSuccess'))
       refetch()
     }
     setPartyToDelete(null)
@@ -123,9 +123,9 @@ export default function PartyManager() {
     const { error } = await supabase.from('parties').update({ deleted_at: new Date().toISOString() }).in('id', bulkDeleteIds)
 
     if (error) {
-      toast.error(`Failed to delete ${bulkDeleteIds.length} parties.`)
+      toast.error(t('failedToDeleteParties').replace('{count}', bulkDeleteIds.length.toString()))
     } else {
-      toast.success(`${bulkDeleteIds.length} parties deleted successfully.`)
+      toast.success(t('partiesDeletedSuccess').replace('{count}', bulkDeleteIds.length.toString()))
       refetch()
     }
     setBulkDeleteIds(null)
@@ -140,9 +140,9 @@ export default function PartyManager() {
     if (!partyToRestore) return
     const { error } = await supabase.from('parties').update({ deleted_at: null }).eq('id', partyToRestore)
     if (error) {
-      toast.error('Failed to restore party: ' + error.message)
+      toast.error(t('failedToRestoreParty').replace('{error}', error.message))
     } else {
-      toast.success('Party restored successfully!')
+      toast.success(t('partyRestoredSuccess'))
       refetch()
     }
     setPartyToRestore(null)
@@ -157,9 +157,9 @@ export default function PartyManager() {
     if (!bulkRestoreIds || bulkRestoreIds.length === 0) return
     const { error } = await supabase.from('parties').update({ deleted_at: null }).in('id', bulkRestoreIds)
     if (error) {
-      toast.error(`Failed to restore ${bulkRestoreIds.length} parties: ` + error.message)
+      toast.error(t('failedToRestoreParties').replace('{count}', bulkRestoreIds.length.toString()).replace('{error}', error.message))
     } else {
-      toast.success(`${bulkRestoreIds.length} parties restored successfully!`)
+      toast.success(t('partiesRestoredSuccess').replace('{count}', bulkRestoreIds.length.toString()))
       refetch()
     }
     setBulkRestoreIds(null)
@@ -172,19 +172,19 @@ export default function PartyManager() {
   
   const confirmPermanentDelete = async () => {
     if (!partyToPermanentlyDelete) return
-    
+
     // First, delete related party prices
     const { error: pricesError } = await supabase.from('item_party_prices').delete().eq('party_id', partyToPermanentlyDelete)
     if (pricesError) {
-      return toast.error('Failed to delete related party prices: ' + pricesError.message)
+      return toast.error(t('failedToDeletePrices').replace('{error}', pricesError.message))
     }
 
     // Then, delete the party itself
     const { error } = await supabase.from('parties').delete().eq('id', partyToPermanentlyDelete)
     if (error) {
-      toast.error('Failed to permanently delete party: ' + error.message)
+      toast.error(t('failedToPermanentlyDeleteParty').replace('{error}', error.message))
     } else {
-      toast.success('Party permanently deleted successfully!')
+      toast.success(t('partyPermanentlyDeletedSuccess'))
       refetch()
     }
     setPartyToPermanentlyDelete(null)
@@ -197,19 +197,19 @@ export default function PartyManager() {
 
   const confirmBulkPermanentDelete = async () => {
     if (!bulkPermanentDeleteIds || bulkPermanentDeleteIds.length === 0) return
-    
+
     // First, delete related party prices
     const { error: pricesError } = await supabase.from('item_party_prices').delete().in('party_id', bulkPermanentDeleteIds)
     if (pricesError) {
-      return toast.error('Failed to delete related party prices: ' + pricesError.message)
+      return toast.error(t('failedToDeletePrices').replace('{error}', pricesError.message))
     }
-    
+
     // Then, delete the parties themselves
     const { error } = await supabase.from('parties').delete().in('id', bulkPermanentDeleteIds)
     if (error) {
-      toast.error(`Failed to permanently delete ${bulkPermanentDeleteIds.length} parties: ` + error.message)
+      toast.error(t('failedToPermanentlyDeleteParties').replace('{count}', bulkPermanentDeleteIds.length.toString()).replace('{error}', error.message))
     } else {
-      toast.success(`${bulkPermanentDeleteIds.length} parties permanently deleted successfully!`)
+      toast.success(t('partiesPermanentlyDeletedSuccess').replace('{count}', bulkPermanentDeleteIds.length.toString()))
       refetch()
     }
     setBulkPermanentDeleteIds(null)
@@ -238,11 +238,11 @@ export default function PartyManager() {
       enableSorting: false,
       enableHiding: false,
     },
-    { 
-      accessorKey: 'name', 
+    {
+      accessorKey: 'name',
       header: ({ column }) => (
         <div className="flex items-center cursor-pointer" onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}>
-          Name
+          {t('name')}
           <ArrowUpDown className="ml-2 h-4 w-4" />
         </div>
       ),
@@ -251,17 +251,17 @@ export default function PartyManager() {
       accessorKey: 'bundle_rate',
       header: ({ column }) => (
         <div className="flex items-center cursor-pointer" onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}>
-          Bundle Rate
+          {t('bundleRate')}
           <ArrowUpDown className="ml-2 h-4 w-4" />
         </div>
       ),
-      cell: ({ row }) => row.original.bundle_rate ?? 'N/A',
+      cell: ({ row }) => row.original.bundle_rate ?? t('na'),
     },
-    { 
-      accessorKey: 'deleted_at', 
+    {
+      accessorKey: 'deleted_at',
       header: ({ column }) => (
         <div className="flex items-center cursor-pointer" onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}>
-          Deleted At
+          {t('deletedAt')}
           <ArrowUpDown className="ml-2 h-4 w-4" />
         </div>
       ),
@@ -281,7 +281,7 @@ export default function PartyManager() {
               </Button>
             </TooltipTrigger>
             <TooltipContent>
-              <p>Restore Party</p>
+              <p>{t('restoreParty')}</p>
             </TooltipContent>
           </Tooltip>
           <Tooltip>
@@ -294,7 +294,7 @@ export default function PartyManager() {
               </Button>
             </TooltipTrigger>
             <TooltipContent>
-              <p>Delete Permanently</p>
+              <p>{t('deletePermanently')}</p>
             </TooltipContent>
           </Tooltip>
         </div>
@@ -305,12 +305,12 @@ export default function PartyManager() {
 
   return (
     <>
-      <SetHeader 
-        title="Parties"
+      <SetHeader
+        title={tParties('title')}
         actions={
           <Button onClick={openNewPartyForm}>
             <PlusCircle className="h-4 w-4 mr-2" />
-            Create Party
+            {tParties('createParty')}
           </Button>
         }
       />
@@ -322,15 +322,15 @@ export default function PartyManager() {
       />
       <Tabs defaultValue="active">
         <TabsList>
-          <TabsTrigger value="active">Active</TabsTrigger>
-          <TabsTrigger value="deleted">Deleted</TabsTrigger>
+          <TabsTrigger value="active">{t('active')}</TabsTrigger>
+          <TabsTrigger value="deleted">{t('deleted')}</TabsTrigger>
         </TabsList>
         <TabsContent value="active">
           <DataTable
             columns={activePartyColumns({ onEdit: openEditPartyForm, onDelete: handleDeleteRequest, t: tPartiesColumns })}
             data={activeParties}
             loading={loading}
-            searchPlaceholder="Search parties..."
+            searchPlaceholder={t('searchParties')}
             onBulkDelete={handleBulkDelete}
           />
         </TabsContent>
@@ -339,10 +339,10 @@ export default function PartyManager() {
             columns={deletedPartyColumns}
             data={deletedParties as (Party & { deleted_at: string })[]}
             loading={loading}
-            searchPlaceholder="Search deleted parties..."
+            searchPlaceholder={t('searchDeletedParties')}
             onBulkRestore={handleBulkRestore}
             onBulkDelete={handleBulkPermanentDelete}
-            bulkActionLabel="Delete Permanently"
+            bulkActionLabel={t('deletePermanently')}
           />
         </TabsContent>
       </Tabs>
@@ -366,15 +366,15 @@ export default function PartyManager() {
           else if (bulkRestoreIds) confirmBulkRestore()
           setIsConfirmOpen(false)
         }}
-        title="Are you sure?"
+        title={t('areYouSure')}
         description={
-          bulkDeleteIds ? `This action will mark ${bulkDeleteIds.length} parties as deleted. You can restore them within 30 days.`
-          : partyToDelete ? "This action will mark the party as deleted. You can restore it within 30 days, after which it may be permanently deleted."
-          : partyToRestore ? "This will restore the party and make it active again."
-          : bulkRestoreIds ? `This will restore ${bulkRestoreIds.length} parties and make them active again.`
-          : bulkPermanentDeleteIds ? `This action is IRREVERSIBLE. This will permanently delete ${bulkPermanentDeleteIds.length} parties and all associated data.`
-          : partyToPermanentlyDelete ? "This action is IRREVERSIBLE. This will permanently delete the party and all associated data."
-          : "Are you sure you want to proceed?"
+          bulkDeleteIds ? t('moveMultipleToDeleted').replace('{count}', bulkDeleteIds.length.toString())
+          : partyToDelete ? t('moveToDeleted')
+          : partyToRestore ? t('restoreConfirm')
+          : bulkRestoreIds ? t('restoreMultipleConfirm').replace('{count}', bulkRestoreIds.length.toString())
+          : bulkPermanentDeleteIds ? t('permanentDeleteMultipleConfirm').replace('{count}', bulkPermanentDeleteIds.length.toString())
+          : partyToPermanentlyDelete ? t('permanentDeleteConfirm')
+          : t('proceedConfirm')
         }
       />
     </>
