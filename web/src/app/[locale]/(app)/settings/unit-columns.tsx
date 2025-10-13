@@ -14,7 +14,8 @@ export type Unit = {
 
 export const columns = (
   onEdit: (unit: Unit) => void,
-  onDelete: (unitId: number) => void
+  onDelete: (unitId: number) => void,
+  t?: (key: string) => string
 ): ColumnDef<Unit>[] => [
   {
     id: "select",
@@ -45,7 +46,7 @@ export const columns = (
         className="flex items-center cursor-pointer"
         onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
       >
-        Name
+        {t ? t('unitName') : 'Name'}
         <ArrowUpDown className="ml-2 h-4 w-4" />
       </div>
     ),
@@ -57,7 +58,7 @@ export const columns = (
         className="flex items-center cursor-pointer"
         onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
       >
-        Created At
+        {t ? t('createdAt') : 'Created At'}
         <ArrowUpDown className="ml-2 h-4 w-4" />
       </div>
     ),
@@ -80,7 +81,7 @@ export const columns = (
               </Button>
             </TooltipTrigger>
             <TooltipContent>
-              <p>Edit Unit</p>
+              <p>{t ? t('editUnit') : 'Edit Unit'}</p>
             </TooltipContent>
           </Tooltip>
           <Tooltip>
@@ -94,7 +95,7 @@ export const columns = (
               </Button>
             </TooltipTrigger>
             <TooltipContent>
-              <p>Delete Unit</p>
+              <p>{t ? t('deleteUnit') : 'Delete Unit'}</p>
             </TooltipContent>
           </Tooltip>
         </div>

@@ -35,10 +35,7 @@ import { DataTable } from '@/components/data-table'
 import { columns, Unit } from './unit-columns'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 
-// Define the schema for the form validation
-const unitSchema = z.object({
-  name: z.string().min(1, 'Name is required'),
-})
+// Schema will be created with translations inside the component
 
 export default function UnitManager() {
   const t = useTranslations('settings')
@@ -56,6 +53,10 @@ export default function UnitManager() {
   const [bulkPermanentlyDeleteIds, setBulkPermanentlyDeleteIds] = useState<number[] | null>(null)
   const [bulkRestoreIds, setBulkRestoreIds] = useState<number[] | null>(null)
 
+  const unitSchema = z.object({
+    name: z.string().min(1, t('nameRequired')),
+  })
+
   const form = useForm<z.infer<typeof unitSchema>>({
     resolver: zodResolver(unitSchema),
     defaultValues: { name: '' },
@@ -71,13 +72,13 @@ export default function UnitManager() {
       supabase.from('units').select('*').is('deleted_at', null).order('created_at', { ascending: false }),
       supabase.from('units').select('*').not('deleted_at', 'is', null).order('deleted_at', { ascending: false })
     ])
-    
-    if (activeRes.error) toast.error('Error fetching units: ' + activeRes.error.message)
+
+    if (activeRes.error) toast.error(t('errorFetchingUnits') + activeRes.error.message)
     else setUnits(activeRes.data as Unit[])
 
-    if (deletedRes.error) toast.error('Error fetching deleted units: ' + deletedRes.error.message)
+    if (deletedRes.error) toast.error(t('errorFetchingDeletedUnits') + deletedRes.error.message)
     else setDeletedUnits(deletedRes.data as Unit[])
-    
+
     setLoading(false)
   }
 
@@ -103,16 +104,16 @@ export default function UnitManager() {
         .select('id, name, deleted_at')
 
       if (checkError) {
-        return toast.error('Validation check failed: ' + checkError.message)
+        return toast.error(t('validationCheckFailed') + checkError.message)
       }
 
       const normalizedNew = normalizeName(values.name)
       const duplicate = allUnits.find(unit => normalizeName(unit.name) === normalizedNew && unit.id !== editingUnit?.id)
       if (duplicate) {
         if (duplicate.deleted_at) {
-          return toast.error('A unit with this name is currently deleted. Please restore it from the deleted tab.')
+          return toast.error(t('unitDeletedRestore'))
         } else {
-          return toast.error('A unit with this name already exists.')
+          return toast.error(t('unitAlreadyExists'))
         }
       }
       // 2. Proceed with update or insert
@@ -125,14 +126,14 @@ export default function UnitManager() {
         error = insertError
       }
       if (error) {
-        toast.error('Failed to save unit: ' + error.message)
+        toast.error(t('failedToSaveUnit') + error.message)
       } else {
-        toast.success(`Unit ${editingUnit ? 'updated' : 'created'} successfully!`)
+        toast.success(editingUnit ? t('unitUpdatedSuccess') : t('unitCreatedSuccess'))
         setIsDialogOpen(false)
         fetchData()
       }
     } catch (error: any) {
-      toast.error('Failed to save unit: ' + error.message)
+      toast.error(t('failedToSaveUnit') + error.message)
     }
   }
   
@@ -150,20 +151,20 @@ export default function UnitManager() {
       .eq('unit_id', deletingUnitId)
 
     if (checkError) {
-      return toast.error('Failed to check item usage: ' + checkError.message)
+      return toast.error(t('failedToCheckItemUsage') + checkError.message)
     }
 
     if (count && count > 0) {
       setIsConfirmOpen(false)
       setDeletingUnitId(null)
-      return toast.error(`Cannot delete. This unit is used by ${count} item(s). Please update those items first.`)
+      return toast.error(t('cannotDeleteUnitInUse').replace('{count}', count.toString()))
     }
 
     const { error } = await supabase.from('units').update({ deleted_at: new Date().toISOString() }).eq('id', deletingUnitId)
     if (error) {
-      toast.error('Failed to delete unit: ' + error.message)
+      toast.error(t('failedToDeleteUnit') + error.message)
     } else {
-      toast.success('Unit deleted successfully!')
+      toast.success(t('unitDeletedSuccess'))
       fetchData()
     }
     setDeletingUnitId(null)
@@ -178,9 +179,9 @@ export default function UnitManager() {
     if (!permanentlyDeletingUnitId) return
     const { error } = await supabase.from('units').delete().eq('id', permanentlyDeletingUnitId)
     if (error) {
-      toast.error('Failed to permanently delete unit: ' + error.message)
+      toast.error(t('failedToPermanentlyDeleteUnit') + error.message)
     } else {
-      toast.success('Unit permanently deleted successfully!')
+      toast.success(t('unitPermanentlyDeletedSuccess'))
       fetchData()
     }
     setPermanentlyDeletingUnitId(null)
@@ -188,16 +189,16 @@ export default function UnitManager() {
 
   const handleRestore = (unitId: number) => {
     setRestoringUnitId(unitId)
-    setIsConfirmOpen(true) 
+    setIsConfirmOpen(true)
   }
 
   const confirmRestore = async () => {
     if (!restoringUnitId) return
     const { error } = await supabase.from('units').update({ deleted_at: null }).eq('id', restoringUnitId)
     if (error) {
-      toast.error('Failed to restore unit: ' + error.message)
+      toast.error(t('failedToRestoreUnit') + error.message)
     } else {
-      toast.success('Unit restored successfully!')
+      toast.success(t('unitRestoredSuccess'))
       fetchData()
     }
     setRestoringUnitId(null)
@@ -220,7 +221,7 @@ export default function UnitManager() {
     if (usageError) {
       setIsConfirmOpen(false)
       setBulkDeleteIds(null)
-      return toast.error('Failed to check item usage: ' + usageError.message);
+      return toast.error(t('failedToCheckItemUsage') + usageError.message);
     }
 
     if (usageData && usageData.length > 0) {
@@ -233,17 +234,17 @@ export default function UnitManager() {
       const errorMessages = Object.entries(usageCounts)
         .map(([name, count]) => `${name} is used by ${count} item(s)`)
         .join(', ');
-      
+
       setIsConfirmOpen(false)
       setBulkDeleteIds(null)
-      return toast.error(`Cannot delete units in use: ${errorMessages}.`);
+      return toast.error(t('cannotDeleteUnitsInUse').replace('{details}', errorMessages));
     }
 
     const { error } = await supabase.from('units').update({ deleted_at: new Date().toISOString() }).in('id', bulkDeleteIds)
     if (error) {
-      toast.error(`Failed to delete ${bulkDeleteIds.length} units: ` + error.message)
+      toast.error(t('failedToDeleteUnits').replace('{count}', bulkDeleteIds.length.toString()) + error.message)
     } else {
-      toast.success(`${bulkDeleteIds.length} units deleted successfully!`)
+      toast.success(t('unitsDeletedSuccess').replace('{count}', bulkDeleteIds.length.toString()))
       fetchData()
     }
     setBulkDeleteIds(null);
@@ -258,9 +259,9 @@ export default function UnitManager() {
     if (!bulkPermanentlyDeleteIds) return
     const { error } = await supabase.from('units').delete().in('id', bulkPermanentlyDeleteIds)
     if (error) {
-      toast.error(`Failed to permanently delete ${bulkPermanentlyDeleteIds.length} units: ` + error.message)
+      toast.error(t('failedToPermanentlyDeleteUnits').replace('{count}', bulkPermanentlyDeleteIds.length.toString()) + error.message)
     } else {
-      toast.success(`${bulkPermanentlyDeleteIds.length} units permanently deleted successfully!`)
+      toast.success(t('unitsPermanentlyDeletedSuccess').replace('{count}', bulkPermanentlyDeleteIds.length.toString()))
       fetchData()
     }
     setBulkPermanentlyDeleteIds(null)
@@ -275,9 +276,9 @@ export default function UnitManager() {
     if (!bulkRestoreIds) return;
     const { error } = await supabase.from('units').update({ deleted_at: null }).in('id', bulkRestoreIds)
     if (error) {
-      toast.error(`Failed to restore ${bulkRestoreIds.length} units: ` + error.message)
+      toast.error(t('failedToRestoreUnits').replace('{count}', bulkRestoreIds.length.toString()) + error.message)
     } else {
-      toast.success(`${bulkRestoreIds.length} units restored successfully!`)
+      toast.success(t('unitsRestoredSuccess').replace('{count}', bulkRestoreIds.length.toString()))
       fetchData()
     }
     setBulkRestoreIds(null);
@@ -306,20 +307,20 @@ export default function UnitManager() {
       enableSorting: false,
       enableHiding: false,
     },
-    { 
-      accessorKey: 'name', 
+    {
+      accessorKey: 'name',
       header: ({ column }) => (
         <div className="flex items-center cursor-pointer" onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}>
-          Name
+          {t('unitName')}
           <ArrowUpDown className="ml-2 h-4 w-4" />
         </div>
       ),
     },
-    { 
-      accessorKey: 'deleted_at', 
+    {
+      accessorKey: 'deleted_at',
       header: ({ column }) => (
         <div className="flex items-center cursor-pointer" onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}>
-          Deleted At
+          {t('deletedAt')}
           <ArrowUpDown className="ml-2 h-4 w-4" />
         </div>
       ),
@@ -337,7 +338,7 @@ export default function UnitManager() {
                 </Button>
               </TooltipTrigger>
               <TooltipContent>
-                <p>Restore Unit</p>
+                <p>{t('restoreUnit')}</p>
               </TooltipContent>
             </Tooltip>
             <Tooltip>
@@ -347,7 +348,7 @@ export default function UnitManager() {
                 </Button>
               </TooltipTrigger>
               <TooltipContent>
-                <p>Delete Permanently</p>
+                <p>{t('deletePermanently')}</p>
               </TooltipContent>
             </Tooltip>
           </div>
@@ -358,13 +359,13 @@ export default function UnitManager() {
 
   const getDialogInfo = () => {
     let description = "Are you sure you want to proceed?";
-    
-    if (deletingUnitId) description = "This will mark the unit as deleted. You can restore it within 30 days. This action will fail if the unit is currently in use by any items."
-    if (restoringUnitId) description = "This will restore the unit and make it active again."
-    if (permanentlyDeletingUnitId) description = "This action is IRREVERSIBLE and will permanently delete the unit."
-    if (bulkDeleteIds) description = `This will mark ${bulkDeleteIds.length} units as deleted. You can restore them within 30 days. This action will fail if any of the selected units are currently in use by items.`
-    if (bulkRestoreIds) description = `This will restore ${bulkRestoreIds.length} units and make them active again.`
-    if (bulkPermanentlyDeleteIds) description = `This action is IRREVERSIBLE and will permanently delete ${bulkPermanentlyDeleteIds.length} units.`
+
+    if (deletingUnitId) description = t('confirmDeleteDescription')
+    if (restoringUnitId) description = t('confirmRestoreDescription')
+    if (permanentlyDeletingUnitId) description = t('confirmPermanentDeleteDescription')
+    if (bulkDeleteIds) description = t('confirmBulkDeleteDescription').replace('{count}', bulkDeleteIds.length.toString())
+    if (bulkRestoreIds) description = t('confirmBulkRestoreDescription').replace('{count}', bulkRestoreIds.length.toString())
+    if (bulkPermanentlyDeleteIds) description = t('confirmBulkPermanentDeleteDescription').replace('{count}', bulkPermanentlyDeleteIds.length.toString())
 
     return { description };
   }
@@ -384,21 +385,21 @@ export default function UnitManager() {
       <Tabs defaultValue="active">
         <div className="flex justify-between items-center">
           <TabsList>
-            <TabsTrigger value="active">Active</TabsTrigger>
-            <TabsTrigger value="deleted">Deleted</TabsTrigger>
+            <TabsTrigger value="active">{t('active')}</TabsTrigger>
+            <TabsTrigger value="deleted">{t('deleted')}</TabsTrigger>
           </TabsList>
           <Button onClick={() => openDialog()}>
             <PlusCircle className="mr-2 h-4 w-4" />
-            Create Unit
+            {t('createUnit')}
           </Button>
         </div>
         <TabsContent value="active">
-          <DataTable 
-            columns={columns(openDialog, handleDelete)} 
-            data={units} 
+          <DataTable
+            columns={columns(openDialog, handleDelete, t)}
+            data={units}
             loading={loading}
             onBulkDelete={handleBulkDelete}
-            searchPlaceholder="Search units..." 
+            searchPlaceholder={t('searchUnits')}
           />
         </TabsContent>
         <TabsContent value="deleted">
@@ -407,7 +408,7 @@ export default function UnitManager() {
             data={deletedUnits as any}
             loading={loading}
             filterColumn="name"
-            filterPlaceholder="Filter by name..."
+            filterPlaceholder={t('filterByName')}
             onBulkRestore={handleBulkRestore}
             onBulkPermanentDelete={handleBulkPermanentDelete}
           />
@@ -417,9 +418,9 @@ export default function UnitManager() {
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>{editingUnit ? 'Edit Unit' : 'Create Unit'}</DialogTitle>
+            <DialogTitle>{editingUnit ? t('editUnit') : t('createUnit')}</DialogTitle>
             <DialogDescription>
-              {editingUnit ? 'Update the details of your unit.' : 'Add a new unit to your list.'}
+              {editingUnit ? t('updateUnitDetails') : t('addNewUnit')}
             </DialogDescription>
           </DialogHeader>
           <Form {...form}>
@@ -429,9 +430,9 @@ export default function UnitManager() {
                 name="name"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Unit Name</FormLabel>
+                    <FormLabel>{t('unitName')}</FormLabel>
                     <FormControl>
-                      <Input placeholder="e.g., Kilogram" {...field} />
+                      <Input placeholder={t('unitNamePlaceholder')} {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -439,9 +440,9 @@ export default function UnitManager() {
               />
               <DialogFooter>
                 <Button type="button" variant="secondary" onClick={() => setIsDialogOpen(false)}>
-                  Cancel
+                  {t('cancel')}
                 </Button>
-                <Button type="submit">Save Unit</Button>
+                <Button type="submit">{t('saveUnit')}</Button>
               </DialogFooter>
             </form>
           </Form>
@@ -459,7 +460,7 @@ export default function UnitManager() {
           setBulkRestoreIds(null)
         }}
         onConfirm={handleConfirmation}
-        title="Are you sure?"
+        title={t('areYouSure')}
         description={getDialogInfo().description}
       />
     </div>
