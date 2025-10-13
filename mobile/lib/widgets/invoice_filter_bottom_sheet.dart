@@ -298,12 +298,12 @@ class _InvoiceFilterBottomSheetState extends State<InvoiceFilterBottomSheet> {
                 child: Container(
                   decoration: BoxDecoration(
                     color: isDarkTheme
-                        ? const Color(0xFF2D3748)
+                        ? const Color(0xFF1E293B) // Darker slate to match Share button
                         : Colors.grey.shade100,
                     borderRadius: BorderRadius.circular(12),
                     border: Border.all(
                       color: isDarkTheme
-                          ? const Color(0xFF4A5568)
+                          ? const Color(0xFF334155) // Subtle border
                           : Colors.grey.shade300,
                       width: 1,
                     ),
