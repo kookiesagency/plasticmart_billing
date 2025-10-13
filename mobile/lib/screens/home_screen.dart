@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import '../providers/basic_mode_provider.dart';
 import 'dashboard_tab.dart';
 import 'invoices/invoices_screen.dart';
@@ -59,27 +60,29 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
-  List<String> _getScreenTitles(bool isBasicMode) {
+  List<String> _getScreenTitles(BuildContext context, bool isBasicMode) {
+    final l10n = AppLocalizations.of(context)!;
     if (isBasicMode) {
       return [
-        'Dashboard',
-        'Items',
-        'Parties',
-        'Settings',
+        l10n.dashboard_title,
+        l10n.nav_items,
+        l10n.nav_parties,
+        l10n.nav_settings,
       ];
     } else {
       return [
-        'Dashboard',
-        'Bills',
-        'Items',
-        'Parties',
-        'Settings',
+        l10n.dashboard_title,
+        l10n.nav_invoices,
+        l10n.nav_items,
+        l10n.nav_parties,
+        l10n.nav_settings,
       ];
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final basicModeProvider = context.watch<BasicModeProvider>();
     final isBasicMode = basicModeProvider.isBasicMode;
 
@@ -87,7 +90,7 @@ class _HomeScreenState extends State<HomeScreen> {
     _handleModeChange(isBasicMode);
 
     final screens = _getScreens(isBasicMode);
-    final titles = _getScreenTitles(isBasicMode);
+    final titles = _getScreenTitles(context, isBasicMode);
 
     // Ensure selected index is within bounds
     if (_selectedIndex >= screens.length) {
@@ -128,7 +131,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     }
                   },
                   icon: const Icon(Icons.bolt),
-                  tooltip: 'Offline Bill',
+                  tooltip: l10n.invoices_createOfflineInvoice,
                 ),
                 IconButton(
                   onPressed: () {
@@ -140,7 +143,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     );
                   },
                   icon: const Icon(Icons.add),
-                  tooltip: 'Create Bill',
+                  tooltip: l10n.invoices_createInvoice,
                 ),
               ]
             : _selectedIndex == itemsTabIndex // Items tab
@@ -155,7 +158,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         );
                       },
                       icon: const Icon(Icons.add),
-                      tooltip: 'Add Item',
+                      tooltip: l10n.items_createItem,
                     ),
                   ]
                 : _selectedIndex == partiesTabIndex // Parties tab
@@ -170,7 +173,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             );
                           },
                           icon: const Icon(Icons.add),
-                          tooltip: 'Add Party',
+                          tooltip: l10n.parties_createParty,
                         ),
                       ]
                     : null,
@@ -189,44 +192,44 @@ class _HomeScreenState extends State<HomeScreen> {
           });
         },
         items: isBasicMode
-            ? const [
+            ? [
                 BottomNavigationBarItem(
-                  icon: Icon(Icons.home_outlined),
-                  label: 'Home',
+                  icon: const Icon(Icons.home_outlined),
+                  label: l10n.nav_dashboard,
                 ),
                 BottomNavigationBarItem(
-                  icon: Icon(Icons.inventory),
-                  label: 'Items',
+                  icon: const Icon(Icons.inventory),
+                  label: l10n.nav_items,
                 ),
                 BottomNavigationBarItem(
-                  icon: Icon(Icons.people),
-                  label: 'Parties',
+                  icon: const Icon(Icons.people),
+                  label: l10n.nav_parties,
                 ),
                 BottomNavigationBarItem(
-                  icon: Icon(Icons.settings),
-                  label: 'Settings',
+                  icon: const Icon(Icons.settings),
+                  label: l10n.nav_settings,
                 ),
               ]
-            : const [
+            : [
                 BottomNavigationBarItem(
-                  icon: Icon(Icons.home_outlined),
-                  label: 'Home',
+                  icon: const Icon(Icons.home_outlined),
+                  label: l10n.nav_dashboard,
                 ),
                 BottomNavigationBarItem(
-                  icon: Icon(Icons.receipt),
-                  label: 'Bills',
+                  icon: const Icon(Icons.receipt),
+                  label: l10n.nav_invoices,
                 ),
                 BottomNavigationBarItem(
-                  icon: Icon(Icons.inventory),
-                  label: 'Items',
+                  icon: const Icon(Icons.inventory),
+                  label: l10n.nav_items,
                 ),
                 BottomNavigationBarItem(
-                  icon: Icon(Icons.people),
-                  label: 'Parties',
+                  icon: const Icon(Icons.people),
+                  label: l10n.nav_parties,
                 ),
                 BottomNavigationBarItem(
-                  icon: Icon(Icons.settings),
-                  label: 'Settings',
+                  icon: const Icon(Icons.settings),
+                  label: l10n.nav_settings,
                 ),
               ],
       ),

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import '../../models/party.dart';
 import '../../providers/party_provider.dart';
 import '../../theme/app_button_styles.dart';
@@ -68,10 +69,11 @@ class _AddEditPartyScreenState extends State<AddEditPartyScreen> {
 
     setState(() => _isSaving = false);
 
+    final l10n = AppLocalizations.of(context)!;
     if (success) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Party ${widget.party != null ? 'updated' : 'created'} successfully'),
+          content: Text(widget.party != null ? l10n.partyForm_updateSuccess : l10n.partyForm_createSuccess),
           backgroundColor: Colors.green,
           behavior: SnackBarBehavior.floating,
         ),
@@ -80,7 +82,7 @@ class _AddEditPartyScreenState extends State<AddEditPartyScreen> {
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(partyProvider.errorMessage ?? 'Failed to save party'),
+          content: Text(partyProvider.errorMessage ?? l10n.partyForm_saveFailed),
           backgroundColor: Colors.red,
           behavior: SnackBarBehavior.floating,
         ),
@@ -90,12 +92,14 @@ class _AddEditPartyScreenState extends State<AddEditPartyScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+
     return GestureDetector(
       onTap: () => FocusScope.of(context).unfocus(),
       behavior: HitTestBehavior.opaque,
       child: Scaffold(
         appBar: AppBar(
-          title: Text(widget.party != null ? 'Edit Party' : 'Create Party'),
+          title: Text(widget.party != null ? l10n.parties_editParty : l10n.parties_createParty),
         ),
         body: Form(
         key: _formKey,
@@ -105,8 +109,8 @@ class _AddEditPartyScreenState extends State<AddEditPartyScreen> {
             TextFormField(
               controller: _nameController,
               decoration: InputDecoration(
-                labelText: 'Party Name',
-                hintText: 'e.g., John Doe',
+                labelText: l10n.parties_partyName,
+                hintText: l10n.partyForm_nameHint,
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),
@@ -115,7 +119,7 @@ class _AddEditPartyScreenState extends State<AddEditPartyScreen> {
               ),
               validator: (value) {
                 if (value == null || value.trim().isEmpty) {
-                  return 'Name is required';
+                  return l10n.validation_nameRequired;
                 }
                 return null;
               },
@@ -125,8 +129,8 @@ class _AddEditPartyScreenState extends State<AddEditPartyScreen> {
             TextFormField(
               controller: _bundleRateController,
               decoration: InputDecoration(
-                labelText: 'Specific Bundle Rate (Optional)',
-                hintText: 'Enter bundle rate',
+                labelText: l10n.parties_specificBundleRate,
+                hintText: l10n.parties_enterBundleRate,
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),
@@ -138,7 +142,7 @@ class _AddEditPartyScreenState extends State<AddEditPartyScreen> {
                 if (value != null && value.trim().isNotEmpty) {
                   final number = double.tryParse(value.trim());
                   if (number == null || number < 0) {
-                    return 'Please enter a valid positive number';
+                    return l10n.settings_enterPositiveNumber;
                   }
                 }
                 return null;
@@ -149,9 +153,9 @@ class _AddEditPartyScreenState extends State<AddEditPartyScreen> {
             TextFormField(
               controller: _openingBalanceController,
               decoration: InputDecoration(
-                labelText: 'Opening Balance (Optional)',
-                hintText: 'Enter opening balance',
-                helperText: 'Initial amount owed at the start (can be positive or negative)',
+                labelText: l10n.parties_openingBalance,
+                hintText: l10n.parties_enterOpeningBalance,
+                helperText: l10n.parties_openingBalanceHint,
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),
@@ -163,7 +167,7 @@ class _AddEditPartyScreenState extends State<AddEditPartyScreen> {
                 if (value != null && value.trim().isNotEmpty) {
                   final number = double.tryParse(value.trim());
                   if (number == null) {
-                    return 'Please enter a valid number';
+                    return l10n.partyForm_enterValidNumber;
                   }
                 }
                 return null;
@@ -184,7 +188,7 @@ class _AddEditPartyScreenState extends State<AddEditPartyScreen> {
                       ),
                     )
                   : Text(
-                      widget.party != null ? 'Update Party' : 'Create Party',
+                      widget.party != null ? l10n.partyForm_updateButton : l10n.partyForm_createButton,
                       style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
                     ),
             ),

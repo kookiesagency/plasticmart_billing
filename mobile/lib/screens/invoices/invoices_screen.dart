@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import '../../models/invoice.dart';
 import '../../providers/invoice_provider.dart';
 import 'create_invoice_screen.dart';
@@ -90,10 +91,11 @@ class _InvoicesScreenState extends State<InvoicesScreen> with SingleTickerProvid
 
     if (!mounted) return;
 
+    final l10n = AppLocalizations.of(context)!;
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(
-          success ? 'Bill deleted successfully' : 'Failed to delete bill',
+          success ? l10n.invoices_deleteSuccess : l10n.invoices_deleteFailed,
         ),
         backgroundColor: success ? Colors.green : Colors.red,
         behavior: SnackBarBehavior.floating,
@@ -107,10 +109,11 @@ class _InvoicesScreenState extends State<InvoicesScreen> with SingleTickerProvid
 
     if (!mounted) return;
 
+    final l10n = AppLocalizations.of(context)!;
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(
-          success ? 'Bill restored successfully' : 'Failed to restore bill',
+          success ? l10n.invoices_restoreSuccess : l10n.invoices_restoreFailed,
         ),
         backgroundColor: success ? Colors.green : Colors.red,
         behavior: SnackBarBehavior.floating,
@@ -121,24 +124,27 @@ class _InvoicesScreenState extends State<InvoicesScreen> with SingleTickerProvid
   Future<void> _permanentlyDeleteInvoice(int id) async {
     final confirmed = await showDialog<bool>(
       context: context,
-      builder: (context) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        title: const Text('Permanently Delete Bill'),
-        content: const Text('This action is IRREVERSIBLE. This will permanently delete the bill and all associated data. Are you sure?'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: const Text('Cancel'),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.pop(context, true),
-            style: FilledButton.styleFrom(
-              backgroundColor: Colors.red,
+      builder: (dialogContext) {
+        final dialogL10n = AppLocalizations.of(dialogContext)!;
+        return AlertDialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          title: Text(dialogL10n.invoices_permanentDeleteTitle),
+          content: Text(dialogL10n.invoices_permanentDeleteMessage),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(dialogContext, false),
+              child: Text(dialogL10n.common_cancel),
             ),
-            child: const Text('Delete Permanently'),
-          ),
-        ],
-      ),
+            FilledButton(
+              onPressed: () => Navigator.pop(dialogContext, true),
+              style: FilledButton.styleFrom(
+                backgroundColor: Colors.red,
+              ),
+              child: Text(dialogL10n.invoices_permanentDeleteButton),
+            ),
+          ],
+        );
+      },
     );
 
     if (confirmed != true || !mounted) return;
@@ -148,10 +154,11 @@ class _InvoicesScreenState extends State<InvoicesScreen> with SingleTickerProvid
 
     if (!mounted) return;
 
+    final l10n = AppLocalizations.of(context)!;
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(
-          success ? 'Bill permanently deleted' : 'Failed to permanently delete bill',
+          success ? l10n.invoices_permanentDeleteSuccess : l10n.invoices_permanentDeleteFailed,
         ),
         backgroundColor: success ? Colors.green : Colors.red,
         behavior: SnackBarBehavior.floating,
@@ -161,6 +168,7 @@ class _InvoicesScreenState extends State<InvoicesScreen> with SingleTickerProvid
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final invoiceProvider = Provider.of<InvoiceProvider>(context);
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
@@ -173,16 +181,16 @@ class _InvoicesScreenState extends State<InvoicesScreen> with SingleTickerProvid
       children: [
         TabBar(
           controller: _tabController,
-          tabs: const [
-            Tab(text: 'Active'),
-            Tab(text: 'Deleted'),
+          tabs: [
+            Tab(text: l10n.invoices_active),
+            Tab(text: l10n.invoices_deleted),
           ],
         ),
         Padding(
           padding: const EdgeInsets.all(16.0),
           child: TextField(
             decoration: InputDecoration(
-              hintText: 'Search bills...',
+              hintText: l10n.invoices_searchInvoices,
               prefixIcon: const Icon(Icons.search),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
@@ -220,7 +228,7 @@ class _InvoicesScreenState extends State<InvoicesScreen> with SingleTickerProvid
                           ),
                           const SizedBox(height: 16),
                           Text(
-                            _showDeleted ? 'No deleted bills' : 'No bills yet',
+                            _showDeleted ? l10n.invoices_noDeletedInvoices : l10n.invoices_noInvoicesYet,
                             style: const TextStyle(
                               fontSize: 18,
                               color: Colors.grey,
@@ -239,7 +247,7 @@ class _InvoicesScreenState extends State<InvoicesScreen> with SingleTickerProvid
                                 if (result == true) _loadData();
                               },
                               icon: const Icon(Icons.add),
-                              label: const Text('Create your first bill'),
+                              label: Text(l10n.invoices_createFirstInvoice),
                             ),
                           ],
                         ],
@@ -268,24 +276,27 @@ class _InvoicesScreenState extends State<InvoicesScreen> with SingleTickerProvid
                             confirmDismiss: (direction) async {
                               return await showDialog<bool>(
                                 context: context,
-                                builder: (context) => AlertDialog(
-                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                                  title: const Text('Delete Bill'),
-                                  content: const Text('Are you sure you want to delete this bill?'),
-                                  actions: [
-                                    TextButton(
-                                      onPressed: () => Navigator.pop(context, false),
-                                      child: const Text('Cancel'),
-                                    ),
-                                    FilledButton(
-                                      onPressed: () => Navigator.pop(context, true),
-                                      style: FilledButton.styleFrom(
-                                        backgroundColor: Colors.red,
+                                builder: (dialogContext) {
+                                  final dialogL10n = AppLocalizations.of(dialogContext)!;
+                                  return AlertDialog(
+                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                    title: Text(dialogL10n.invoices_deleteInvoice),
+                                    content: Text(dialogL10n.common_areYouSure),
+                                    actions: [
+                                      TextButton(
+                                        onPressed: () => Navigator.pop(dialogContext, false),
+                                        child: Text(dialogL10n.common_cancel),
                                       ),
-                                      child: const Text('Delete'),
-                                    ),
-                                  ],
-                                ),
+                                      FilledButton(
+                                        onPressed: () => Navigator.pop(dialogContext, true),
+                                        style: FilledButton.styleFrom(
+                                          backgroundColor: Colors.red,
+                                        ),
+                                        child: Text(dialogL10n.common_delete),
+                                      ),
+                                    ],
+                                  );
+                                },
                               );
                             },
                             onDismissed: (direction) async {
@@ -391,7 +402,7 @@ class _InvoicesScreenState extends State<InvoicesScreen> with SingleTickerProvid
                                               children: [
                                                 if (invoice.invoiceNumber != null) ...[
                                                   Text(
-                                                    'Bill #${invoice.invoiceNumber}',
+                                                    '${l10n.invoices_billNumber}${invoice.invoiceNumber}',
                                                     style: TextStyle(
                                                       color: theme.textTheme.bodyLarge?.color,
                                                       fontSize: 13,
@@ -416,7 +427,7 @@ class _InvoicesScreenState extends State<InvoicesScreen> with SingleTickerProvid
                                                 IconButton(
                                                   icon: const Icon(Icons.restore, color: Colors.green, size: 22),
                                                   onPressed: () => _restoreInvoice(invoice.id!),
-                                                  tooltip: 'Restore',
+                                                  tooltip: l10n.invoices_restore,
                                                   padding: EdgeInsets.zero,
                                                   constraints: const BoxConstraints(),
                                                 ),
@@ -424,7 +435,7 @@ class _InvoicesScreenState extends State<InvoicesScreen> with SingleTickerProvid
                                                 IconButton(
                                                   icon: const Icon(Icons.delete_forever, color: Colors.red, size: 22),
                                                   onPressed: () => _permanentlyDeleteInvoice(invoice.id!),
-                                                  tooltip: 'Delete Permanently',
+                                                  tooltip: l10n.invoices_permanentDeleteTooltip,
                                                   padding: EdgeInsets.zero,
                                                   constraints: const BoxConstraints(),
                                                 ),

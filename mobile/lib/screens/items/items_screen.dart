@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import '../../models/item.dart';
 import '../../providers/item_provider.dart';
 import '../../providers/unit_provider.dart';
@@ -77,23 +78,24 @@ class _ItemsScreenState extends State<ItemsScreen> with SingleTickerProviderStat
   }
 
   Future<void> _deleteItem(int id) async {
+    final l10n = AppLocalizations.of(context)!;
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        title: const Text('Delete Item'),
-        content: const Text('Are you sure you want to delete this item?'),
+        title: Text(l10n.items_deleteItem),
+        content: Text(l10n.common_areYouSure),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: const Text('Cancel'),
+            child: Text(l10n.common_cancel),
           ),
           FilledButton(
             onPressed: () => Navigator.pop(context, true),
             style: FilledButton.styleFrom(
               backgroundColor: Colors.red,
             ),
-            child: const Text('Delete'),
+            child: Text(l10n.common_delete),
           ),
         ],
       ),
@@ -105,10 +107,11 @@ class _ItemsScreenState extends State<ItemsScreen> with SingleTickerProviderStat
 
       if (!mounted) return;
 
+      final l10nAfter = AppLocalizations.of(context)!;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            success ? 'Item deleted successfully' : 'Failed to delete item',
+            success ? l10nAfter.items_deleteSuccess : l10nAfter.items_deleteFailed,
           ),
           backgroundColor: success ? Colors.green : Colors.red,
           behavior: SnackBarBehavior.floating,
@@ -123,10 +126,11 @@ class _ItemsScreenState extends State<ItemsScreen> with SingleTickerProviderStat
 
     if (!mounted) return;
 
+    final l10n = AppLocalizations.of(context)!;
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(
-          success ? 'Item restored successfully' : 'Failed to restore item',
+          success ? l10n.items_restoreSuccess : l10n.items_restoreFailed,
         ),
         backgroundColor: success ? Colors.green : Colors.red,
         behavior: SnackBarBehavior.floating,
@@ -166,6 +170,7 @@ class _ItemsScreenState extends State<ItemsScreen> with SingleTickerProviderStat
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final itemProvider = Provider.of<ItemProvider>(context);
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
@@ -178,16 +183,16 @@ class _ItemsScreenState extends State<ItemsScreen> with SingleTickerProviderStat
         children: [
           TabBar(
             controller: _tabController,
-            tabs: const [
-              Tab(text: 'Active'),
-              Tab(text: 'Deleted'),
+            tabs: [
+              Tab(text: l10n.items_active),
+              Tab(text: l10n.items_deleted),
             ],
           ),
           Padding(
             padding: const EdgeInsets.all(16.0),
             child: TextField(
               decoration: InputDecoration(
-                hintText: 'Search items...',
+                hintText: l10n.items_searchItems,
                 prefixIcon: const Icon(Icons.search),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
@@ -235,7 +240,7 @@ class _ItemsScreenState extends State<ItemsScreen> with SingleTickerProviderStat
                             ),
                             const SizedBox(height: 16),
                             Text(
-                              _showDeleted ? 'No deleted items' : 'No items yet',
+                              _showDeleted ? l10n.items_noDeletedItems : l10n.items_noItemsYet,
                               style: const TextStyle(
                                 fontSize: 18,
                                 color: Colors.grey,
@@ -246,7 +251,7 @@ class _ItemsScreenState extends State<ItemsScreen> with SingleTickerProviderStat
                               TextButton.icon(
                                 onPressed: () => _showAddEditDialog(),
                                 icon: const Icon(Icons.add),
-                                label: const Text('Add your first item'),
+                                label: Text(l10n.items_createFirstItem),
                               ),
                             ],
                           ],
@@ -296,24 +301,27 @@ class _ItemsScreenState extends State<ItemsScreen> with SingleTickerProviderStat
                                   // Delete action - show confirmation
                                   return await showDialog<bool>(
                                     context: context,
-                                    builder: (context) => AlertDialog(
-                                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                                      title: const Text('Delete Item'),
-                                      content: const Text('Are you sure you want to delete this item?'),
-                                      actions: [
-                                        TextButton(
-                                          onPressed: () => Navigator.pop(context, false),
-                                          child: const Text('Cancel'),
-                                        ),
-                                        FilledButton(
-                                          onPressed: () => Navigator.pop(context, true),
-                                          style: FilledButton.styleFrom(
-                                            backgroundColor: Colors.red,
+                                    builder: (dialogContext) {
+                                      final dialogL10n = AppLocalizations.of(dialogContext)!;
+                                      return AlertDialog(
+                                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                        title: Text(dialogL10n.items_deleteItem),
+                                        content: Text(dialogL10n.common_areYouSure),
+                                        actions: [
+                                          TextButton(
+                                            onPressed: () => Navigator.pop(dialogContext, false),
+                                            child: Text(dialogL10n.common_cancel),
                                           ),
-                                          child: const Text('Delete'),
-                                        ),
-                                      ],
-                                    ),
+                                          FilledButton(
+                                            onPressed: () => Navigator.pop(dialogContext, true),
+                                            style: FilledButton.styleFrom(
+                                              backgroundColor: Colors.red,
+                                            ),
+                                            child: Text(dialogL10n.common_delete),
+                                          ),
+                                        ],
+                                      );
+                                    },
                                   );
                                 }
                               },
@@ -352,18 +360,42 @@ class _ItemsScreenState extends State<ItemsScreen> with SingleTickerProviderStat
                                           child: Column(
                                             crossAxisAlignment: CrossAxisAlignment.start,
                                             children: [
-                                              Text(
-                                                item.name,
-                                                style: const TextStyle(
-                                                  fontWeight: FontWeight.w600,
-                                                  fontSize: 16,
-                                                ),
+                                              Row(
+                                                children: [
+                                                  Expanded(
+                                                    child: Text(
+                                                      item.name,
+                                                      style: const TextStyle(
+                                                        fontWeight: FontWeight.w600,
+                                                        fontSize: 16,
+                                                      ),
+                                                    ),
+                                                  ),
+                                                  if (item.purchaseParty?.partyCode != null) ...[
+                                                    const SizedBox(width: 8),
+                                                    Container(
+                                                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                                                      decoration: BoxDecoration(
+                                                        color: const Color(0xFF14B8A6).withOpacity(0.1),
+                                                        borderRadius: BorderRadius.circular(6),
+                                                      ),
+                                                      child: Text(
+                                                        item.purchaseParty!.partyCode,
+                                                        style: const TextStyle(
+                                                          color: Color(0xFF14B8A6),
+                                                          fontSize: 11,
+                                                          fontWeight: FontWeight.bold,
+                                                        ),
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ],
                                               ),
                                               const SizedBox(height: 8),
                                               Row(
                                                 children: [
                                                   Text(
-                                                    'Rate: ',
+                                                    '${l10n.items_rate}: ',
                                                     style: TextStyle(
                                                       color: theme.textTheme.bodySmall?.color?.withOpacity(0.7),
                                                       fontSize: 14,
@@ -410,7 +442,7 @@ class _ItemsScreenState extends State<ItemsScreen> with SingleTickerProviderStat
                                               Row(
                                                 children: [
                                                   Text(
-                                                    'Purchase: ',
+                                                    '${l10n.items_purchase}: ',
                                                     style: TextStyle(
                                                       color: theme.textTheme.bodySmall?.color?.withOpacity(0.7),
                                                       fontSize: 14,
@@ -454,7 +486,7 @@ class _ItemsScreenState extends State<ItemsScreen> with SingleTickerProviderStat
                                                     ],
                                                   ] else ...[
                                                     Text(
-                                                      'Not set',
+                                                      l10n.items_notSet,
                                                       style: TextStyle(
                                                         color: theme.textTheme.bodySmall?.color?.withOpacity(0.7),
                                                         fontSize: 14,
@@ -470,7 +502,7 @@ class _ItemsScreenState extends State<ItemsScreen> with SingleTickerProviderStat
                                           IconButton(
                                             icon: const Icon(Icons.restore, color: Colors.green, size: 22),
                                             onPressed: () => _restoreItem(item.id!),
-                                            tooltip: 'Restore',
+                                            tooltip: l10n.items_restore,
                                           ),
                                       ],
                                     ),

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import '../providers/invoice_provider.dart';
 import '../providers/party_provider.dart';
 import '../providers/basic_mode_provider.dart';
@@ -72,6 +73,7 @@ class _DashboardTabState extends State<DashboardTab> {
   }
 
   Widget _buildQuickActions(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
     final basicModeProvider = context.watch<BasicModeProvider>();
     final isBasicMode = basicModeProvider.isBasicMode;
@@ -80,7 +82,7 @@ class _DashboardTabState extends State<DashboardTab> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Quick Actions',
+          l10n.dashboard_quickActions,
           style: theme.textTheme.titleMedium?.copyWith(
             fontWeight: FontWeight.w600,
           ),
@@ -93,7 +95,7 @@ class _DashboardTabState extends State<DashboardTab> {
               _buildQuickActionButton(
                 context: context,
                 icon: Icons.inventory_2_outlined,
-                label: 'Add Item',
+                label: l10n.dashboard_addItem,
                 color: const Color(0xFF0EA5E9), // Sky blue
                 onTap: () {
                   Navigator.push(
@@ -108,7 +110,7 @@ class _DashboardTabState extends State<DashboardTab> {
               _buildQuickActionButton(
                 context: context,
                 icon: Icons.people_outlined,
-                label: 'Add Party',
+                label: l10n.dashboard_addParty,
                 color: const Color(0xFFF59E0B), // Amber/Orange
                 onTap: () {
                   Navigator.push(
@@ -131,7 +133,7 @@ class _DashboardTabState extends State<DashboardTab> {
                     child: _buildQuickActionButton(
                       context: context,
                       icon: Icons.receipt_long_outlined,
-                      label: 'Create Bill',
+                      label: l10n.dashboard_createBill,
                       color: theme.colorScheme.primary,
                       onTap: () {
                         Navigator.push(
@@ -148,7 +150,7 @@ class _DashboardTabState extends State<DashboardTab> {
                     child: _buildQuickActionButton(
                       context: context,
                       icon: Icons.bolt,
-                      label: 'Offline Bill',
+                      label: l10n.dashboard_offlineBill,
                       color: Colors.orange,
                       onTap: () {
                         Navigator.push(
@@ -169,7 +171,7 @@ class _DashboardTabState extends State<DashboardTab> {
                     child: _buildQuickActionButton(
                       context: context,
                       icon: Icons.people_outlined,
-                      label: 'Add Party',
+                      label: l10n.dashboard_addParty,
                       color: Colors.green,
                       onTap: () {
                         Navigator.push(
@@ -186,7 +188,7 @@ class _DashboardTabState extends State<DashboardTab> {
                     child: _buildQuickActionButton(
                       context: context,
                       icon: Icons.inventory_2_outlined,
-                      label: 'Add Item',
+                      label: l10n.dashboard_addItem,
                       color: Colors.purple,
                       onTap: () {
                         Navigator.push(
@@ -320,11 +322,13 @@ class _DashboardTabState extends State<DashboardTab> {
         // Total outstanding = opening_balance + total_billed - total_received
         final totalOutstanding = totalOpeningBalance + totalBilled - totalReceived;
 
+        final l10n = AppLocalizations.of(context)!;
+
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Financial Summary',
+              l10n.dashboard_financialSummary,
               style: theme.textTheme.titleMedium?.copyWith(
                 fontWeight: FontWeight.w600,
               ),
@@ -339,7 +343,7 @@ class _DashboardTabState extends State<DashboardTab> {
               childAspectRatio: 1.5,
               children: [
                 _buildSummaryCard(
-                  title: 'Today',
+                  title: l10n.dashboard_today,
                   amount: todayRevenue,
                   icon: Icons.today_outlined,
                   color: Colors.blue,
@@ -347,7 +351,7 @@ class _DashboardTabState extends State<DashboardTab> {
                   theme: theme,
                 ),
                 _buildSummaryCard(
-                  title: 'This Week',
+                  title: l10n.dashboard_thisWeek,
                   amount: weekRevenue,
                   icon: Icons.calendar_today_outlined,
                   color: Colors.green,
@@ -355,7 +359,7 @@ class _DashboardTabState extends State<DashboardTab> {
                   theme: theme,
                 ),
                 _buildSummaryCard(
-                  title: 'This Month',
+                  title: l10n.dashboard_thisMonth,
                   amount: monthRevenue,
                   icon: Icons.calendar_month_outlined,
                   color: Colors.purple,
@@ -363,7 +367,7 @@ class _DashboardTabState extends State<DashboardTab> {
                   theme: theme,
                 ),
                 _buildSummaryCard(
-                  title: 'Outstanding',
+                  title: l10n.dashboard_totalOutstanding,
                   amount: totalOutstanding,
                   icon: Icons.account_balance_wallet_outlined,
                   color: Colors.orange,
@@ -429,6 +433,7 @@ class _DashboardTabState extends State<DashboardTab> {
   Widget _buildPaymentStatus(BuildContext context) {
     return Consumer<InvoiceProvider>(
       builder: (context, invoiceProvider, child) {
+        final l10n = AppLocalizations.of(context)!;
         final theme = Theme.of(context);
         final isDark = theme.brightness == Brightness.dark;
 
@@ -452,7 +457,7 @@ class _DashboardTabState extends State<DashboardTab> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Payment Status',
+              l10n.dashboard_paymentStatus,
               style: theme.textTheme.titleMedium?.copyWith(
                 fontWeight: FontWeight.w600,
               ),
@@ -462,7 +467,7 @@ class _DashboardTabState extends State<DashboardTab> {
               children: [
                 Expanded(
                   child: _buildStatusCard(
-                    title: 'Paid',
+                    title: l10n.dashboard_paid,
                     count: paidCount,
                     color: Colors.green,
                     icon: Icons.check_circle_outline,
@@ -473,7 +478,7 @@ class _DashboardTabState extends State<DashboardTab> {
                 const SizedBox(width: 12),
                 Expanded(
                   child: _buildStatusCard(
-                    title: 'Pending',
+                    title: l10n.dashboard_pending,
                     count: pendingCount,
                     color: Colors.red,
                     icon: Icons.pending_outlined,
@@ -484,7 +489,7 @@ class _DashboardTabState extends State<DashboardTab> {
                 const SizedBox(width: 12),
                 Expanded(
                   child: _buildStatusCard(
-                    title: 'Partial',
+                    title: l10n.dashboard_partial,
                     count: partialCount,
                     color: Colors.orange,
                     icon: Icons.timelapse_outlined,
@@ -553,6 +558,7 @@ class _DashboardTabState extends State<DashboardTab> {
   Widget _buildRecentInvoices(BuildContext context) {
     return Consumer<InvoiceProvider>(
       builder: (context, invoiceProvider, child) {
+        final l10n = AppLocalizations.of(context)!;
         final theme = Theme.of(context);
         final colorScheme = theme.colorScheme;
         final isDark = theme.brightness == Brightness.dark;
@@ -582,7 +588,7 @@ class _DashboardTabState extends State<DashboardTab> {
                   ),
                   const SizedBox(height: 12),
                   Text(
-                    'No invoices yet',
+                    l10n.dashboard_noInvoicesYet,
                     style: theme.textTheme.titleMedium?.copyWith(
                       color: subtitleColor,
                     ),
@@ -600,14 +606,14 @@ class _DashboardTabState extends State<DashboardTab> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  'Recent Invoices',
+                  l10n.dashboard_recentInvoices,
                   style: theme.textTheme.titleMedium?.copyWith(
                     fontWeight: FontWeight.w600,
                   ),
                 ),
                 TextButton(
                   onPressed: () => widget.onSwitchToTab?.call(1),
-                  child: const Text('View All'),
+                  child: Text(l10n.dashboard_viewAll),
                 ),
               ],
             ),
@@ -642,21 +648,22 @@ class _DashboardTabState extends State<DashboardTab> {
     required Color subtitleColor,
     required ColorScheme colorScheme,
   }) {
+    final l10n = AppLocalizations.of(context)!;
     Color statusColor;
     String statusText;
 
     switch (invoice.status) {
       case 'paid':
         statusColor = Colors.green;
-        statusText = 'Paid';
+        statusText = l10n.dashboard_paid;
         break;
       case 'partial':
         statusColor = Colors.orange;
-        statusText = 'Partial';
+        statusText = l10n.dashboard_partial;
         break;
       default:
         statusColor = Colors.red;
-        statusText = 'Pending';
+        statusText = l10n.dashboard_pending;
     }
 
     return Container(
@@ -683,7 +690,7 @@ class _DashboardTabState extends State<DashboardTab> {
                 children: [
                   Expanded(
                     child: Text(
-                      invoice.partyName ?? 'Unknown Party',
+                      invoice.partyName ?? l10n.dashboard_unknownParty,
                       style: theme.textTheme.titleMedium?.copyWith(
                         fontWeight: FontWeight.w600,
                       ),
@@ -703,9 +710,9 @@ class _DashboardTabState extends State<DashboardTab> {
                                 : const Color(0xFFFFF7ED),
                             borderRadius: BorderRadius.circular(4),
                           ),
-                          child: const Text(
-                            'OFFLINE',
-                            style: TextStyle(
+                          child: Text(
+                            l10n.dashboard_offline,
+                            style: const TextStyle(
                               color: Color(0xFFC2410C), // text-orange-700
                               fontSize: 9,
                               fontWeight: FontWeight.bold,
@@ -748,7 +755,7 @@ class _DashboardTabState extends State<DashboardTab> {
                       children: [
                         if (invoice.invoiceNumber != null) ...[
                           Text(
-                            'Bill #${invoice.invoiceNumber}',
+                            '${l10n.dashboard_billNumber}${invoice.invoiceNumber}',
                             style: theme.textTheme.bodyMedium?.copyWith(
                               color: subtitleColor,
                               fontSize: 13,
@@ -759,7 +766,7 @@ class _DashboardTabState extends State<DashboardTab> {
                         Text(
                           invoice.invoiceDate != null
                               ? DateFormat('dd MMM yyyy').format(DateTime.parse(invoice.invoiceDate!))
-                              : 'No date',
+                              : l10n.dashboard_noDate,
                           style: theme.textTheme.bodySmall?.copyWith(
                             color: subtitleColor,
                             fontSize: 12,

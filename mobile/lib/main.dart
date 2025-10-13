@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:provider/provider.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'config/supabase_config.dart';
 import 'providers/auth_provider.dart';
 import 'providers/unit_provider.dart';
@@ -10,6 +12,7 @@ import 'providers/theme_provider.dart';
 import 'providers/basic_mode_provider.dart';
 import 'providers/item_category_provider.dart';
 import 'providers/purchase_party_provider.dart';
+import 'providers/language_provider.dart';
 import 'theme/app_theme.dart';
 import 'screens/auth/splash_screen.dart';
 import 'screens/settings/categories_screen.dart';
@@ -41,9 +44,10 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => BasicModeProvider()),
         ChangeNotifierProvider(create: (_) => ItemCategoryProvider()),
         ChangeNotifierProvider(create: (_) => PurchasePartyProvider()),
+        ChangeNotifierProvider(create: (_) => LanguageProvider()),
       ],
-      child: Consumer<ThemeProvider>(
-        builder: (context, themeProvider, _) {
+      child: Consumer2<ThemeProvider, LanguageProvider>(
+        builder: (context, themeProvider, languageProvider, _) {
           final themeMode = themeProvider.isInitialized
               ? themeProvider.themeMode
               : ThemeMode.light;
@@ -54,6 +58,18 @@ class MyApp extends StatelessWidget {
             theme: AppTheme.light(),
             darkTheme: AppTheme.dark(),
             themeMode: themeMode,
+            locale: languageProvider.locale,
+            localizationsDelegates: const [
+              AppLocalizations.delegate,
+              GlobalMaterialLocalizations.delegate,
+              GlobalWidgetsLocalizations.delegate,
+              GlobalCupertinoLocalizations.delegate,
+            ],
+            supportedLocales: const [
+              Locale('en'), // English
+              Locale('hi'), // Hindi
+              Locale('ur'), // Urdu
+            ],
             home: const SplashScreen(),
             routes: {
               '/categories': (context) => const CategoriesScreen(),

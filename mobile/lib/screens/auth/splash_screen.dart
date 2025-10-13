@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import '../../providers/auth_provider.dart';
 import '../home_screen.dart';
 import 'login_screen.dart';
@@ -61,6 +62,8 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+
     return Scaffold(
       backgroundColor: const Color(0xFFC5E5DC),
       body: FadeTransition(
@@ -104,9 +107,9 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
               const SizedBox(height: 8),
 
               // Tagline
-              const Text(
-                'Billing Made Simple',
-                style: TextStyle(
+              Text(
+                l10n.splash_tagline,
+                style: const TextStyle(
                   fontSize: 16,
                   color: Colors.black54,
                   letterSpacing: 0.5,
@@ -126,9 +129,9 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
               const SizedBox(height: 24),
 
               // Version Number
-              const Text(
-                'Version 1.0.0',
-                style: TextStyle(
+              Text(
+                l10n.splash_version,
+                style: const TextStyle(
                   fontSize: 12,
                   color: Colors.black38,
                 ),

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import '../../providers/unit_provider.dart';
 import '../../models/unit.dart';
 
@@ -61,6 +62,7 @@ class _UnitsScreenState extends State<UnitsScreen> with SingleTickerProviderStat
   }
 
   void _showAddEditDialog({Unit? unit}) {
+    final l10n = AppLocalizations.of(context)!;
     _editingUnit = unit;
     _nameController.text = unit?.name ?? '';
 
@@ -68,21 +70,21 @@ class _UnitsScreenState extends State<UnitsScreen> with SingleTickerProviderStat
       context: context,
       builder: (context) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        title: Text(unit == null ? 'Add Unit' : 'Edit Unit'),
+        title: Text(unit == null ? l10n.settings_createUnit : l10n.settings_editUnit),
         content: Form(
           key: _formKey,
           child: TextFormField(
             controller: _nameController,
-            decoration: const InputDecoration(
-              labelText: 'Unit Name',
-              hintText: 'e.g., KG, PCS, DZ',
-              border: OutlineInputBorder(),
-              prefixIcon: Icon(Icons.straighten),
+            decoration: InputDecoration(
+              labelText: l10n.settings_unitName,
+              hintText: l10n.settings_unitNameHint,
+              border: const OutlineInputBorder(),
+              prefixIcon: const Icon(Icons.straighten),
             ),
             textCapitalization: TextCapitalization.characters,
             validator: (value) {
               if (value == null || value.trim().isEmpty) {
-                return 'Please enter a unit name';
+                return l10n.settings_pleaseEnterUnitName;
               }
               return null;
             },
@@ -92,11 +94,11 @@ class _UnitsScreenState extends State<UnitsScreen> with SingleTickerProviderStat
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
+            child: Text(l10n.common_cancel),
           ),
           FilledButton(
             onPressed: () => _saveUnit(),
-            child: const Text('Save'),
+            child: Text(l10n.common_save),
           ),
         ],
       ),
@@ -106,6 +108,7 @@ class _UnitsScreenState extends State<UnitsScreen> with SingleTickerProviderStat
   Future<void> _saveUnit() async {
     if (!_formKey.currentState!.validate()) return;
 
+    final l10n = AppLocalizations.of(context)!;
     final unitProvider = Provider.of<UnitProvider>(context, listen: false);
     final name = _nameController.text.trim().toUpperCase();
 
@@ -123,8 +126,8 @@ class _UnitsScreenState extends State<UnitsScreen> with SingleTickerProviderStat
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(_editingUnit == null
-              ? 'Unit created successfully'
-              : 'Unit updated successfully'),
+              ? l10n.settings_unitCreatedSuccess
+              : l10n.settings_unitUpdatedSuccess),
           backgroundColor: Colors.green,
           behavior: SnackBarBehavior.floating,
         ),
@@ -134,7 +137,7 @@ class _UnitsScreenState extends State<UnitsScreen> with SingleTickerProviderStat
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(unitProvider.errorMessage ?? 'Failed to save unit'),
+          content: Text(unitProvider.errorMessage ?? l10n.settings_failedToSaveUnit),
           backgroundColor: Colors.red,
           behavior: SnackBarBehavior.floating,
         ),
@@ -143,6 +146,7 @@ class _UnitsScreenState extends State<UnitsScreen> with SingleTickerProviderStat
   }
 
   Future<void> _restoreUnit(int id) async {
+    final l10n = AppLocalizations.of(context)!;
     final unitProvider = Provider.of<UnitProvider>(context, listen: false);
     final success = await unitProvider.restoreUnit(id);
 
@@ -151,7 +155,7 @@ class _UnitsScreenState extends State<UnitsScreen> with SingleTickerProviderStat
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(
-          success ? 'Unit restored successfully' : 'Failed to restore unit',
+          success ? l10n.settings_unitRestoredSuccess : l10n.settings_failedToRestoreUnit,
         ),
         backgroundColor: success ? Colors.green : Colors.red,
         behavior: SnackBarBehavior.floating,
@@ -161,6 +165,7 @@ class _UnitsScreenState extends State<UnitsScreen> with SingleTickerProviderStat
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final unitProvider = Provider.of<UnitProvider>(context);
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
@@ -174,12 +179,12 @@ class _UnitsScreenState extends State<UnitsScreen> with SingleTickerProviderStat
       behavior: HitTestBehavior.opaque,
       child: Scaffold(
         appBar: AppBar(
-          title: const Text('Units'),
+          title: Text(l10n.settings_units),
         actions: [
           IconButton(
             icon: const Icon(Icons.add),
             onPressed: () => _showAddEditDialog(),
-            tooltip: 'Add Unit',
+            tooltip: l10n.settings_addUnit,
           ),
         ],
       ),
@@ -187,16 +192,16 @@ class _UnitsScreenState extends State<UnitsScreen> with SingleTickerProviderStat
         children: [
           TabBar(
             controller: _tabController,
-            tabs: const [
-              Tab(text: 'Active'),
-              Tab(text: 'Deleted'),
+            tabs: [
+              Tab(text: l10n.settings_active),
+              Tab(text: l10n.settings_deleted),
             ],
           ),
           Padding(
             padding: const EdgeInsets.all(16.0),
             child: TextField(
               decoration: InputDecoration(
-                hintText: 'Search units...',
+                hintText: l10n.settings_searchUnits,
                 prefixIcon: const Icon(Icons.search),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
@@ -234,7 +239,7 @@ class _UnitsScreenState extends State<UnitsScreen> with SingleTickerProviderStat
                             ),
                             const SizedBox(height: 16),
                             Text(
-                              _showDeleted ? 'No deleted units' : 'No units yet',
+                              _showDeleted ? l10n.settings_noDeletedUnits : l10n.settings_noUnitsYet,
                               style: const TextStyle(
                                 fontSize: 18,
                                 color: Colors.grey,
@@ -245,7 +250,7 @@ class _UnitsScreenState extends State<UnitsScreen> with SingleTickerProviderStat
                               TextButton.icon(
                                 onPressed: () => _showAddEditDialog(),
                                 icon: const Icon(Icons.add),
-                                label: const Text('Add your first unit'),
+                                label: Text(l10n.settings_addFirstUnit),
                               ),
                             ],
                           ],
@@ -276,19 +281,19 @@ class _UnitsScreenState extends State<UnitsScreen> with SingleTickerProviderStat
                                   context: context,
                                   builder: (context) => AlertDialog(
                                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                                    title: const Text('Delete Unit'),
-                                    content: const Text('Are you sure you want to delete this unit?'),
+                                    title: Text(l10n.settings_deleteUnitTitle),
+                                    content: Text(l10n.settings_deleteUnitMessage),
                                     actions: [
                                       TextButton(
                                         onPressed: () => Navigator.pop(context, false),
-                                        child: const Text('Cancel'),
+                                        child: Text(l10n.common_cancel),
                                       ),
                                       FilledButton(
                                         onPressed: () => Navigator.pop(context, true),
                                         style: FilledButton.styleFrom(
                                           backgroundColor: Colors.red,
                                         ),
-                                        child: const Text('Delete'),
+                                        child: Text(l10n.common_delete),
                                       ),
                                     ],
                                   ),
@@ -326,7 +331,7 @@ class _UnitsScreenState extends State<UnitsScreen> with SingleTickerProviderStat
                                             if (unit.createdAt != null) ...[
                                               const SizedBox(height: 4),
                                               Text(
-                                                'Created on ${_formatDate(unit.createdAt!)}',
+                                                '${l10n.settings_createdOn} ${_formatDate(unit.createdAt!)}',
                                                 style: TextStyle(
                                                   color: theme.textTheme.bodySmall?.color?.withOpacity(0.7),
                                                   fontSize: 12,
@@ -340,14 +345,14 @@ class _UnitsScreenState extends State<UnitsScreen> with SingleTickerProviderStat
                                           ? IconButton(
                                               icon: const Icon(Icons.restore, color: Colors.green, size: 22),
                                               onPressed: () => _restoreUnit(unit.id!),
-                                              tooltip: 'Restore',
+                                              tooltip: l10n.settings_restore,
                                               padding: EdgeInsets.zero,
                                               constraints: const BoxConstraints(),
                                             )
                                           : IconButton(
                                               icon: Icon(Icons.edit_outlined, color: colorScheme.primary, size: 22),
                                               onPressed: () => _showAddEditDialog(unit: unit),
-                                              tooltip: 'Edit',
+                                              tooltip: l10n.settings_edit,
                                               padding: EdgeInsets.zero,
                                               constraints: const BoxConstraints(),
                                             ),

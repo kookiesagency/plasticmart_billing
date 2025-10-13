@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import '../../config/supabase_config.dart';
 import '../../models/party.dart';
 import '../../theme/theme_helpers.dart';
@@ -136,9 +137,10 @@ class _PartyWeeklyReportScreenState extends State<PartyWeeklyReportScreen> {
     } catch (e) {
       setState(() => _isLoading = false);
       if (mounted) {
+        final l10n = AppLocalizations.of(context)!;
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Failed to load report: $e'),
+            content: Text(l10n.parties_failedToLoadReport(e.toString())),
             backgroundColor: Colors.red,
             behavior: SnackBarBehavior.floating,
           ),
@@ -168,13 +170,14 @@ class _PartyWeeklyReportScreenState extends State<PartyWeeklyReportScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
     final colorScheme = theme.colorScheme;
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Weekly Report'),
+        title: Text(l10n.parties_weeklyReport),
         elevation: 0,
       ),
       body: _isLoading
@@ -203,7 +206,7 @@ class _PartyWeeklyReportScreenState extends State<PartyWeeklyReportScreen> {
                         ),
                         const SizedBox(height: 8),
                         Text(
-                          'Week of ${DateFormat('dd/MM/yyyy').format(_weekStart!)} to ${DateFormat('dd/MM/yyyy').format(_weekEnd!)}',
+                          '${l10n.parties_weekOf} ${DateFormat('dd/MM/yyyy').format(_weekStart!)} ${l10n.parties_to} ${DateFormat('dd/MM/yyyy').format(_weekEnd!)}',
                           style: TextStyle(
                             fontSize: 14,
                             color: Colors.white.withOpacity(0.9),
@@ -227,9 +230,9 @@ class _PartyWeeklyReportScreenState extends State<PartyWeeklyReportScreen> {
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              const Text(
-                                'Previous Outstanding Balance',
-                                style: TextStyle(
+                              Text(
+                                l10n.parties_previousOutstandingBalance,
+                                style: const TextStyle(
                                   fontSize: 14,
                                   fontWeight: FontWeight.w600,
                                 ),
@@ -254,9 +257,9 @@ class _PartyWeeklyReportScreenState extends State<PartyWeeklyReportScreen> {
                         const SizedBox(height: 20),
 
                         // Current Week Invoices Header
-                        const Text(
-                          'Current Week Invoices:',
-                          style: TextStyle(
+                        Text(
+                          l10n.parties_currentWeekInvoices,
+                          style: const TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.bold,
                           ),
@@ -273,7 +276,7 @@ class _PartyWeeklyReportScreenState extends State<PartyWeeklyReportScreen> {
                               borderRadius: BorderRadius.circular(8),
                             ),
                             child: Text(
-                              'No invoices for this week',
+                              l10n.parties_noInvoicesThisWeek,
                               style: TextStyle(
                                 fontSize: 14,
                                 color: ThemeHelpers.mutedTextColor(context),
@@ -310,7 +313,7 @@ class _PartyWeeklyReportScreenState extends State<PartyWeeklyReportScreen> {
                                           crossAxisAlignment: CrossAxisAlignment.start,
                                           children: [
                                             Text(
-                                              'Invoice $invoiceNumber',
+                                              '${l10n.parties_invoice} $invoiceNumber',
                                               style: const TextStyle(
                                                 fontSize: 14,
                                                 fontWeight: FontWeight.w600,
@@ -359,9 +362,9 @@ class _PartyWeeklyReportScreenState extends State<PartyWeeklyReportScreen> {
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              const Text(
-                                'Total This Week',
-                                style: TextStyle(
+                              Text(
+                                l10n.parties_totalThisWeek,
+                                style: const TextStyle(
                                   fontSize: 14,
                                   fontWeight: FontWeight.w600,
                                 ),
@@ -386,9 +389,9 @@ class _PartyWeeklyReportScreenState extends State<PartyWeeklyReportScreen> {
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              const Text(
-                                'Total',
-                                style: TextStyle(
+                              Text(
+                                l10n.parties_total,
+                                style: const TextStyle(
                                   fontSize: 14,
                                   fontWeight: FontWeight.w600,
                                 ),
@@ -419,9 +422,9 @@ class _PartyWeeklyReportScreenState extends State<PartyWeeklyReportScreen> {
                                 );
                               },
                               style: AppButtonStyles.primaryElevated(context),
-                              child: const Text(
-                                'More Details',
-                                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                              child: Text(
+                                l10n.parties_moreDetails,
+                                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
                               ),
                             ),
                           ),

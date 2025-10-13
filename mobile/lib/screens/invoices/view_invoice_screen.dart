@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import '../../models/invoice.dart';
 import '../../models/invoice_item.dart';
 import '../../models/payment.dart';
@@ -60,8 +61,8 @@ class _ViewInvoiceScreenState extends State<ViewInvoiceScreen> {
       setState(() => _isLoading = false);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Failed to load bill details'),
+          SnackBar(
+            content: Text(AppLocalizations.of(context)!.invoiceView_loadFailedMessage),
             backgroundColor: Colors.red,
           ),
         );
@@ -145,7 +146,7 @@ class _ViewInvoiceScreenState extends State<ViewInvoiceScreen> {
             icon: const Icon(Icons.arrow_back),
             onPressed: () => Navigator.pop(context, _hasChanges),
           ),
-          title: Text(_invoice?.invoiceNumber ?? 'Bill Details'),
+          title: Text(_invoice?.invoiceNumber ?? AppLocalizations.of(context)!.invoiceView_billDetails),
           actions: [
           PopupMenuButton<String>(
             onSelected: (value) async {
@@ -197,17 +198,17 @@ class _ViewInvoiceScreenState extends State<ViewInvoiceScreen> {
                   children: [
                     Icon(Icons.edit_outlined, size: 20, color: ThemeHelpers.mutedTextColor(context)),
                     const SizedBox(width: 12),
-                    const Text('Edit', style: TextStyle(fontSize: 15)),
+                    Text(AppLocalizations.of(context)!.common_edit, style: const TextStyle(fontSize: 15)),
                   ],
                 ),
               ),
-              const PopupMenuItem(
+              PopupMenuItem(
                 value: 'delete',
                 child: Row(
                   children: [
-                    Icon(Icons.delete_outlined, size: 20, color: Colors.red),
-                    SizedBox(width: 12),
-                    Text('Delete', style: TextStyle(color: Colors.red, fontSize: 15)),
+                    const Icon(Icons.delete_outlined, size: 20, color: Colors.red),
+                    const SizedBox(width: 12),
+                    Text(AppLocalizations.of(context)!.common_delete, style: const TextStyle(color: Colors.red, fontSize: 15)),
                   ],
                 ),
               ),
@@ -218,7 +219,7 @@ class _ViewInvoiceScreenState extends State<ViewInvoiceScreen> {
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
           : _invoice == null
-              ? const Center(child: Text('Bill not found'))
+              ? Center(child: Text(AppLocalizations.of(context)!.invoiceView_billNotFound))
               : SingleChildScrollView(
                   padding: const EdgeInsets.all(16),
                   child: Column(
@@ -239,7 +240,7 @@ class _ViewInvoiceScreenState extends State<ViewInvoiceScreen> {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                  _invoice!.partyName ?? 'Unknown Party',
+                                  _invoice!.partyName ?? AppLocalizations.of(context)!.invoiceView_unknownParty,
                                   style: const TextStyle(
                                     fontSize: 20,
                                     fontWeight: FontWeight.bold,
@@ -251,7 +252,7 @@ class _ViewInvoiceScreenState extends State<ViewInvoiceScreen> {
                                 Row(
                                   children: [
                                     Text(
-                                      'Bill #${_invoice!.invoiceNumber ?? 'N/A'}',
+                                      '${AppLocalizations.of(context)!.invoices_billNumber}${_invoice!.invoiceNumber ?? AppLocalizations.of(context)!.invoiceView_NA}',
                                       style: TextStyle(
                                         color: ThemeHelpers.mutedTextColor(context),
                                         fontSize: 14,
@@ -260,18 +261,18 @@ class _ViewInvoiceScreenState extends State<ViewInvoiceScreen> {
                                     const SizedBox(width: 12),
                                     Container(
                                       padding: const EdgeInsets.symmetric(
-                                        horizontal: 12,
-                                        vertical: 4,
+                                        horizontal: 8,
+                                        vertical: 2,
                                       ),
                                       decoration: BoxDecoration(
                                         color: _getStatusColor(_paymentStatus).withOpacity(0.1),
-                                        borderRadius: BorderRadius.circular(8),
+                                        borderRadius: BorderRadius.circular(6),
                                       ),
                                       child: Text(
                                         _getStatusText(_paymentStatus),
                                         style: TextStyle(
                                           color: _getStatusColor(_paymentStatus),
-                                          fontSize: 12,
+                                          fontSize: 11,
                                           fontWeight: FontWeight.bold,
                                         ),
                                       ),
@@ -290,7 +291,7 @@ class _ViewInvoiceScreenState extends State<ViewInvoiceScreen> {
                                           borderRadius: BorderRadius.circular(6),
                                         ),
                                         child: Text(
-                                          'OFFLINE',
+                                          AppLocalizations.of(context)!.invoiceView_offline,
                                           style: TextStyle(
                                             color: theme.brightness == Brightness.dark
                                                 ? Colors.orange.shade300
@@ -327,7 +328,7 @@ class _ViewInvoiceScreenState extends State<ViewInvoiceScreen> {
                                   Icon(Icons.access_time_outlined, size: 16, color: ThemeHelpers.mutedTextColor(context)),
                                   const SizedBox(width: 8),
                                   Text(
-                                    'Created: ${DateFormat('dd MMM yyyy, hh:mm a').format(_invoice!.createdAt!)}',
+                                    '${AppLocalizations.of(context)!.invoiceView_created} ${DateFormat('dd MMM yyyy, hh:mm a').format(_invoice!.createdAt!)}',
                                     style: TextStyle(
                                       color: ThemeHelpers.mutedTextColor(context),
                                       fontSize: 12,
@@ -354,9 +355,9 @@ class _ViewInvoiceScreenState extends State<ViewInvoiceScreen> {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              const Text(
-                                'Items',
-                                style: TextStyle(
+                              Text(
+                                AppLocalizations.of(context)!.invoiceView_items,
+                                style: const TextStyle(
                                   fontSize: 16,
                                   fontWeight: FontWeight.bold,
                                 ),
@@ -384,7 +385,7 @@ class _ViewInvoiceScreenState extends State<ViewInvoiceScreen> {
                                             crossAxisAlignment: CrossAxisAlignment.start,
                                             children: [
                                               Text(
-                                                item.itemName ?? 'Unknown Item',
+                                                item.itemName ?? AppLocalizations.of(context)!.invoiceView_unknownItem,
                                                 style: const TextStyle(
                                                   fontWeight: FontWeight.w500,
                                                   fontSize: 14,
@@ -440,9 +441,9 @@ class _ViewInvoiceScreenState extends State<ViewInvoiceScreen> {
                             Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
-                                const Text(
-                                  'Payment History',
-                                  style: TextStyle(
+                                Text(
+                                  AppLocalizations.of(context)!.invoiceView_paymentHistory,
+                                  style: const TextStyle(
                                     fontSize: 16,
                                     fontWeight: FontWeight.bold,
                                   ),
@@ -453,7 +454,7 @@ class _ViewInvoiceScreenState extends State<ViewInvoiceScreen> {
                                     context,
                                     padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                                   ),
-                                  child: const Text('Add', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
+                                  child: Text(AppLocalizations.of(context)!.invoiceView_add, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
                                 ),
                               ],
                             ),
@@ -463,7 +464,7 @@ class _ViewInvoiceScreenState extends State<ViewInvoiceScreen> {
                                 child: Padding(
                                   padding: const EdgeInsets.all(24),
                                   child: Text(
-                                    'No payments recorded',
+                                    AppLocalizations.of(context)!.invoiceView_noPaymentsRecorded,
                                     style: TextStyle(
                                       color: ThemeHelpers.mutedTextColor(context),
                                       fontSize: 14,
@@ -495,16 +496,16 @@ class _ViewInvoiceScreenState extends State<ViewInvoiceScreen> {
                                         builder: (BuildContext context) {
                                           return AlertDialog(
                                             backgroundColor: theme.cardColor,
-                                            title: const Text('Delete Payment'),
-                                            content: const Text('Are you sure you want to delete this payment?'),
+                                            title: Text(AppLocalizations.of(context)!.invoiceView_deletePaymentTitle),
+                                            content: Text(AppLocalizations.of(context)!.invoiceView_deletePaymentMessage),
                                             actions: [
                                               TextButton(
                                                 onPressed: () => Navigator.of(context).pop(false),
-                                                child: const Text('Cancel'),
+                                                child: Text(AppLocalizations.of(context)!.common_cancel),
                                               ),
                                               TextButton(
                                                 onPressed: () => Navigator.of(context).pop(true),
-                                                child: const Text('Delete', style: TextStyle(color: Colors.red)),
+                                                child: Text(AppLocalizations.of(context)!.common_delete, style: const TextStyle(color: Colors.red)),
                                               ),
                                             ],
                                           );
@@ -588,38 +589,38 @@ class _ViewInvoiceScreenState extends State<ViewInvoiceScreen> {
                             // Hide sub-total, bundle details for offline invoices
                             if (_invoice!.isOffline != true) ...[
                               _buildSummaryRow(
-                                'Sub Total',
+                                AppLocalizations.of(context)!.invoiceView_subTotal,
                                 '₹${_formatNumber(_calculatedSubTotal)}',
                                 false,
                               ),
                               const SizedBox(height: 8),
                               _buildSummaryRow(
-                                'Bundle Qty',
+                                AppLocalizations.of(context)!.invoiceView_bundleQty,
                                 _formatNumber(_invoice!.bundleQuantity ?? 1),
                                 false,
                               ),
                               const SizedBox(height: 8),
                               _buildSummaryRow(
-                                'Bundle Charge',
+                                AppLocalizations.of(context)!.invoiceView_bundleCharge,
                                 '₹${_formatNumber(_invoice!.bundleCharge)}',
                                 false,
                               ),
                               const Divider(height: 24),
                             ],
                             _buildSummaryRow(
-                              'Grand Total',
+                              AppLocalizations.of(context)!.invoiceView_grandTotal,
                               '₹${_formatNumber((_invoice!.isOffline == true) ? (_invoice!.totalAmount ?? 0) : (_calculatedSubTotal + _invoice!.bundleCharge))}',
                               true,
                             ),
                             const Divider(height: 24),
                             _buildSummaryRowWithColor(
-                              'Paid',
+                              AppLocalizations.of(context)!.invoiceView_paid,
                               '₹${_formatNumber(_totalPaid)}',
                               Colors.green,
                             ),
                             const SizedBox(height: 8),
                             _buildSummaryRowWithColor(
-                              'Balance Due',
+                              AppLocalizations.of(context)!.invoiceView_balanceDue,
                               '₹${_formatNumber(_balanceDue)}',
                               _balanceDue > 0 ? Colors.red : Colors.green,
                             ),
@@ -657,7 +658,7 @@ class _ViewInvoiceScreenState extends State<ViewInvoiceScreen> {
                                         if (mounted) {
                                           ScaffoldMessenger.of(context).showSnackBar(
                                             SnackBar(
-                                              content: Text('Failed to share PDF: $e'),
+                                              content: Text(AppLocalizations.of(context)!.invoiceView_shareFailMessage(e.toString())),
                                               backgroundColor: Colors.red,
                                             ),
                                           );
@@ -665,7 +666,7 @@ class _ViewInvoiceScreenState extends State<ViewInvoiceScreen> {
                                       }
                                     },
                                     style: AppButtonStyles.primaryOutlined(context),
-                                    child: const Text('Share', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+                                    child: Text(AppLocalizations.of(context)!.invoiceView_share, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
                                   );
                                 },
                               ),
@@ -685,7 +686,7 @@ class _ViewInvoiceScreenState extends State<ViewInvoiceScreen> {
                                     if (mounted) {
                                       ScaffoldMessenger.of(context).showSnackBar(
                                         SnackBar(
-                                          content: Text('Failed to generate PDF: $e'),
+                                          content: Text(AppLocalizations.of(context)!.invoiceView_pdfFailMessage(e.toString())),
                                           backgroundColor: Colors.red,
                                         ),
                                       );
@@ -693,7 +694,7 @@ class _ViewInvoiceScreenState extends State<ViewInvoiceScreen> {
                                   }
                                 },
                                 style: AppButtonStyles.primaryElevated(context),
-                                child: const Text('PDF', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+                                child: Text(AppLocalizations.of(context)!.invoiceView_pdf, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
                               ),
                             ),
                           ],
@@ -777,16 +778,16 @@ class _ViewInvoiceScreenState extends State<ViewInvoiceScreen> {
     if (success) {
       _hasChanges = true;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Payment deleted successfully'),
+        SnackBar(
+          content: Text(AppLocalizations.of(context)!.invoiceView_paymentDeletedSuccess),
           backgroundColor: Colors.green,
         ),
       );
       _loadInvoiceData();
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Failed to delete payment'),
+        SnackBar(
+          content: Text(AppLocalizations.of(context)!.invoiceView_paymentDeleteFailed),
           backgroundColor: Colors.red,
         ),
       );
@@ -799,12 +800,12 @@ class _ViewInvoiceScreenState extends State<ViewInvoiceScreen> {
       builder: (context) => AlertDialog(
         backgroundColor: Theme.of(context).cardColor,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        title: const Text('Delete Bill'),
-        content: const Text('Are you sure you want to delete this bill?'),
+        title: Text(AppLocalizations.of(context)!.invoiceView_deleteBillTitle),
+        content: Text(AppLocalizations.of(context)!.invoiceView_deleteBillMessage),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: const Text('Cancel'),
+            child: Text(AppLocalizations.of(context)!.common_cancel),
           ),
           ElevatedButton(
             onPressed: () => Navigator.pop(context, true),
@@ -816,7 +817,7 @@ class _ViewInvoiceScreenState extends State<ViewInvoiceScreen> {
                 borderRadius: BorderRadius.circular(12),
               ),
             ),
-            child: const Text('Delete', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+            child: Text(AppLocalizations.of(context)!.common_delete, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
           ),
         ],
       ),
@@ -832,15 +833,15 @@ class _ViewInvoiceScreenState extends State<ViewInvoiceScreen> {
     if (success) {
       Navigator.pop(context, true); // Return to list screen
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Bill deleted successfully'),
+        SnackBar(
+          content: Text(AppLocalizations.of(context)!.invoiceView_billDeletedSuccess),
           backgroundColor: Colors.green,
         ),
       );
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Failed to delete bill'),
+        SnackBar(
+          content: Text(AppLocalizations.of(context)!.invoiceView_billDeleteFailed),
           backgroundColor: Colors.red,
         ),
       );

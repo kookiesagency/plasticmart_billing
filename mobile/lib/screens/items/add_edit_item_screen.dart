@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import '../../models/item.dart';
 import '../../models/unit.dart';
 import '../../models/party.dart';
@@ -118,6 +119,7 @@ class _AddEditItemScreenState extends State<AddEditItemScreen> {
 
   void _showUnitPicker() {
     final unitProvider = Provider.of<UnitProvider>(context, listen: false);
+    final l10n = AppLocalizations.of(context)!;
     String searchQuery = '';
     final theme = Theme.of(context);
 
@@ -148,9 +150,9 @@ class _AddEditItemScreenState extends State<AddEditItemScreen> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      const Text(
-                        'Select Unit',
-                        style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                      Text(
+                        l10n.items_selectUnit,
+                        style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                       ),
                       IconButton(
                         icon: const Icon(Icons.close),
@@ -165,7 +167,7 @@ class _AddEditItemScreenState extends State<AddEditItemScreen> {
                   // Search Field
                   TextField(
                     decoration: InputDecoration(
-                      hintText: 'Search units...',
+                      hintText: l10n.items_searchUnits,
                       prefixIcon: const Icon(Icons.search),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
@@ -217,6 +219,7 @@ class _AddEditItemScreenState extends State<AddEditItemScreen> {
 
   void _showCategoryPicker() {
     final categoryProvider = Provider.of<ItemCategoryProvider>(context, listen: false);
+    final l10n = AppLocalizations.of(context)!;
     String searchQuery = '';
     final theme = Theme.of(context);
 
@@ -247,9 +250,9 @@ class _AddEditItemScreenState extends State<AddEditItemScreen> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      const Text(
-                        'Select Category',
-                        style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                      Text(
+                        l10n.items_selectCategory,
+                        style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                       ),
                       IconButton(
                         icon: const Icon(Icons.close),
@@ -264,7 +267,7 @@ class _AddEditItemScreenState extends State<AddEditItemScreen> {
                   // Search Field
                   TextField(
                     decoration: InputDecoration(
-                      hintText: 'Search categories...',
+                      hintText: l10n.items_searchCategory,
                       prefixIcon: const Icon(Icons.search),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
@@ -288,7 +291,7 @@ class _AddEditItemScreenState extends State<AddEditItemScreen> {
                       itemBuilder: (context, index) {
                         if (index == 0) {
                           return ListTile(
-                            title: const Text('None'),
+                            title: Text(l10n.items_none),
                             trailing: _selectedCategory == null
                                 ? Icon(Icons.check_circle, color: theme.colorScheme.primary)
                                 : null,
@@ -335,6 +338,7 @@ class _AddEditItemScreenState extends State<AddEditItemScreen> {
 
   void _showPurchasePartyPicker() {
     final purchasePartyProvider = Provider.of<PurchasePartyProvider>(context, listen: false);
+    final l10n = AppLocalizations.of(context)!;
     String searchQuery = '';
     final theme = Theme.of(context);
 
@@ -367,9 +371,9 @@ class _AddEditItemScreenState extends State<AddEditItemScreen> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      const Text(
-                        'Select Purchase Party',
-                        style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                      Text(
+                        l10n.items_selectPurchaseParty,
+                        style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                       ),
                       IconButton(
                         icon: const Icon(Icons.close),
@@ -384,7 +388,7 @@ class _AddEditItemScreenState extends State<AddEditItemScreen> {
                   // Search Field
                   TextField(
                     decoration: InputDecoration(
-                      hintText: 'Search purchase parties...',
+                      hintText: l10n.items_searchPurchaseParties,
                       prefixIcon: const Icon(Icons.search),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
@@ -408,7 +412,7 @@ class _AddEditItemScreenState extends State<AddEditItemScreen> {
                       itemBuilder: (context, index) {
                         if (index == 0) {
                           return ListTile(
-                            title: const Text('None'),
+                            title: Text(l10n.items_none),
                             trailing: _selectedPurchaseParty == null
                                 ? Icon(Icons.check_circle, color: theme.colorScheme.primary)
                                 : null,
@@ -468,6 +472,7 @@ class _AddEditItemScreenState extends State<AddEditItemScreen> {
 
   void _showPartyPricesPicker() {
     final partyProvider = Provider.of<PartyProvider>(context, listen: false);
+    final l10n = AppLocalizations.of(context)!;
     String searchQuery = '';
     final theme = Theme.of(context);
 
@@ -502,9 +507,9 @@ class _AddEditItemScreenState extends State<AddEditItemScreen> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      const Text(
-                        'Add Party Price',
-                        style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                      Text(
+                        l10n.items_addPartyPrice,
+                        style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                       ),
                       IconButton(
                         icon: const Icon(Icons.close),
@@ -519,7 +524,7 @@ class _AddEditItemScreenState extends State<AddEditItemScreen> {
                   // Search Field
                   TextField(
                     decoration: InputDecoration(
-                      hintText: 'Search parties...',
+                      hintText: l10n.items_searchParty,
                       prefixIcon: const Icon(Icons.search),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
@@ -538,10 +543,10 @@ class _AddEditItemScreenState extends State<AddEditItemScreen> {
                   // Parties List
                   Expanded(
                     child: filteredParties.isEmpty
-                        ? const Center(
+                        ? Center(
                             child: Text(
-                              'All parties have been added',
-                              style: TextStyle(color: Colors.grey),
+                              l10n.items_allPartiesAdded,
+                              style: const TextStyle(color: Colors.grey),
                             ),
                           )
                         : ListView.builder(
@@ -574,10 +579,12 @@ class _AddEditItemScreenState extends State<AddEditItemScreen> {
   Future<void> _save() async {
     if (!_formKey.currentState!.validate()) return;
 
+    final l10n = AppLocalizations.of(context)!;
+
     if (_selectedUnit == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Please select a unit'),
+        SnackBar(
+          content: Text(l10n.items_pleaseSelectUnit),
           backgroundColor: Colors.red,
           behavior: SnackBarBehavior.floating,
         ),
@@ -606,8 +613,8 @@ class _AddEditItemScreenState extends State<AddEditItemScreen> {
       if (!mounted) return;
 
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('An item with this name already exists'),
+        SnackBar(
+          content: Text(l10n.items_nameAlreadyExists),
           backgroundColor: Colors.red,
           behavior: SnackBarBehavior.floating,
         ),
@@ -650,19 +657,21 @@ class _AddEditItemScreenState extends State<AddEditItemScreen> {
 
     if (!mounted) return;
 
+    final l10nAfter = AppLocalizations.of(context)!;
+
     if (success) {
       Navigator.pop(context);
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(widget.item == null ? 'Item added successfully' : 'Item updated successfully'),
+          content: Text(widget.item == null ? l10nAfter.items_addedSuccessfully : l10nAfter.items_updatedSuccessfully),
           backgroundColor: Colors.green,
           behavior: SnackBarBehavior.floating,
         ),
       );
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Failed to save item'),
+        SnackBar(
+          content: Text(l10nAfter.items_saveFailed),
           backgroundColor: Colors.red,
           behavior: SnackBarBehavior.floating,
         ),
@@ -672,6 +681,7 @@ class _AddEditItemScreenState extends State<AddEditItemScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
     final isDarkTheme = theme.brightness == Brightness.dark;
@@ -681,7 +691,7 @@ class _AddEditItemScreenState extends State<AddEditItemScreen> {
       behavior: HitTestBehavior.opaque,
       child: Scaffold(
         appBar: AppBar(
-          title: Text(widget.item == null ? 'Add Item' : 'Edit Item'),
+          title: Text(widget.item == null ? l10n.items_addItem : l10n.items_editItem),
         actions: [
           if (_isLoading)
             const Center(
@@ -698,7 +708,7 @@ class _AddEditItemScreenState extends State<AddEditItemScreen> {
             IconButton(
               onPressed: _save,
               icon: const Icon(Icons.check),
-              tooltip: 'Save',
+              tooltip: l10n.common_save,
             ),
         ],
       ),
@@ -709,15 +719,15 @@ class _AddEditItemScreenState extends State<AddEditItemScreen> {
           children: [
             TextFormField(
               controller: _nameController,
-              decoration: const InputDecoration(
-                labelText: 'Item Name',
-                hintText: 'Enter item name',
-                border: OutlineInputBorder(),
-                prefixIcon: Icon(Icons.inventory_2),
+              decoration: InputDecoration(
+                labelText: l10n.items_itemName,
+                hintText: l10n.items_enterItemName,
+                border: const OutlineInputBorder(),
+                prefixIcon: const Icon(Icons.inventory_2),
               ),
               validator: (value) {
                 if (value == null || value.trim().isEmpty) {
-                  return 'Please enter item name';
+                  return l10n.items_pleaseEnterItemName;
                 }
                 return null;
               },
@@ -727,14 +737,14 @@ class _AddEditItemScreenState extends State<AddEditItemScreen> {
             InkWell(
               onTap: _showUnitPicker,
               child: InputDecorator(
-                decoration: const InputDecoration(
-                  labelText: 'Unit',
-                  border: OutlineInputBorder(),
-                  prefixIcon: Icon(Icons.straighten),
-                  suffixIcon: Icon(Icons.arrow_drop_down),
+                decoration: InputDecoration(
+                  labelText: l10n.items_unit,
+                  border: const OutlineInputBorder(),
+                  prefixIcon: const Icon(Icons.straighten),
+                  suffixIcon: const Icon(Icons.arrow_drop_down),
                 ),
                 child: Text(
-                  _selectedUnit?.name ?? 'Select unit',
+                  _selectedUnit?.name ?? l10n.items_selectUnit,
                   style: TextStyle(
                     color: _selectedUnit == null ? Colors.grey : null,
                   ),
@@ -745,14 +755,14 @@ class _AddEditItemScreenState extends State<AddEditItemScreen> {
             InkWell(
               onTap: _showCategoryPicker,
               child: InputDecorator(
-                decoration: const InputDecoration(
-                  labelText: 'Category (Optional)',
-                  border: OutlineInputBorder(),
-                  prefixIcon: Icon(Icons.category_outlined),
-                  suffixIcon: Icon(Icons.arrow_drop_down),
+                decoration: InputDecoration(
+                  labelText: l10n.items_categoryOptional,
+                  border: const OutlineInputBorder(),
+                  prefixIcon: const Icon(Icons.category_outlined),
+                  suffixIcon: const Icon(Icons.arrow_drop_down),
                 ),
                 child: Text(
-                  _selectedCategory?.name ?? 'Select category',
+                  _selectedCategory?.name ?? l10n.items_selectCategory,
                   style: TextStyle(
                     color: _selectedCategory == null ? Colors.grey : null,
                   ),
@@ -763,11 +773,11 @@ class _AddEditItemScreenState extends State<AddEditItemScreen> {
             InkWell(
               onTap: _showPurchasePartyPicker,
               child: InputDecorator(
-                decoration: const InputDecoration(
-                  labelText: 'Purchase Party (Optional)',
-                  border: OutlineInputBorder(),
-                  prefixIcon: Icon(Icons.business_outlined),
-                  suffixIcon: Icon(Icons.arrow_drop_down),
+                decoration: InputDecoration(
+                  labelText: l10n.items_purchasePartyOptional,
+                  border: const OutlineInputBorder(),
+                  prefixIcon: const Icon(Icons.business_outlined),
+                  suffixIcon: const Icon(Icons.arrow_drop_down),
                 ),
                 child: Row(
                   children: [
@@ -792,7 +802,7 @@ class _AddEditItemScreenState extends State<AddEditItemScreen> {
                     ],
                     Expanded(
                       child: Text(
-                        _selectedPurchaseParty?.name ?? 'Select purchase party',
+                        _selectedPurchaseParty?.name ?? l10n.items_selectPurchaseParty,
                         style: TextStyle(
                           color: _selectedPurchaseParty == null ? Colors.grey : null,
                         ),
@@ -806,19 +816,19 @@ class _AddEditItemScreenState extends State<AddEditItemScreen> {
             const SizedBox(height: 16),
             TextFormField(
               controller: _defaultRateController,
-              decoration: const InputDecoration(
-                labelText: 'Default Rate',
-                hintText: 'Enter default rate',
-                border: OutlineInputBorder(),
-                prefixIcon: Icon(Icons.currency_rupee),
+              decoration: InputDecoration(
+                labelText: l10n.items_defaultRate,
+                hintText: l10n.items_enterDefaultRate,
+                border: const OutlineInputBorder(),
+                prefixIcon: const Icon(Icons.currency_rupee),
               ),
               keyboardType: const TextInputType.numberWithOptions(decimal: true),
               validator: (value) {
                 if (value == null || value.trim().isEmpty) {
-                  return 'Please enter default rate';
+                  return l10n.items_pleaseEnterDefaultRate;
                 }
                 if (double.tryParse(value.trim()) == null) {
-                  return 'Please enter a valid number';
+                  return l10n.items_pleaseEnterValidNumber;
                 }
                 return null;
               },
@@ -827,17 +837,17 @@ class _AddEditItemScreenState extends State<AddEditItemScreen> {
             const SizedBox(height: 16),
             TextFormField(
               controller: _purchaseRateController,
-              decoration: const InputDecoration(
-                labelText: 'Purchase Rate (Optional)',
-                hintText: 'Enter purchase rate',
-                border: OutlineInputBorder(),
-                prefixIcon: Icon(Icons.shopping_cart),
+              decoration: InputDecoration(
+                labelText: l10n.items_purchaseRateOptional,
+                hintText: l10n.items_enterPurchaseRate,
+                border: const OutlineInputBorder(),
+                prefixIcon: const Icon(Icons.shopping_cart),
               ),
               keyboardType: const TextInputType.numberWithOptions(decimal: true),
               validator: (value) {
                 if (value != null && value.trim().isNotEmpty) {
                   if (double.tryParse(value.trim()) == null) {
-                    return 'Please enter a valid number';
+                    return l10n.items_pleaseEnterValidNumber;
                   }
                 }
                 return null;
@@ -850,9 +860,9 @@ class _AddEditItemScreenState extends State<AddEditItemScreen> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Text(
-                  'Party-Specific Prices',
-                  style: TextStyle(
+                Text(
+                  l10n.items_partySpecificPrices,
+                  style: const TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.w600,
                   ),
@@ -860,7 +870,7 @@ class _AddEditItemScreenState extends State<AddEditItemScreen> {
                 TextButton.icon(
                   onPressed: _showPartyPricesPicker,
                   icon: const Icon(Icons.add, size: 18),
-                  label: const Text('Add Party'),
+                  label: Text(l10n.items_addParty),
                 ),
               ],
             ),
@@ -879,12 +889,12 @@ class _AddEditItemScreenState extends State<AddEditItemScreen> {
                       Icon(Icons.price_change_outlined, size: 48, color: theme.textTheme.bodySmall?.color?.withOpacity(0.5)),
                       const SizedBox(height: 8),
                       Text(
-                        'No party-specific prices yet',
+                        l10n.items_noPartyPricesYet,
                         style: TextStyle(color: theme.textTheme.bodySmall?.color?.withOpacity(0.7)),
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        'Add parties with custom prices',
+                        l10n.items_addPartiesWithCustomPrices,
                         style: TextStyle(color: theme.textTheme.bodySmall?.color?.withOpacity(0.5), fontSize: 12),
                       ),
                     ],
@@ -912,29 +922,32 @@ class _AddEditItemScreenState extends State<AddEditItemScreen> {
                   confirmDismiss: (direction) async {
                     return await showDialog<bool>(
                       context: context,
-                      builder: (context) => AlertDialog(
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                        title: const Text('Remove Party Price'),
-                        content: Text('Remove price for ${partyPrice.party.name}?'),
-                        actions: [
-                          TextButton(
-                            onPressed: () => Navigator.pop(context, false),
-                            child: const Text('Cancel'),
-                          ),
-                          ElevatedButton(
-                            onPressed: () => Navigator.pop(context, true),
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.red,
-                              foregroundColor: Colors.white,
-                              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12),
-                              ),
+                      builder: (dialogContext) {
+                        final dialogL10n = AppLocalizations.of(dialogContext)!;
+                        return AlertDialog(
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                          title: Text(dialogL10n.items_removePartyPrice),
+                          content: Text(dialogL10n.items_removePartyPriceMessage(partyPrice.party.name)),
+                          actions: [
+                            TextButton(
+                              onPressed: () => Navigator.pop(dialogContext, false),
+                              child: Text(dialogL10n.common_cancel),
                             ),
-                            child: const Text('Remove', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
-                          ),
-                        ],
-                      ),
+                            ElevatedButton(
+                              onPressed: () => Navigator.pop(dialogContext, true),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.red,
+                                foregroundColor: Colors.white,
+                                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                              ),
+                              child: Text(dialogL10n.items_remove, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+                            ),
+                          ],
+                        );
+                      },
                     );
                   },
                   onDismissed: (direction) {
@@ -967,20 +980,20 @@ class _AddEditItemScreenState extends State<AddEditItemScreen> {
                           padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
                           child: TextFormField(
                             controller: partyPrice.priceController,
-                            decoration: const InputDecoration(
-                              labelText: 'Price',
-                              hintText: '0.00',
+                            decoration: InputDecoration(
+                              labelText: l10n.items_price,
+                              hintText: l10n.items_priceHint,
                               prefixText: '₹',
-                              border: OutlineInputBorder(),
-                              contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                              border: const OutlineInputBorder(),
+                              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                             ),
                             validator: (value) {
                               if (value == null || value.trim().isEmpty) {
-                                return 'Please enter a price';
+                                return l10n.items_pleaseEnterPrice;
                               }
                               final price = double.tryParse(value.trim());
                               if (price == null || price <= 0) {
-                                return 'Price must be a positive number';
+                                return l10n.items_priceMustBePositive;
                               }
                               return null;
                             },
@@ -1009,7 +1022,7 @@ class _AddEditItemScreenState extends State<AddEditItemScreen> {
                         ),
                       )
                     : Text(
-                        widget.item == null ? 'Add Item' : 'Update Item',
+                        widget.item == null ? l10n.items_addItem : l10n.items_updateItem,
                         style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
                       ),
               ),

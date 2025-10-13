@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import '../../models/item.dart';
 import '../../providers/item_provider.dart';
 import '../../theme/theme_helpers.dart';
@@ -20,7 +21,7 @@ class ViewItemScreen extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Item Details'),
+        title: Text(AppLocalizations.of(context)!.itemView_itemDetails),
       ),
       body: SingleChildScrollView(
         child: Column(
@@ -54,7 +55,7 @@ class ViewItemScreen extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Pricing',
+                    AppLocalizations.of(context)!.itemView_pricing,
                     style: textTheme.titleMedium?.copyWith(
                       fontWeight: FontWeight.bold,
                       color: ThemeHelpers.mutedTextColor(context),
@@ -67,7 +68,7 @@ class ViewItemScreen extends StatelessWidget {
                       context,
                       icon: Icons.inventory_2_outlined,
                       iconColor: const Color(0xFF10B981),
-                      title: 'PCS Rate',
+                      title: AppLocalizations.of(context)!.itemView_pcsRate,
                       value: '₹${_getPcsRateValue(item, item.defaultRate)}/PCS',
                     )
                   else
@@ -75,7 +76,7 @@ class ViewItemScreen extends StatelessWidget {
                       context,
                       icon: Icons.currency_rupee,
                       iconColor: const Color(0xFF10B981),
-                      title: 'Rate',
+                      title: AppLocalizations.of(context)!.itemView_rate,
                       value: '₹${item.defaultRate.toStringAsFixed(2)}${item.unit != null ? '/${item.unit!.name}' : ''}',
                     ),
                   const SizedBox(height: 12),
@@ -85,7 +86,7 @@ class ViewItemScreen extends StatelessWidget {
                       context,
                       icon: Icons.shopping_basket_outlined,
                       iconColor: const Color(0xFF8B5CF6),
-                      title: 'DOZ Rate',
+                      title: AppLocalizations.of(context)!.itemView_dozRate,
                       value: '₹${_getDozRateValue(item, item.defaultRate)}/DOZ',
                     ),
                 ],
@@ -101,7 +102,7 @@ class ViewItemScreen extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Purchase',
+                    AppLocalizations.of(context)!.itemView_purchase,
                     style: textTheme.titleMedium?.copyWith(
                       fontWeight: FontWeight.bold,
                       color: ThemeHelpers.mutedTextColor(context),
@@ -112,12 +113,12 @@ class ViewItemScreen extends StatelessWidget {
                     context,
                     icon: Icons.shopping_bag_outlined,
                     iconColor: const Color(0xFF3B82F6),
-                    title: 'Rate',
+                    title: AppLocalizations.of(context)!.itemView_rate,
                     mainRate: item.purchaseRate != null
                         ? (item.unit != null && (item.unit!.name.toUpperCase() == 'DOZ' || item.unit!.name.toUpperCase() == 'PCS')
                             ? '₹${_getPcsRateValue(item, item.purchaseRate!)}/PCS'
                             : '₹${item.purchaseRate!.toStringAsFixed(2)}${item.unit != null ? '/${item.unit!.name}' : ''}')
-                        : 'Not set',
+                        : AppLocalizations.of(context)!.itemView_notSet,
                     convertedRate: item.purchaseRate != null && item.unit != null && (item.unit!.name.toUpperCase() == 'DOZ' || item.unit!.name.toUpperCase() == 'PCS')
                         ? '₹${_getDozRateValue(item, item.purchaseRate!)}/DOZ'
                         : null,
@@ -127,8 +128,16 @@ class ViewItemScreen extends StatelessWidget {
                     context,
                     icon: Icons.business_outlined,
                     iconColor: const Color(0xFF06B6D4),
-                    title: 'Party From',
-                    value: item.purchaseParty?.name ?? 'Not set',
+                    title: AppLocalizations.of(context)!.itemView_purchaseParty,
+                    value: item.purchaseParty?.name ?? AppLocalizations.of(context)!.itemView_notSet,
+                  ),
+                  const SizedBox(height: 12),
+                  _buildInfoCard(
+                    context,
+                    icon: Icons.qr_code_outlined,
+                    iconColor: const Color(0xFF8B5CF6),
+                    title: AppLocalizations.of(context)!.itemView_partyCode,
+                    value: item.purchaseParty?.partyCode ?? AppLocalizations.of(context)!.itemView_notSet,
                   ),
                 ],
               ),
@@ -144,7 +153,7 @@ class ViewItemScreen extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Party-Specific Prices',
+                      AppLocalizations.of(context)!.itemView_partySpecificPrices,
                       style: textTheme.titleMedium?.copyWith(
                         fontWeight: FontWeight.bold,
                         color: ThemeHelpers.mutedTextColor(context),
@@ -155,7 +164,7 @@ class ViewItemScreen extends StatelessWidget {
                       padding: const EdgeInsets.only(bottom: 12),
                       child: _buildPartyPriceCard(
                         context,
-                        partyName: partyPrice.partyName ?? 'Unknown Party',
+                        partyName: partyPrice.partyName ?? AppLocalizations.of(context)!.itemView_unknownParty,
                         price: partyPrice.price,
                       ),
                     )),
@@ -173,7 +182,7 @@ class ViewItemScreen extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Additional Information',
+                    AppLocalizations.of(context)!.itemView_additionalInformation,
                     style: textTheme.titleMedium?.copyWith(
                       fontWeight: FontWeight.bold,
                       color: ThemeHelpers.mutedTextColor(context),
@@ -184,8 +193,16 @@ class ViewItemScreen extends StatelessWidget {
                     context,
                     icon: Icons.straighten_outlined,
                     iconColor: const Color(0xFFF59E0B),
-                    title: 'Unit',
-                    value: item.unit?.name ?? 'N/A',
+                    title: AppLocalizations.of(context)!.itemView_unit,
+                    value: item.unit?.name ?? AppLocalizations.of(context)!.itemView_NA,
+                  ),
+                  const SizedBox(height: 12),
+                  _buildInfoCard(
+                    context,
+                    icon: Icons.category_outlined,
+                    iconColor: const Color(0xFFEC4899),
+                    title: AppLocalizations.of(context)!.itemView_category,
+                    value: item.itemCategory?.name ?? AppLocalizations.of(context)!.itemView_notSet,
                   ),
                   if (item.createdAt != null) ...[
                     const SizedBox(height: 12),
@@ -193,7 +210,7 @@ class ViewItemScreen extends StatelessWidget {
                       context,
                       icon: Icons.calendar_today_outlined,
                       iconColor: const Color(0xFF8B5CF6),
-                      title: 'Created On',
+                      title: AppLocalizations.of(context)!.itemView_createdOn,
                       value: _formatDate(item.createdAt!),
                     ),
                   ],
@@ -210,7 +227,7 @@ class ViewItemScreen extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Actions',
+                    AppLocalizations.of(context)!.itemView_actions,
                     style: textTheme.titleMedium?.copyWith(
                       fontWeight: FontWeight.bold,
                       color: ThemeHelpers.mutedTextColor(context),
@@ -237,9 +254,9 @@ class ViewItemScreen extends StatelessWidget {
                             context,
                             padding: const EdgeInsets.symmetric(vertical: 14),
                           ),
-                          child: const Text(
-                            'Edit',
-                            style: TextStyle(
+                          child: Text(
+                            AppLocalizations.of(context)!.itemView_edit,
+                            style: const TextStyle(
                               fontSize: 15,
                               fontWeight: FontWeight.w600,
                             ),
@@ -258,9 +275,9 @@ class ViewItemScreen extends StatelessWidget {
                               borderRadius: BorderRadius.circular(12),
                             ),
                           ),
-                          child: const Text(
-                            'Delete',
-                            style: TextStyle(
+                          child: Text(
+                            AppLocalizations.of(context)!.itemView_delete,
+                            style: const TextStyle(
                               fontSize: 15,
                               fontWeight: FontWeight.w600,
                               color: Colors.white,
@@ -405,7 +422,7 @@ class ViewItemScreen extends StatelessWidget {
                     if (item.unit != null) ...[
                       const SizedBox(width: 4),
                       Text(
-                        'per ${item.unit!.name}',
+                        '${AppLocalizations.of(context)!.itemView_per} ${item.unit!.name}',
                         style: TextStyle(
                           fontSize: 12,
                           color: ThemeHelpers.mutedTextColor(context),
@@ -527,19 +544,19 @@ class ViewItemScreen extends StatelessWidget {
       context: context,
       builder: (context) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        title: const Text('Delete Item'),
-        content: Text('Are you sure you want to delete "${item.name}"?'),
+        title: Text(AppLocalizations.of(context)!.itemView_deleteItemTitle),
+        content: Text(AppLocalizations.of(context)!.itemView_deleteItemMessage(item.name)),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: const Text('Cancel'),
+            child: Text(AppLocalizations.of(context)!.itemView_cancel),
           ),
           FilledButton(
             onPressed: () => Navigator.pop(context, true),
             style: FilledButton.styleFrom(
               backgroundColor: Colors.red,
             ),
-            child: const Text('Delete'),
+            child: Text(AppLocalizations.of(context)!.itemView_delete),
           ),
         ],
       ),
@@ -554,16 +571,16 @@ class ViewItemScreen extends StatelessWidget {
       if (success) {
         Navigator.pop(context);
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Item deleted successfully'),
+          SnackBar(
+            content: Text(AppLocalizations.of(context)!.itemView_itemDeletedSuccess),
             backgroundColor: Colors.green,
             behavior: SnackBarBehavior.floating,
           ),
         );
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Failed to delete item'),
+          SnackBar(
+            content: Text(AppLocalizations.of(context)!.itemView_itemDeleteFailed),
             backgroundColor: Colors.red,
             behavior: SnackBarBehavior.floating,
           ),

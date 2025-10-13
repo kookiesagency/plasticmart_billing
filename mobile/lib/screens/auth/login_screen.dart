@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import '../../providers/auth_provider.dart';
 import '../home_screen.dart';
 
@@ -44,9 +45,10 @@ class _LoginScreenState extends State<LoginScreen> {
       );
     } else {
       // Show error message
+      final l10n = AppLocalizations.of(context)!;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(authProvider.errorMessage ?? 'Login failed'),
+          content: Text(authProvider.errorMessage ?? l10n.login_loginFailed),
           backgroundColor: Colors.red,
         ),
       );
@@ -55,6 +57,8 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+
     return GestureDetector(
       onTap: () => FocusScope.of(context).unfocus(),
       behavior: HitTestBehavior.opaque,
@@ -79,9 +83,9 @@ class _LoginScreenState extends State<LoginScreen> {
                   const SizedBox(height: 32),
 
                   // Title
-                  const Text(
-                    'Welcome Back',
-                    style: TextStyle(
+                  Text(
+                    l10n.login_welcomeBack,
+                    style: const TextStyle(
                       fontSize: 28,
                       fontWeight: FontWeight.bold,
                       color: Colors.black87,
@@ -89,9 +93,9 @@ class _LoginScreenState extends State<LoginScreen> {
                     textAlign: TextAlign.center,
                   ),
                   const SizedBox(height: 8),
-                  const Text(
-                    'Login to your account',
-                    style: TextStyle(
+                  Text(
+                    l10n.login_subtitle,
+                    style: const TextStyle(
                       fontSize: 16,
                       color: Colors.black54,
                     ),
@@ -104,7 +108,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     controller: _emailController,
                     keyboardType: TextInputType.emailAddress,
                     decoration: InputDecoration(
-                      labelText: 'Email',
+                      labelText: l10n.login_email,
                       prefixIcon: const Icon(Icons.email_outlined),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
@@ -114,10 +118,10 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                     validator: (value) {
                       if (value == null || value.isEmpty) {
-                        return 'Please enter your email';
+                        return l10n.login_emailRequired;
                       }
                       if (!value.contains('@')) {
-                        return 'Please enter a valid email';
+                        return l10n.login_emailInvalid;
                       }
                       return null;
                     },
@@ -129,7 +133,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     controller: _passwordController,
                     obscureText: _obscurePassword,
                     decoration: InputDecoration(
-                      labelText: 'Password',
+                      labelText: l10n.login_password,
                       prefixIcon: const Icon(Icons.lock),
                       suffixIcon: IconButton(
                         icon: Icon(
@@ -151,10 +155,10 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                     validator: (value) {
                       if (value == null || value.isEmpty) {
-                        return 'Please enter your password';
+                        return l10n.login_passwordRequired;
                       }
                       if (value.length < 6) {
-                        return 'Password must be at least 6 characters';
+                        return l10n.login_passwordMinLength;
                       }
                       return null;
                     },
@@ -186,9 +190,9 @@ class _LoginScreenState extends State<LoginScreen> {
                                   ),
                                 ),
                               )
-                            : const Text(
-                                'Login',
-                                style: TextStyle(
+                            : Text(
+                                l10n.login_loginButton,
+                                style: const TextStyle(
                                   fontSize: 16,
                                   fontWeight: FontWeight.bold,
                                 ),
@@ -203,12 +207,12 @@ class _LoginScreenState extends State<LoginScreen> {
                     onPressed: () {
                       // TODO: Implement forgot password
                       ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('Forgot password feature coming soon'),
+                        SnackBar(
+                          content: Text(l10n.login_forgotPasswordComingSoon),
                         ),
                       );
                     },
-                    child: const Text('Forgot Password?'),
+                    child: Text(l10n.login_forgotPassword),
                   ),
                 ],
               ),

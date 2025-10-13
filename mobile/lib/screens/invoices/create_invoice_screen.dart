@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import '../../models/party.dart';
 import '../../models/item.dart';
 import '../../models/item_party_price.dart';
@@ -163,10 +164,11 @@ class _CreateInvoiceScreenState extends State<CreateInvoiceScreen> {
   }
 
   Future<void> _saveInvoice() async {
+    final l10n = AppLocalizations.of(context)!;
     if (_selectedParty == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Please select a party'),
+        SnackBar(
+          content: Text(l10n.invoiceForm_selectPartyError),
           backgroundColor: Colors.red,
           behavior: SnackBarBehavior.floating,
         ),
@@ -176,8 +178,8 @@ class _CreateInvoiceScreenState extends State<CreateInvoiceScreen> {
 
     if (_invoiceItems.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Please add at least one item'),
+        SnackBar(
+          content: Text(l10n.invoiceForm_addAtLeastOneItem),
           backgroundColor: Colors.red,
           behavior: SnackBarBehavior.floating,
         ),
@@ -226,8 +228,8 @@ class _CreateInvoiceScreenState extends State<CreateInvoiceScreen> {
     if (isEditMode) {
       if (result == true) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Bill updated successfully'),
+          SnackBar(
+            content: Text(l10n.invoiceForm_billUpdatedSuccess),
             backgroundColor: Colors.green,
             behavior: SnackBarBehavior.floating,
           ),
@@ -235,8 +237,8 @@ class _CreateInvoiceScreenState extends State<CreateInvoiceScreen> {
         Navigator.pop(context, true);
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Failed to update bill'),
+          SnackBar(
+            content: Text(l10n.invoiceForm_failedToUpdateBill),
             backgroundColor: Colors.red,
             behavior: SnackBarBehavior.floating,
           ),
@@ -246,7 +248,7 @@ class _CreateInvoiceScreenState extends State<CreateInvoiceScreen> {
       if (result?['success'] == true) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Bill ${result?['invoice_number'] ?? ''} created successfully'),
+            content: Text('${l10n.invoiceForm_billText} ${result?['invoice_number'] ?? ''} ${l10n.invoiceForm_createdSuccessfully}'),
             backgroundColor: Colors.green,
             behavior: SnackBarBehavior.floating,
           ),
@@ -255,7 +257,7 @@ class _CreateInvoiceScreenState extends State<CreateInvoiceScreen> {
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Failed to create bill: ${result?['error'] ?? 'Unknown error'}'),
+            content: Text('${l10n.invoiceForm_failedToCreateBill}: ${result?['error'] ?? l10n.invoiceForm_unknownError}'),
             backgroundColor: Colors.red,
             behavior: SnackBarBehavior.floating,
           ),
@@ -266,6 +268,7 @@ class _CreateInvoiceScreenState extends State<CreateInvoiceScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
     final isDark = theme.brightness == Brightness.dark;
@@ -277,7 +280,7 @@ class _CreateInvoiceScreenState extends State<CreateInvoiceScreen> {
       behavior: HitTestBehavior.opaque,
       child: Scaffold(
         appBar: AppBar(
-          title: Text(widget.invoiceId != null ? 'Edit Bill' : 'Create Bill'),
+          title: Text(widget.invoiceId != null ? l10n.invoiceForm_editBill : l10n.invoiceForm_createBill),
         ),
         body: Theme(
           data: theme.copyWith(
@@ -289,8 +292,8 @@ class _CreateInvoiceScreenState extends State<CreateInvoiceScreen> {
         onStepContinue: () async {
           if (_currentStep == 0 && _selectedParty == null) {
             ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('Please select a party'),
+              SnackBar(
+                content: Text(l10n.invoiceForm_selectPartyError),
                 backgroundColor: Colors.red,
                 behavior: SnackBarBehavior.floating,
               ),
@@ -299,8 +302,8 @@ class _CreateInvoiceScreenState extends State<CreateInvoiceScreen> {
           }
           if (_currentStep == 1 && _invoiceItems.isEmpty) {
             ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('Please add at least one item'),
+              SnackBar(
+                content: Text(l10n.invoiceForm_addAtLeastOneItem),
                 backgroundColor: Colors.red,
                 behavior: SnackBarBehavior.floating,
               ),
@@ -344,9 +347,9 @@ class _CreateInvoiceScreenState extends State<CreateInvoiceScreen> {
                   style: AppButtonStyles.primaryElevated(context),
                   child: Text(
                     _currentStep == 2
-                      ? (widget.invoiceId != null ? 'Update Bill' : 'Create Bill')
-                      : 'Continue',
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                      ? (widget.invoiceId != null ? l10n.invoiceForm_updateBill : l10n.invoiceForm_createBill)
+                      : l10n.invoiceForm_continue,
+                    style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
                   ),
                 ),
                 if (_currentStep > 0) ...[
@@ -354,7 +357,7 @@ class _CreateInvoiceScreenState extends State<CreateInvoiceScreen> {
                   OutlinedButton(
                     onPressed: _isLoading ? null : details.onStepCancel,
                     style: AppButtonStyles.primaryOutlined(context),
-                    child: const Text('Back', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+                    child: Text(l10n.invoiceForm_back, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
                   ),
                 ],
               ],
@@ -363,7 +366,7 @@ class _CreateInvoiceScreenState extends State<CreateInvoiceScreen> {
         },
         steps: [
           Step(
-            title: const Text('Details'),
+            title: Text(l10n.invoiceForm_details),
             content: Theme(
               data: originalTheme,
               child: _buildPartyStep(),
@@ -372,7 +375,7 @@ class _CreateInvoiceScreenState extends State<CreateInvoiceScreen> {
             state: _currentStep > 0 ? StepState.complete : StepState.indexed,
           ),
           Step(
-            title: const Text('Items'),
+            title: Text(l10n.invoiceForm_items),
             content: Theme(
               data: originalTheme,
               child: _buildItemsStep(),
@@ -381,7 +384,7 @@ class _CreateInvoiceScreenState extends State<CreateInvoiceScreen> {
             state: _currentStep > 1 ? StepState.complete : StepState.indexed,
           ),
           Step(
-            title: const Text('Bundle'),
+            title: Text(l10n.invoiceForm_bundle),
             content: Theme(
               data: originalTheme,
               child: _buildReviewStep(),
@@ -433,9 +436,9 @@ class _CreateInvoiceScreenState extends State<CreateInvoiceScreen> {
                 children: [
                   Icon(Icons.calendar_today_outlined, size: 20, color: Colors.grey.shade600),
                   const SizedBox(width: 12),
-                  const Text(
-                    'Bill Date:',
-                    style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
+                  Text(
+                    AppLocalizations.of(context)!.invoiceForm_billDate,
+                    style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
                   ),
                   const Spacer(),
                   Text(
@@ -453,17 +456,17 @@ class _CreateInvoiceScreenState extends State<CreateInvoiceScreen> {
           ),
           const SizedBox(height: 16),
 
-          const Text(
-            'Select Party',
-            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+          Text(
+            AppLocalizations.of(context)!.invoiceForm_selectParty,
+            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 16),
 
           // Search Field
           TextField(
-            decoration: const InputDecoration(
-              hintText: 'Search parties...',
-              prefixIcon: Icon(Icons.search),
+            decoration: InputDecoration(
+              hintText: AppLocalizations.of(context)!.invoiceForm_searchPartiesHint,
+              prefixIcon: const Icon(Icons.search),
             ),
             onChanged: (value) {
               setState(() {
@@ -476,7 +479,7 @@ class _CreateInvoiceScreenState extends State<CreateInvoiceScreen> {
           // Party List
           Expanded(
             child: filteredParties.isEmpty
-                ? const Center(child: Text('No parties available'))
+                ? Center(child: Text(AppLocalizations.of(context)!.invoiceForm_noPartiesAvailable))
                 : ListView.builder(
                     itemCount: filteredParties.length,
                     itemBuilder: (context, index) {
@@ -527,7 +530,7 @@ class _CreateInvoiceScreenState extends State<CreateInvoiceScreen> {
                                       if (party.bundleRate != null && party.bundleRate! > 0) ...[
                                         const SizedBox(height: 4),
                                         Text(
-                                          'Bundle Rate: ₹${_formatNumber(party.bundleRate!)}',
+                                          '${AppLocalizations.of(context)!.invoiceForm_bundleRateLabel}: ₹${_formatNumber(party.bundleRate!)}',
                                           style: TextStyle(
                                             fontSize: 13,
                                             color: ThemeHelpers.mutedTextColor(context),
@@ -555,7 +558,7 @@ class _CreateInvoiceScreenState extends State<CreateInvoiceScreen> {
                 setState(() => _currentStep = 1);
               },
               style: AppButtonStyles.primaryElevated(context),
-              child: const Text('Continue', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+              child: Text(AppLocalizations.of(context)!.invoiceForm_continue, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
             ),
           ),
         ],
@@ -564,6 +567,7 @@ class _CreateInvoiceScreenState extends State<CreateInvoiceScreen> {
   }
 
   Widget _buildItemsStep() {
+    final l10n = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
     final itemProvider = Provider.of<ItemProvider>(context);
@@ -575,9 +579,9 @@ class _CreateInvoiceScreenState extends State<CreateInvoiceScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // Sticky Header with Title and Add Button
-          const Text(
-            'Add Items',
-            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+          Text(
+            l10n.invoiceForm_addItems,
+            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 16),
 
@@ -587,7 +591,7 @@ class _CreateInvoiceScreenState extends State<CreateInvoiceScreen> {
             child: ElevatedButton.icon(
               onPressed: () => _showAddItemDialog(items),
               icon: const Icon(Icons.add, size: 20),
-              label: const Text('Add Item', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+              label: Text(l10n.invoiceForm_addItem, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
               style: AppButtonStyles.primaryElevated(context),
             ),
           ),
@@ -596,7 +600,7 @@ class _CreateInvoiceScreenState extends State<CreateInvoiceScreen> {
           // Scrollable Invoice Items List
           Expanded(
             child: _invoiceItems.isEmpty
-                ? const Text('No items added yet')
+                ? Text(l10n.invoiceForm_noItemsAddedYet)
                 : SingleChildScrollView(
                     child: ReorderableListView.builder(
                       shrinkWrap: true,
@@ -668,7 +672,7 @@ class _CreateInvoiceScreenState extends State<CreateInvoiceScreen> {
                                         ),
                                         const SizedBox(height: 4),
                                         Text(
-                                          'Qty: ${_formatQuantity(invoiceItem.quantity)} ${invoiceItem.itemUnit ?? ''} × ₹${_formatNumber(invoiceItem.rate)}',
+                                          '${AppLocalizations.of(context)!.invoiceForm_qty}: ${_formatQuantity(invoiceItem.quantity)} ${invoiceItem.itemUnit ?? ''} × ₹${_formatNumber(invoiceItem.rate)}',
                                           style: TextStyle(
                                             color: ThemeHelpers.mutedTextColor(context),
                                             fontSize: 13,
@@ -707,6 +711,7 @@ class _CreateInvoiceScreenState extends State<CreateInvoiceScreen> {
   }
 
   Widget _buildReviewStep() {
+    final l10n = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
     return Column(
@@ -721,7 +726,7 @@ class _CreateInvoiceScreenState extends State<CreateInvoiceScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'Bill Date',
+                l10n.invoiceForm_billDate,
                 style: TextStyle(
                   fontWeight: FontWeight.bold,
                   fontSize: 12,
@@ -738,7 +743,7 @@ class _CreateInvoiceScreenState extends State<CreateInvoiceScreen> {
               ),
               const SizedBox(height: 12),
               Text(
-                'Party',
+                l10n.invoiceForm_party,
                 style: TextStyle(
                   fontWeight: FontWeight.bold,
                   fontSize: 12,
@@ -759,14 +764,14 @@ class _CreateInvoiceScreenState extends State<CreateInvoiceScreen> {
         const SizedBox(height: 16),
 
         // Items Summary
-        const Text(
-          'Items',
-          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+        Text(
+          l10n.invoiceForm_items,
+          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
         ),
         const SizedBox(height: 12),
 
         if (_invoiceItems.isEmpty)
-          const Text('No items added')
+          Text(l10n.invoiceForm_noItemsAdded)
         else
           ListView.builder(
             shrinkWrap: true,
@@ -798,7 +803,7 @@ class _CreateInvoiceScreenState extends State<CreateInvoiceScreen> {
                           ),
                           const SizedBox(height: 4),
                           Text(
-                            'Qty: ${_formatQuantity(invoiceItem.quantity)} ${invoiceItem.itemUnit ?? ''} × ₹${_formatNumber(invoiceItem.rate)}',
+                            '${AppLocalizations.of(context)!.invoiceForm_qty}: ${_formatQuantity(invoiceItem.quantity)} ${invoiceItem.itemUnit ?? ''} × ₹${_formatNumber(invoiceItem.rate)}',
                             style: TextStyle(
                               color: ThemeHelpers.mutedTextColor(context),
                               fontSize: 13,
@@ -834,7 +839,7 @@ class _CreateInvoiceScreenState extends State<CreateInvoiceScreen> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const Text('Sub-Total', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+                  Text(AppLocalizations.of(context)!.invoiceForm_subTotal, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
                   Text(
                     '₹${_formatNumber(_subTotal)}',
                     style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
@@ -846,7 +851,7 @@ class _CreateInvoiceScreenState extends State<CreateInvoiceScreen> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const Text('Bundle Qty', style: TextStyle(fontSize: 15)),
+                  Text(AppLocalizations.of(context)!.invoiceForm_bundleQty, style: const TextStyle(fontSize: 15)),
                   SizedBox(
                     width: 100,
                     child: TextField(
@@ -886,7 +891,7 @@ class _CreateInvoiceScreenState extends State<CreateInvoiceScreen> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const Text('Bundle Rate', style: TextStyle(fontSize: 15)),
+                  Text(AppLocalizations.of(context)!.invoiceForm_bundleRate, style: const TextStyle(fontSize: 15)),
                   SizedBox(
                     width: 100,
                     child: TextField(
@@ -926,7 +931,7 @@ class _CreateInvoiceScreenState extends State<CreateInvoiceScreen> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const Text('Total Bundle Charge', style: TextStyle(fontSize: 15)),
+                  Text(AppLocalizations.of(context)!.invoiceForm_totalBundleCharge, style: const TextStyle(fontSize: 15)),
                   Text(
                     '₹${_formatNumber(_bundleCharge)}',
                     style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
@@ -937,9 +942,9 @@ class _CreateInvoiceScreenState extends State<CreateInvoiceScreen> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const Text(
-                    'Grand Total:',
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  Text(
+                    AppLocalizations.of(context)!.invoiceForm_grandTotal,
+                    style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                   ),
                   Text(
                     '₹${_formatNumber(_grandTotal)}',
@@ -960,6 +965,7 @@ class _CreateInvoiceScreenState extends State<CreateInvoiceScreen> {
   }
 
   void _showAddItemDialog(List<Item> items) {
+    final l10n = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
     String searchQuery = '';
@@ -998,9 +1004,9 @@ class _CreateInvoiceScreenState extends State<CreateInvoiceScreen> {
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          const Text(
-                            'Select Item',
-                            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                          Text(
+                            l10n.invoiceForm_selectItem,
+                            style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                           ),
                           IconButton(
                             icon: const Icon(Icons.close),
@@ -1015,7 +1021,7 @@ class _CreateInvoiceScreenState extends State<CreateInvoiceScreen> {
                       // Search Field
                       TextField(
                         decoration: InputDecoration(
-                          hintText: 'Search items...',
+                          hintText: l10n.invoiceForm_searchItemsHint,
                           prefixIcon: const Icon(Icons.search),
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
@@ -1053,7 +1059,7 @@ class _CreateInvoiceScreenState extends State<CreateInvoiceScreen> {
                                     ),
                                     const SizedBox(height: 16),
                                     Text(
-                                      'No items found',
+                                      l10n.invoiceForm_noItemsFound,
                                       style: TextStyle(
                                         fontSize: 16,
                                         color: ThemeHelpers.mutedTextColor(context),
@@ -1080,7 +1086,7 @@ class _CreateInvoiceScreenState extends State<CreateInvoiceScreen> {
                                         }
                                       },
                                       icon: const Icon(Icons.add),
-                                      label: const Text('Create Item', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+                                      label: Text(l10n.invoiceForm_createItem, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
                                       style: AppButtonStyles.primaryElevated(context),
                                     ),
                                   ],
@@ -1118,7 +1124,7 @@ class _CreateInvoiceScreenState extends State<CreateInvoiceScreen> {
                                             ),
                                             const SizedBox(height: 4),
                                             Text(
-                                              'Rate: ₹${_formatNumber(item.defaultRate)}${item.unit?.name != null ? ' per ${item.unit!.name}' : ''}',
+                                              '${l10n.invoiceForm_rate}: ₹${_formatNumber(item.defaultRate)}${item.unit?.name != null ? ' ${l10n.invoiceForm_per} ${item.unit!.name}' : ''}',
                                               style: TextStyle(
                                                 fontSize: 13,
                                                 color: ThemeHelpers.mutedTextColor(context),
@@ -1144,6 +1150,7 @@ class _CreateInvoiceScreenState extends State<CreateInvoiceScreen> {
   }
 
   void _showQuantityDialog(Item item) {
+    final l10n = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
     final unitProvider = Provider.of<UnitProvider>(context, listen: false);
@@ -1199,7 +1206,7 @@ class _CreateInvoiceScreenState extends State<CreateInvoiceScreen> {
                     TextField(
                       controller: quantityController,
                       decoration: InputDecoration(
-                        labelText: 'Quantity',
+                        labelText: l10n.invoiceForm_quantity,
                         labelStyle: TextStyle(color: hasError ? Colors.red : null),
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
@@ -1240,7 +1247,7 @@ class _CreateInvoiceScreenState extends State<CreateInvoiceScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'Unit',
+                          l10n.invoiceForm_unit,
                           style: TextStyle(
                             fontSize: 12,
                             fontWeight: FontWeight.w500,
@@ -1303,7 +1310,7 @@ class _CreateInvoiceScreenState extends State<CreateInvoiceScreen> {
                     TextField(
                       controller: rateController,
                       decoration: InputDecoration(
-                        labelText: 'Rate',
+                        labelText: l10n.invoiceForm_rate,
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
                           borderSide: BorderSide(color: ThemeHelpers.borderColor(context)),
@@ -1330,7 +1337,7 @@ class _CreateInvoiceScreenState extends State<CreateInvoiceScreen> {
                       children: [
                         TextButton(
                           onPressed: () => Navigator.pop(context),
-                          child: const Text('Cancel'),
+                          child: Text(l10n.invoiceForm_cancel),
                         ),
                         const SizedBox(width: 12),
                         ElevatedButton(
@@ -1339,7 +1346,7 @@ class _CreateInvoiceScreenState extends State<CreateInvoiceScreen> {
                             if (quantity == null || quantity! <= 0) {
                               setDialogState(() {
                                 hasError = true;
-                                errorMessage = 'Please enter a valid quantity greater than 0';
+                                errorMessage = l10n.invoiceForm_quantityError;
                               });
                               return;
                             }
@@ -1356,7 +1363,7 @@ class _CreateInvoiceScreenState extends State<CreateInvoiceScreen> {
                             Navigator.pop(context);
                           },
                           style: AppButtonStyles.primaryElevated(context),
-                          child: const Text('Add', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+                          child: Text(l10n.invoiceForm_add, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
                         ),
                       ],
                     ),
@@ -1371,6 +1378,7 @@ class _CreateInvoiceScreenState extends State<CreateInvoiceScreen> {
   }
 
   void _showEditItemDialog(int index) {
+    final l10n = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
     final invoiceItem = _invoiceItems[index];
@@ -1404,14 +1412,14 @@ class _CreateInvoiceScreenState extends State<CreateInvoiceScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      invoiceItem.itemName ?? 'Edit Item',
+                      invoiceItem.itemName ?? l10n.invoiceForm_editItem,
                       style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                     ),
                     const SizedBox(height: 24),
                     TextField(
                       controller: quantityController,
                       decoration: InputDecoration(
-                        labelText: 'Quantity',
+                        labelText: l10n.invoiceForm_quantity,
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
                           borderSide: BorderSide(color: ThemeHelpers.borderColor(context)),
@@ -1441,7 +1449,7 @@ class _CreateInvoiceScreenState extends State<CreateInvoiceScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'Unit',
+                          l10n.invoiceForm_unit,
                           style: TextStyle(
                             fontSize: 12,
                             fontWeight: FontWeight.w500,
@@ -1504,7 +1512,7 @@ class _CreateInvoiceScreenState extends State<CreateInvoiceScreen> {
                     TextField(
                       controller: rateController,
                       decoration: InputDecoration(
-                        labelText: 'Rate',
+                        labelText: l10n.invoiceForm_rate,
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
                           borderSide: BorderSide(color: ThemeHelpers.borderColor(context)),
@@ -1531,7 +1539,7 @@ class _CreateInvoiceScreenState extends State<CreateInvoiceScreen> {
                       children: [
                         TextButton(
                           onPressed: () => Navigator.pop(context),
-                          child: const Text('Cancel'),
+                          child: Text(l10n.invoiceForm_cancel),
                         ),
                         const SizedBox(width: 12),
                         ElevatedButton(
@@ -1539,8 +1547,8 @@ class _CreateInvoiceScreenState extends State<CreateInvoiceScreen> {
                             // Validate quantity
                             if (quantity <= 0) {
                               ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
-                                  content: Text('Please enter a valid quantity greater than 0'),
+                                SnackBar(
+                                  content: Text(l10n.invoiceForm_quantityError),
                                   backgroundColor: Colors.red,
                                   behavior: SnackBarBehavior.floating,
                                 ),
@@ -1560,7 +1568,7 @@ class _CreateInvoiceScreenState extends State<CreateInvoiceScreen> {
                             Navigator.pop(context);
                           },
                           style: AppButtonStyles.primaryElevated(context),
-                          child: const Text('Save', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+                          child: Text(l10n.invoiceForm_save, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
                         ),
                       ],
                     ),

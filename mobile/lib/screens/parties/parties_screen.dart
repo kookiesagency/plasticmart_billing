@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import '../../models/party.dart';
 import '../../providers/party_provider.dart';
 import 'add_edit_party_screen.dart';
@@ -80,10 +81,11 @@ class _PartiesScreenState extends State<PartiesScreen> with SingleTickerProvider
 
     if (!mounted) return;
 
+    final l10n = AppLocalizations.of(context)!;
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(
-          success ? 'Party deleted successfully' : 'Failed to delete party',
+          success ? l10n.parties_deleteSuccess : l10n.parties_deleteFailed,
         ),
         backgroundColor: success ? Colors.green : Colors.red,
         behavior: SnackBarBehavior.floating,
@@ -97,10 +99,11 @@ class _PartiesScreenState extends State<PartiesScreen> with SingleTickerProvider
 
     if (!mounted) return;
 
+    final l10n = AppLocalizations.of(context)!;
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(
-          success ? 'Party restored successfully' : 'Failed to restore party',
+          success ? l10n.parties_restoreSuccess : l10n.parties_restoreFailed,
         ),
         backgroundColor: success ? Colors.green : Colors.red,
         behavior: SnackBarBehavior.floating,
@@ -109,26 +112,30 @@ class _PartiesScreenState extends State<PartiesScreen> with SingleTickerProvider
   }
 
   Future<void> _permanentlyDeleteParty(int id) async {
+    final l10n = AppLocalizations.of(context)!;
     final confirmed = await showDialog<bool>(
       context: context,
-      builder: (context) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        title: const Text('Permanently Delete Party'),
-        content: const Text('This action is IRREVERSIBLE. This will permanently delete the party and all associated data. Are you sure?'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: const Text('Cancel'),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.pop(context, true),
-            style: FilledButton.styleFrom(
-              backgroundColor: Colors.red,
+      builder: (dialogContext) {
+        final dialogL10n = AppLocalizations.of(dialogContext)!;
+        return AlertDialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          title: Text(dialogL10n.parties_permanentDeleteTitle),
+          content: Text(dialogL10n.parties_permanentDeleteMessage),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(dialogContext, false),
+              child: Text(dialogL10n.common_cancel),
             ),
-            child: const Text('Delete Permanently'),
-          ),
-        ],
-      ),
+            FilledButton(
+              onPressed: () => Navigator.pop(dialogContext, true),
+              style: FilledButton.styleFrom(
+                backgroundColor: Colors.red,
+              ),
+              child: Text(dialogL10n.parties_permanentDeleteButton),
+            ),
+          ],
+        );
+      },
     );
 
     if (confirmed != true || !mounted) return;
@@ -138,10 +145,11 @@ class _PartiesScreenState extends State<PartiesScreen> with SingleTickerProvider
 
     if (!mounted) return;
 
+    final l10nAfter = AppLocalizations.of(context)!;
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(
-          success ? 'Party permanently deleted' : 'Failed to permanently delete party',
+          success ? l10nAfter.parties_permanentDeleteSuccess : l10nAfter.parties_permanentDeleteFailed,
         ),
         backgroundColor: success ? Colors.green : Colors.red,
         behavior: SnackBarBehavior.floating,
@@ -151,6 +159,7 @@ class _PartiesScreenState extends State<PartiesScreen> with SingleTickerProvider
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final partyProvider = Provider.of<PartyProvider>(context);
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
@@ -163,16 +172,16 @@ class _PartiesScreenState extends State<PartiesScreen> with SingleTickerProvider
       children: [
         TabBar(
           controller: _tabController,
-          tabs: const [
-            Tab(text: 'Active'),
-            Tab(text: 'Deleted'),
+          tabs: [
+            Tab(text: l10n.parties_active),
+            Tab(text: l10n.parties_deleted),
           ],
         ),
         Padding(
           padding: const EdgeInsets.all(16.0),
           child: TextField(
             decoration: InputDecoration(
-              hintText: 'Search parties...',
+              hintText: l10n.parties_searchParties,
               prefixIcon: const Icon(Icons.search),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
@@ -210,7 +219,7 @@ class _PartiesScreenState extends State<PartiesScreen> with SingleTickerProvider
                           ),
                           const SizedBox(height: 16),
                           Text(
-                            _showDeleted ? 'No deleted parties' : 'No parties yet',
+                            _showDeleted ? l10n.parties_noDeletedParties : l10n.parties_noPartiesYet,
                             style: const TextStyle(
                               fontSize: 18,
                               color: Colors.grey,
@@ -221,7 +230,7 @@ class _PartiesScreenState extends State<PartiesScreen> with SingleTickerProvider
                             TextButton.icon(
                               onPressed: () => _showAddEditDialog(),
                               icon: const Icon(Icons.add),
-                              label: const Text('Add your first party'),
+                              label: Text(l10n.parties_createFirstParty),
                             ),
                           ],
                         ],
@@ -271,24 +280,27 @@ class _PartiesScreenState extends State<PartiesScreen> with SingleTickerProvider
                                 // Delete action
                                 return await showDialog<bool>(
                                   context: context,
-                                  builder: (context) => AlertDialog(
-                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                                    title: const Text('Delete Party'),
-                                    content: const Text('Are you sure you want to delete this party?'),
-                                    actions: [
-                                      TextButton(
-                                        onPressed: () => Navigator.pop(context, false),
-                                        child: const Text('Cancel'),
-                                      ),
-                                      FilledButton(
-                                        onPressed: () => Navigator.pop(context, true),
-                                        style: FilledButton.styleFrom(
-                                          backgroundColor: Colors.red,
+                                  builder: (dialogContext) {
+                                    final dialogL10n = AppLocalizations.of(dialogContext)!;
+                                    return AlertDialog(
+                                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                      title: Text(dialogL10n.parties_deleteParty),
+                                      content: Text(dialogL10n.common_areYouSure),
+                                      actions: [
+                                        TextButton(
+                                          onPressed: () => Navigator.pop(dialogContext, false),
+                                          child: Text(dialogL10n.common_cancel),
                                         ),
-                                        child: const Text('Delete'),
-                                      ),
-                                    ],
-                                  ),
+                                        FilledButton(
+                                          onPressed: () => Navigator.pop(dialogContext, true),
+                                          style: FilledButton.styleFrom(
+                                            backgroundColor: Colors.red,
+                                          ),
+                                          child: Text(dialogL10n.common_delete),
+                                        ),
+                                      ],
+                                    );
+                                  },
                                 );
                               }
                             },
@@ -372,7 +384,7 @@ class _PartiesScreenState extends State<PartiesScreen> with SingleTickerProvider
                                                     children: [
                                                       if (party.bundleRate != null) ...[
                                                         Text(
-                                                          'Bundle Rate: ₹${party.bundleRate!.toStringAsFixed(2)}',
+                                                          '${l10n.parties_bundleRateLabel}: ₹${party.bundleRate!.toStringAsFixed(2)}',
                                                           style: TextStyle(
                                                             color: colorScheme.primary,
                                                             fontSize: 13,
@@ -382,7 +394,7 @@ class _PartiesScreenState extends State<PartiesScreen> with SingleTickerProvider
                                                       if (party.createdAt != null) ...[
                                                         const SizedBox(height: 4),
                                                         Text(
-                                                          'Created: ${_formatDate(party.createdAt!)}',
+                                                          '${l10n.parties_createdLabel}: ${_formatDate(party.createdAt!)}',
                                                           style: TextStyle(
                                                             color: theme.textTheme.bodySmall?.color?.withOpacity(0.7),
                                                             fontSize: 12,
@@ -402,7 +414,7 @@ class _PartiesScreenState extends State<PartiesScreen> with SingleTickerProvider
                                                     borderRadius: BorderRadius.circular(12),
                                                   ),
                                                   child: Text(
-                                                    '${party.invoiceCount ?? 0} ${(party.invoiceCount ?? 0) == 1 ? 'Bill' : 'Bills'}',
+                                                    '${party.invoiceCount ?? 0} ${(party.invoiceCount ?? 0) == 1 ? l10n.parties_billsLabel : l10n.parties_billsLabelPlural}',
                                                     style: TextStyle(
                                                       color: colorScheme.primary,
                                                       fontSize: 12,
@@ -419,12 +431,12 @@ class _PartiesScreenState extends State<PartiesScreen> with SingleTickerProvider
                                         IconButton(
                                           icon: const Icon(Icons.restore, color: Colors.green, size: 22),
                                           onPressed: () => _restoreParty(party.id!),
-                                          tooltip: 'Restore',
+                                          tooltip: l10n.parties_restoreTooltip,
                                         ),
                                         IconButton(
                                           icon: const Icon(Icons.delete_forever, color: Colors.red, size: 22),
                                           onPressed: () => _permanentlyDeleteParty(party.id!),
-                                          tooltip: 'Delete Permanently',
+                                          tooltip: l10n.parties_permanentDeleteTooltip,
                                         ),
                                       ],
                                     ],

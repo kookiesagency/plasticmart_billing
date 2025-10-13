@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import '../../models/party.dart';
 import '../../models/invoice.dart';
 import '../../providers/party_provider.dart';
@@ -68,9 +69,10 @@ class _AddOfflineBillScreenState extends State<AddOfflineBillScreen> {
     } else {
       setState(() => _isLoading = false);
       if (mounted) {
+        final l10n = AppLocalizations.of(context)!;
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Failed to load bill details'),
+          SnackBar(
+            content: Text(l10n.offlineBillForm_loadFailedError),
             backgroundColor: Colors.red,
           ),
         );
@@ -131,13 +133,28 @@ class _AddOfflineBillScreenState extends State<AddOfflineBillScreen> {
     }
   }
 
+  String _getPaymentStatusLabel(BuildContext context, String status) {
+    final l10n = AppLocalizations.of(context)!;
+    switch (status) {
+      case 'Pending':
+        return l10n.dashboard_pending;
+      case 'Partial':
+        return l10n.dashboard_partial;
+      case 'Paid':
+        return l10n.dashboard_paid;
+      default:
+        return status;
+    }
+  }
+
   Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
 
     if (_selectedParty == null) {
+      final l10n = AppLocalizations.of(context)!;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Please select a party'),
+        SnackBar(
+          content: Text(l10n.offlineBillForm_selectPartyError),
           backgroundColor: Colors.red,
           behavior: SnackBarBehavior.floating,
         ),
@@ -147,9 +164,10 @@ class _AddOfflineBillScreenState extends State<AddOfflineBillScreen> {
 
     final amount = double.tryParse(_totalAmountController.text) ?? 0;
     if (amount <= 0) {
+      final l10n = AppLocalizations.of(context)!;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Total amount must be greater than 0'),
+        SnackBar(
+          content: Text(l10n.offlineBillForm_totalAmountMustBeGreaterThanZero),
           backgroundColor: Colors.red,
           behavior: SnackBarBehavior.floating,
         ),
@@ -179,9 +197,10 @@ class _AddOfflineBillScreenState extends State<AddOfflineBillScreen> {
 
         if (!mounted) return;
 
+        final l10n = AppLocalizations.of(context)!;
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Offline bill updated successfully'),
+          SnackBar(
+            content: Text(l10n.offlineBillForm_updateSuccess),
             backgroundColor: Colors.green,
             behavior: SnackBarBehavior.floating,
           ),
@@ -192,9 +211,10 @@ class _AddOfflineBillScreenState extends State<AddOfflineBillScreen> {
 
         if (!mounted) return;
 
+        final l10n = AppLocalizations.of(context)!;
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Failed to update bill: ${e.toString()}'),
+            content: Text('${l10n.offlineBillForm_updateFailed}: ${e.toString()}'),
             backgroundColor: Colors.red,
             behavior: SnackBarBehavior.floating,
           ),
@@ -209,9 +229,10 @@ class _AddOfflineBillScreenState extends State<AddOfflineBillScreen> {
         amountReceived = double.tryParse(_amountReceivedController.text) ?? 0;
         if (amountReceived <= 0 || amountReceived >= amount) {
           setState(() => _isLoading = false);
+          final l10n = AppLocalizations.of(context)!;
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Partial payment must be greater than 0 and less than total amount'),
+            SnackBar(
+              content: Text(l10n.offlineBillForm_partialPaymentValidation),
               backgroundColor: Colors.red,
               behavior: SnackBarBehavior.floating,
             ),
@@ -235,10 +256,11 @@ class _AddOfflineBillScreenState extends State<AddOfflineBillScreen> {
 
       if (!mounted) return;
 
+      final l10n = AppLocalizations.of(context)!;
       if (result?['success'] == true) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Bill ${result?['invoice_number'] ?? ''} created successfully'),
+            content: Text('${l10n.offlineBillForm_billText} ${result?['invoice_number'] ?? ''} ${l10n.offlineBillForm_createdSuccessfully}'),
             backgroundColor: Colors.green,
             behavior: SnackBarBehavior.floating,
           ),
@@ -247,7 +269,7 @@ class _AddOfflineBillScreenState extends State<AddOfflineBillScreen> {
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Failed to create bill: ${result?['error'] ?? 'Unknown error'}'),
+            content: Text('${l10n.offlineBillForm_createFailed}: ${result?['error'] ?? l10n.offlineBillForm_unknownError}'),
             backgroundColor: Colors.red,
             behavior: SnackBarBehavior.floating,
           ),
@@ -258,11 +280,12 @@ class _AddOfflineBillScreenState extends State<AddOfflineBillScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
     return Scaffold(
       backgroundColor: theme.scaffoldBackgroundColor,
       appBar: AppBar(
-        title: Text(_isEditMode ? 'Edit Offline Bill' : 'Add Offline Bill'),
+        title: Text(_isEditMode ? l10n.offlineBillForm_editTitle : l10n.offlineBill_title),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () => Navigator.pop(context),
@@ -284,8 +307,8 @@ class _AddOfflineBillScreenState extends State<AddOfflineBillScreen> {
                       borderRadius: BorderRadius.circular(12),
                       child: InputDecorator(
                         decoration: InputDecoration(
-                          labelText: 'Party',
-                          hintText: 'Select party',
+                          labelText: l10n.invoices_party,
+                          hintText: l10n.invoices_selectParty,
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
                           ),
@@ -299,7 +322,7 @@ class _AddOfflineBillScreenState extends State<AddOfflineBillScreen> {
                                 style: const TextStyle(fontSize: 16),
                               )
                             : Text(
-                                'Select party',
+                                l10n.invoices_selectParty,
                                 style: TextStyle(
                                   fontSize: 16,
                                   color: Theme.of(context).hintColor,
@@ -313,8 +336,8 @@ class _AddOfflineBillScreenState extends State<AddOfflineBillScreen> {
                     TextFormField(
                       controller: _totalAmountController,
                       decoration: InputDecoration(
-                        labelText: 'Total Amount',
-                        hintText: 'Enter amount',
+                        labelText: l10n.offlineBill_totalAmount,
+                        hintText: l10n.offlineBill_enterTotalAmount,
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
                         ),
@@ -327,11 +350,11 @@ class _AddOfflineBillScreenState extends State<AddOfflineBillScreen> {
                       ],
                       validator: (value) {
                         if (value == null || value.isEmpty) {
-                          return 'Please enter total amount';
+                          return l10n.offlineBillForm_totalAmountRequired;
                         }
                         final amount = double.tryParse(value);
                         if (amount == null || amount <= 0) {
-                          return 'Amount must be greater than 0';
+                          return l10n.offlineBillForm_amountGreaterThanZero;
                         }
                         return null;
                       },
@@ -355,7 +378,7 @@ class _AddOfflineBillScreenState extends State<AddOfflineBillScreen> {
                       borderRadius: BorderRadius.circular(12),
                       child: InputDecorator(
                         decoration: InputDecoration(
-                          labelText: 'Invoice Date',
+                          labelText: l10n.offlineBill_invoiceDate,
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
                           ),
@@ -379,7 +402,7 @@ class _AddOfflineBillScreenState extends State<AddOfflineBillScreen> {
                         borderRadius: BorderRadius.circular(12),
                         child: InputDecorator(
                           decoration: InputDecoration(
-                            labelText: 'Payment Status',
+                            labelText: l10n.offlineBill_paymentStatus,
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(12),
                             ),
@@ -388,7 +411,7 @@ class _AddOfflineBillScreenState extends State<AddOfflineBillScreen> {
                             suffixIcon: const Icon(Icons.arrow_drop_down),
                           ),
                           child: Text(
-                            _paymentStatus,
+                            _getPaymentStatusLabel(context, _paymentStatus),
                             style: const TextStyle(fontSize: 16),
                           ),
                         ),
@@ -400,8 +423,8 @@ class _AddOfflineBillScreenState extends State<AddOfflineBillScreen> {
                         TextFormField(
                           controller: _amountReceivedController,
                           decoration: InputDecoration(
-                            labelText: 'Amount Received',
-                            hintText: 'Enter amount received',
+                            labelText: l10n.offlineBill_amountReceived,
+                            hintText: l10n.offlineBill_enterAmountReceived,
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(12),
                             ),
@@ -415,11 +438,11 @@ class _AddOfflineBillScreenState extends State<AddOfflineBillScreen> {
                           validator: (value) {
                             if (_paymentStatus == 'Partial') {
                               if (value == null || value.isEmpty) {
-                                return 'Please enter amount received';
+                                return l10n.offlineBillForm_amountReceivedRequired;
                               }
                               final received = double.tryParse(value);
                               if (received == null || received <= 0) {
-                                return 'Amount must be greater than 0';
+                                return l10n.offlineBillForm_amountMustBeGreaterThanZero;
                               }
                             }
                             return null;
@@ -433,8 +456,8 @@ class _AddOfflineBillScreenState extends State<AddOfflineBillScreen> {
                       TextFormField(
                         controller: _notesController,
                         decoration: InputDecoration(
-                          labelText: 'Notes (Optional)',
-                          hintText: 'Add any additional notes...',
+                          labelText: l10n.offlineBillForm_notesOptional,
+                          hintText: l10n.offlineBillForm_addNotesHint,
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
                           ),
@@ -477,7 +500,7 @@ class _AddOfflineBillScreenState extends State<AddOfflineBillScreen> {
                           ),
                         )
                       : Text(
-                          _isEditMode ? 'Update Bill' : 'Create Bill',
+                          _isEditMode ? l10n.offlineBillForm_updateButton : l10n.offlineBillForm_createButton,
                           style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
                         ),
                 ),
@@ -503,6 +526,7 @@ class _PartySelectionBottomSheetState extends State<PartySelectionBottomSheet> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return StatefulBuilder(
       builder: (context, setBottomSheetState) {
         final partyProvider = Provider.of<PartyProvider>(context);
@@ -526,9 +550,9 @@ class _PartySelectionBottomSheetState extends State<PartySelectionBottomSheet> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      const Text(
-                        'Select Party',
-                        style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                      Text(
+                        l10n.invoices_selectParty,
+                        style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                       ),
                       IconButton(
                         icon: const Icon(Icons.close),
@@ -543,7 +567,7 @@ class _PartySelectionBottomSheetState extends State<PartySelectionBottomSheet> {
                   // Search Field
                   TextField(
                     decoration: InputDecoration(
-                      hintText: 'Search parties...',
+                      hintText: l10n.offlineBillForm_searchPartiesHint,
                       prefixIcon: const Icon(Icons.search),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
@@ -581,7 +605,7 @@ class _PartySelectionBottomSheetState extends State<PartySelectionBottomSheet> {
                                 ),
                                 const SizedBox(height: 16),
                                 Text(
-                                  'No parties found',
+                                  l10n.offlineBillForm_noPartiesFound,
                                   style: TextStyle(
                                     fontSize: 16,
                                     color: ThemeHelpers.mutedTextColor(context),
@@ -622,7 +646,7 @@ class _PartySelectionBottomSheetState extends State<PartySelectionBottomSheet> {
                                         if (party.phone != null) ...[
                                           const SizedBox(height: 4),
                                           Text(
-                                            'Phone: ${party.phone}',
+                                            '${l10n.parties_phone}: ${party.phone}',
                                             style: TextStyle(
                                               fontSize: 13,
                                               color: ThemeHelpers.mutedTextColor(context),
@@ -658,10 +682,11 @@ class PaymentStatusBottomSheet extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final statuses = [
-      {'label': 'Pending', 'color': Colors.red},
-      {'label': 'Partial', 'color': Colors.orange},
-      {'label': 'Paid', 'color': Colors.green},
+      {'value': 'Pending', 'label': l10n.dashboard_pending, 'color': Colors.red},
+      {'value': 'Partial', 'label': l10n.dashboard_partial, 'color': Colors.orange},
+      {'value': 'Paid', 'label': l10n.dashboard_paid, 'color': Colors.green},
     ];
 
     return Container(
@@ -674,9 +699,9 @@ class PaymentStatusBottomSheet extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text(
-                'Payment Status',
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+              Text(
+                l10n.offlineBill_paymentStatus,
+                style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
               ),
               IconButton(
                 icon: const Icon(Icons.close),
@@ -690,7 +715,7 @@ class PaymentStatusBottomSheet extends StatelessWidget {
 
           // Status Options
           ...statuses.map((status) {
-            final isSelected = status['label'] == currentStatus;
+            final isSelected = status['value'] == currentStatus;
             return Container(
               margin: const EdgeInsets.only(bottom: 8),
               decoration: BoxDecoration(
@@ -705,7 +730,7 @@ class PaymentStatusBottomSheet extends StatelessWidget {
               ),
               child: InkWell(
                 onTap: () {
-                  Navigator.pop(context, status['label']);
+                  Navigator.pop(context, status['value']);
                 },
                 borderRadius: BorderRadius.circular(12),
                 child: Padding(

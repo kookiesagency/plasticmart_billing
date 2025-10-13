@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import '../../models/party.dart';
 import '../../models/invoice.dart';
 import '../../providers/invoice_provider.dart';
@@ -138,6 +139,7 @@ class _PartyDetailsScreenState extends State<PartyDetailsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
     final isDark = theme.brightness == Brightness.dark;
@@ -177,7 +179,7 @@ class _PartyDetailsScreenState extends State<PartyDetailsScreen> {
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Text(
-                                    'Bundle Rate',
+                                    l10n.parties_bundleRate,
                                     style: TextStyle(
                                       fontSize: 12,
                                       color: ThemeHelpers.mutedTextColor(context),
@@ -187,7 +189,7 @@ class _PartyDetailsScreenState extends State<PartyDetailsScreen> {
                                   Text(
                                     widget.party.bundleRate != null
                                         ? _formatCurrency(widget.party.bundleRate!)
-                                        : 'Not set',
+                                        : l10n.parties_notSet,
                                     style: const TextStyle(
                                       fontSize: 16,
                                       fontWeight: FontWeight.w500,
@@ -201,7 +203,7 @@ class _PartyDetailsScreenState extends State<PartyDetailsScreen> {
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Text(
-                                    'Opening Balance',
+                                    l10n.parties_openingBalanceLabel,
                                     style: TextStyle(
                                       fontSize: 12,
                                       color: ThemeHelpers.mutedTextColor(context),
@@ -236,28 +238,28 @@ class _PartyDetailsScreenState extends State<PartyDetailsScreen> {
                     children: [
                       _buildSummaryCard(
                         context: context,
-                        title: 'Total Billed',
+                        title: l10n.parties_totalBilled,
                         value: _formatCurrency(_totalBilled),
                         icon: Icons.receipt_long_outlined,
                         color: colorScheme.primary,
                       ),
                       _buildSummaryCard(
                         context: context,
-                        title: 'Total Received',
+                        title: l10n.parties_totalReceived,
                         value: _formatCurrency(_totalReceived),
                         icon: Icons.check_circle_outline,
                         color: Colors.green,
                       ),
                       _buildSummaryCard(
                         context: context,
-                        title: 'Current Balance',
+                        title: l10n.parties_currentBalance,
                         value: _formatCurrency(_currentBalance),
                         icon: Icons.account_balance_wallet_outlined,
                         color: _currentBalance > 0 ? Colors.red : Colors.green,
                       ),
                       _buildSummaryCard(
                         context: context,
-                        title: 'Invoice Count',
+                        title: l10n.parties_invoiceCount,
                         value: _invoices.length.toString(),
                         icon: Icons.description_outlined,
                         color: Colors.blue,
@@ -267,9 +269,9 @@ class _PartyDetailsScreenState extends State<PartyDetailsScreen> {
                   const SizedBox(height: 24),
 
                   // Invoice List Header
-                  const Text(
-                    'Invoices',
-                    style: TextStyle(
+                  Text(
+                    l10n.parties_invoicesTitle,
+                    style: const TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
                     ),
@@ -290,7 +292,7 @@ class _PartyDetailsScreenState extends State<PartyDetailsScreen> {
                             ),
                             const SizedBox(height: 16),
                             Text(
-                              'No invoices yet',
+                              l10n.parties_noInvoicesYet,
                               style: TextStyle(
                                 fontSize: 16,
                                 color: ThemeHelpers.mutedTextColor(context),
@@ -332,7 +334,7 @@ class _PartyDetailsScreenState extends State<PartyDetailsScreen> {
                                     children: [
                                       if (invoice.invoiceNumber != null) ...[
                                         Text(
-                                          'Bill #${invoice.invoiceNumber}',
+                                          '${l10n.parties_billNumber}${invoice.invoiceNumber}',
                                           style: const TextStyle(
                                             fontWeight: FontWeight.w600,
                                             fontSize: 14,
