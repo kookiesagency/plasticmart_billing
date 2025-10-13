@@ -298,13 +298,22 @@ class _InvoiceFilterBottomSheetState extends State<InvoiceFilterBottomSheet> {
                   onPressed: _clearFilters,
                   style: OutlinedButton.styleFrom(
                     padding: const EdgeInsets.symmetric(vertical: 14),
+                    side: BorderSide(
+                      color: isDarkTheme
+                          ? Colors.white.withOpacity(0.3)
+                          : Colors.grey.shade400,
+                      width: 1.5,
+                    ),
+                    foregroundColor: isDarkTheme
+                        ? Colors.white
+                        : Colors.grey.shade800,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),
                   ),
-                  child: Text(
+                  child: const Text(
                     'Clear All',
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w600,
                     ),
@@ -318,9 +327,15 @@ class _InvoiceFilterBottomSheetState extends State<InvoiceFilterBottomSheet> {
                   style: ElevatedButton.styleFrom(
                     backgroundColor: theme.colorScheme.primary,
                     foregroundColor: Colors.white,
+                    elevation: 0,
                     padding: const EdgeInsets.symmetric(vertical: 14),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
+                    ),
+                    textStyle: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.white,
                     ),
                   ),
                   child: const Text(
@@ -328,6 +343,7 @@ class _InvoiceFilterBottomSheetState extends State<InvoiceFilterBottomSheet> {
                     style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w600,
+                      color: Colors.white,
                     ),
                   ),
                 ),
