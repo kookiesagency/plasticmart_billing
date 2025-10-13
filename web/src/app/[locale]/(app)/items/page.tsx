@@ -112,16 +112,16 @@ export default function ItemManager() {
       supabase.from('parties').select('id, name').is('deleted_at', null),
     ])
 
-    if (itemsRes.error) toast.error('Failed to fetch items: ' + itemsRes.error.message)
+    if (itemsRes.error) toast.error(t('failedToFetchItems').replace('{error}', itemsRes.error.message))
     else setItems(itemsRes.data as Item[])
 
-    if (deletedItemsRes.error) toast.error('Failed to fetch deleted items: ' + deletedItemsRes.error.message)
+    if (deletedItemsRes.error) toast.error(t('failedToFetchDeletedItems').replace('{error}', deletedItemsRes.error.message))
     else setDeletedItems(deletedItemsRes.data as Item[])
 
-    if (unitsRes.error) toast.error('Failed to fetch units: ' + unitsRes.error.message)
+    if (unitsRes.error) toast.error(t('failedToFetchUnits').replace('{error}', unitsRes.error.message))
     else setUnits(unitsRes.data)
 
-    if (partiesRes.error) toast.error('Failed to fetch parties: ' + partiesRes.error.message)
+    if (partiesRes.error) toast.error(t('failedToFetchParties').replace('{error}', partiesRes.error.message))
     else setParties(partiesRes.data)
     
     setLoading(false)
@@ -141,7 +141,7 @@ export default function ItemManager() {
         .eq('item_id', item.id)
 
       if (error) {
-        toast.error('Failed to fetch party prices: ' + error.message)
+        toast.error(t('failedToFetchPartyPrices').replace('{error}', error.message))
       }
       
       form.reset({
@@ -161,7 +161,7 @@ export default function ItemManager() {
   const onSubmit = async (values: z.infer<typeof itemSchema>) => {
     const trimmedName = values.name.trim()
     if (!trimmedName) {
-      return toast.error('Item name cannot be empty.')
+      return toast.error(t('itemNameCannotBeEmpty'))
     }
 
     // Fetch all items and check for normalized duplicate
@@ -170,7 +170,7 @@ export default function ItemManager() {
       .select('id, name, deleted_at')
 
     if (checkError) {
-      return toast.error('Error checking for duplicate item: ' + checkError.message)
+      return toast.error(t('errorCheckingDuplicate').replace('{error}', checkError.message))
     }
 
     // If an item with the same normalized name exists AND it's not the item we are currently editing
@@ -178,9 +178,9 @@ export default function ItemManager() {
     const duplicate = allItems.find(item => normalizeName(item.name) === normalizedNew && item.id !== editingItem?.id)
     if (duplicate) {
       if (duplicate.deleted_at) {
-        return toast.error('An item with this name exists in the "Deleted" tab. Please restore it or use a different name.')
+        return toast.error(t('itemExistsInDeleted'))
       }
-      return toast.error('An item with this name already exists.')
+      return toast.error(t('itemAlreadyExists'))
     }
 
     const { party_prices, ...itemData } = { ...values, name: trimmedName }
@@ -189,32 +189,32 @@ export default function ItemManager() {
 
     if (editingItem) {
       const { error } = await supabase.from('items').update(itemData).eq('id', editingItem.id)
-      if (error) return toast.error('Failed to update item: ' + error.message)
+      if (error) return toast.error(t('failedToUpdateItem').replace('{error}', error.message))
     } else {
       const { data, error } = await supabase.from('items').insert(itemData).select('id').single()
-      if (error) return toast.error('Failed to create item: ' + error.message)
+      if (error) return toast.error(t('failedToCreateItem').replace('{error}', error.message))
       itemId = data.id
     }
-    
-    if (!itemId) return toast.error('Could not get item ID.')
+
+    if (!itemId) return toast.error(t('couldNotGetItemId'))
 
     const { error: deleteError } = await supabase.from('item_party_prices').delete().eq('item_id', itemId)
-    if (deleteError) return toast.error('Failed to clear old party prices: ' + deleteError.message)
+    if (deleteError) return toast.error(t('failedToClearOldPartyPrices').replace('{error}', deleteError.message))
 
     if (party_prices && party_prices.length > 0) {
       const pricesToInsert = party_prices.map(pp => ({ ...pp, item_id: itemId }))
       const { error: insertPricesError } = await supabase.from('item_party_prices').insert(pricesToInsert)
-      if (insertPricesError) return toast.error('Failed to save party prices: ' + insertPricesError.message)
+      if (insertPricesError) return toast.error(t('failedToSavePartyPrices').replace('{error}', insertPricesError.message))
     }
 
-    toast.success(`Item ${editingItem ? 'updated' : 'created'} successfully!`)
+    toast.success(editingItem ? t('itemUpdatedSuccess') : t('itemCreatedSuccess'))
     setIsDialogOpen(false)
     fetchData()
   }
 
   const handlePartySelectForPrice = (partyId: number) => {
     if (fields.some(f => f.party_id === partyId)) {
-        return toast.error('This party already has a specific price.')
+        return toast.error(t('partyAlreadyHasPrice'))
     }
     append({ party_id: partyId, price: 0 })
     setPartySearch('')
@@ -230,9 +230,9 @@ export default function ItemManager() {
     if (!itemToDelete) return
     const { error } = await supabase.from('items').update({ deleted_at: new Date().toISOString() }).eq('id', itemToDelete)
     if (error) {
-      toast.error('Failed to delete item: ' + error.message)
+      toast.error(t('failedToDeleteItem').replace('{error}', error.message))
     } else {
-      toast.success('Item deleted successfully!')
+      toast.success(t('itemDeletedSuccess'))
       fetchData()
     }
     setItemToDelete(null)
@@ -247,9 +247,9 @@ export default function ItemManager() {
     if (!itemToRestore) return
     const { error } = await supabase.from('items').update({ deleted_at: null }).eq('id', itemToRestore)
     if (error) {
-      toast.error('Failed to restore item: ' + error.message)
+      toast.error(t('failedToRestoreItem').replace('{error}', error.message))
     } else {
-      toast.success('Item restored successfully!')
+      toast.success(t('itemRestoredSuccess'))
       fetchData()
     }
     setItemToRestore(null)
@@ -264,9 +264,9 @@ export default function ItemManager() {
     if (!bulkDeleteIds || bulkDeleteIds.length === 0) return;
     const { error } = await supabase.from('items').update({ deleted_at: new Date().toISOString() }).in('id', bulkDeleteIds)
     if (error) {
-      toast.error(`Failed to delete ${bulkDeleteIds.length} items: ` + error.message)
+      toast.error(t('failedToDeleteItems').replace('{count}', bulkDeleteIds.length.toString()).replace('{error}', error.message))
     } else {
-      toast.success(`${bulkDeleteIds.length} items deleted successfully!`)
+      toast.success(t('itemsDeletedSuccess').replace('{count}', bulkDeleteIds.length.toString()))
       fetchData()
     }
     setBulkDeleteIds(null)
@@ -286,15 +286,15 @@ export default function ItemManager() {
     // First, delete related party prices, as they don't have a cascading delete rule.
     const { error: pricesError } = await supabase.from('item_party_prices').delete().eq('item_id', itemToPermanentlyDelete)
     if (pricesError) {
-      return toast.error('Failed to delete related party prices: ' + pricesError.message)
+      return toast.error(t('failedToDeletePrices').replace('{error}', pricesError.message))
     }
 
     // Finally, delete the item itself
     const { error } = await supabase.from('items').delete().eq('id', itemToPermanentlyDelete)
     if (error) {
-      toast.error('Failed to permanently delete item: ' + error.message)
+      toast.error(t('failedToPermanentlyDeleteItem').replace('{error}', error.message))
     } else {
-      toast.success('Item permanently deleted successfully!')
+      toast.success(t('itemPermanentlyDeletedSuccess'))
       fetchData()
     }
     setItemToPermanentlyDelete(null)
@@ -314,14 +314,14 @@ export default function ItemManager() {
     // First, delete related party prices
     const { error: pricesError } = await supabase.from('item_party_prices').delete().in('item_id', bulkPermanentDeleteIds)
     if (pricesError) {
-      return toast.error('Failed to delete related party prices: ' + pricesError.message)
+      return toast.error(t('failedToDeletePrices').replace('{error}', pricesError.message))
     }
 
     const { error } = await supabase.from('items').delete().in('id', bulkPermanentDeleteIds)
     if (error) {
-      toast.error(`Failed to permanently delete ${bulkPermanentDeleteIds.length} items: ` + error.message)
+      toast.error(t('failedToPermanentlyDeleteItems').replace('{count}', bulkPermanentDeleteIds.length.toString()).replace('{error}', error.message))
     } else {
-      toast.success(`${bulkPermanentDeleteIds.length} items permanently deleted successfully!`)
+      toast.success(t('itemsPermanentlyDeletedSuccess').replace('{count}', bulkPermanentDeleteIds.length.toString()))
       fetchData()
     }
     setBulkPermanentDeleteIds(null)
@@ -336,9 +336,9 @@ export default function ItemManager() {
     if (!bulkRestoreIds || bulkRestoreIds.length === 0) return
     const { error } = await supabase.from('items').update({ deleted_at: null }).in('id', bulkRestoreIds)
     if (error) {
-      toast.error(`Failed to restore ${bulkRestoreIds.length} items: ` + error.message)
+      toast.error(t('failedToRestoreItems').replace('{count}', bulkRestoreIds.length.toString()).replace('{error}', error.message))
     } else {
-      toast.success(`${bulkRestoreIds.length} items restored successfully!`)
+      toast.success(t('itemsRestoredSuccess').replace('{count}', bulkRestoreIds.length.toString()))
       fetchData()
     }
     setBulkRestoreIds(null)
@@ -366,7 +366,7 @@ export default function ItemManager() {
       .eq('item_id', item.id)
 
     if (error) {
-      toast.error('Failed to fetch party prices: ' + error.message)
+      toast.error(t('failedToFetchPartyPrices').replace('{error}', error.message))
       return
     }
 
@@ -421,7 +421,7 @@ export default function ItemManager() {
           <ArrowUpDown className="ml-2 h-4 w-4" />
         </div>
       ),
-      cell: ({ row }) => row.original.units?.name || 'N/A'
+      cell: ({ row }) => row.original.units?.name || t('na')
     },
     {
       accessorKey: 'default_rate',
@@ -538,7 +538,7 @@ export default function ItemManager() {
             data={items}
             loading={loading}
             onBulkDelete={handleBulkDelete}
-            searchPlaceholder="Search items..."
+            searchPlaceholder={t('searchItems')}
           />
         </TabsContent>
         <TabsContent value="deleted">
@@ -548,8 +548,8 @@ export default function ItemManager() {
             loading={loading}
             onBulkRestore={handleBulkRestore}
             onBulkDelete={handleBulkPermanentDelete}
-            searchPlaceholder="Search deleted items..."
-            bulkActionLabel="Delete Permanently"
+            searchPlaceholder={t('searchDeletedItems')}
+            bulkActionLabel={t('deletePermanently')}
           />
         </TabsContent>
       </Tabs>
@@ -568,7 +568,7 @@ export default function ItemManager() {
                   <FormItem>
                     <FormLabel>{t('itemName')}</FormLabel>
                     <FormControl>
-                      <Input placeholder="e.g. Plastic Bottle" {...field} />
+                      <Input placeholder={t('itemName')} {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -584,7 +584,7 @@ export default function ItemManager() {
                       <FormControl>
                         <Input
                           type="number"
-                          placeholder="Enter rate"
+                          placeholder={t('defaultRate')}
                           {...field}
                           onChange={e => {
                             const value = parseFloat(e.target.value)
@@ -604,7 +604,7 @@ export default function ItemManager() {
                     <FormItem>
                       <FormLabel>{t('purchaseRate')} <span className="text-muted-foreground font-normal">({tCommon('optional')})</span></FormLabel>
                       <FormControl>
-                        <Input type="number" step="0.01" min={0} placeholder="e.g. 100" value={field.value ?? ''} onChange={field.onChange} />
+                        <Input type="number" step="0.01" min={0} placeholder={t('purchaseRate')} value={field.value ?? ''} onChange={field.onChange} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -636,7 +636,7 @@ export default function ItemManager() {
                                 ? units.find(
                                     (unit) => unit.id === field.value
                                   )?.name
-                                : "Select a unit"}
+                                : t('selectUnit')}
                               <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                             </Button>
                           </PopoverTrigger>
@@ -646,8 +646,8 @@ export default function ItemManager() {
                             style={unitPopoverWidth ? { width: unitPopoverWidth } : {}}
                           >
                             <Command>
-                              <CommandInput placeholder="Search unit..." />
-                              <CommandEmpty>No unit found.</CommandEmpty>
+                              <CommandInput placeholder={t('searchUnit')} />
+                              <CommandEmpty>{t('noUnitFound')}</CommandEmpty>
                               <CommandGroup>
                                 <CommandList>
                                   {units.map((unit) => (
@@ -690,7 +690,7 @@ export default function ItemManager() {
 
                     return (
                       <FormItem>
-                        <FormLabel>Purchased From <span className="text-muted-foreground font-normal">(optional)</span></FormLabel>
+                        <FormLabel>{t('purchasedFrom')} <span className="text-muted-foreground font-normal">({tCommon('optional')})</span></FormLabel>
                         <Popover open={purchasePartyOpen} onOpenChange={setPurchasePartyOpen} modal={false}>
                           <PopoverTrigger asChild>
                             <Button
@@ -707,7 +707,7 @@ export default function ItemManager() {
                             >
                               {field.value
                                 ? parties.find((party) => party.id === field.value)?.name
-                                : "Select a party"}
+                                : t('selectParty')}
                               <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                             </Button>
                           </PopoverTrigger>
@@ -719,9 +719,9 @@ export default function ItemManager() {
                             style={purchasePartyPopoverWidth ? { width: purchasePartyPopoverWidth } : {}}
                           >
                           <Command>
-                            <CommandInput placeholder="Search party..." />
+                            <CommandInput placeholder={t('searchParty')} />
                             <CommandList className="max-h-[200px]">
-                              <CommandEmpty>No party found.</CommandEmpty>
+                              <CommandEmpty>{t('noPartyFound')}</CommandEmpty>
                               <CommandGroup>
                                 {parties.map((party) => (
                                   <CommandItem
@@ -756,7 +756,7 @@ export default function ItemManager() {
               </div>
 
               <div>
-                <h4 className="text-sm font-medium mb-2">Party-Specific Prices</h4>
+                <h4 className="text-sm font-medium mb-2">{t('partySpecificPrices')}</h4>
                 <div className="mt-4">
                   <Popover open={isPartySearchOpen} onOpenChange={setIsPartySearchOpen}>
                     <PopoverTrigger asChild>
@@ -771,7 +771,7 @@ export default function ItemManager() {
                         aria-expanded={isPartySearchOpen}
                         data-placeholder={fields.length === 0 ? true : undefined}
                       >
-                        Select party to add price...
+                        {t('selectPartyToAddPrice')}
                         <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                       </Button>
                     </PopoverTrigger>
@@ -782,7 +782,7 @@ export default function ItemManager() {
                     >
                       <Command>
                         <CommandInput
-                          placeholder="Search party..."
+                          placeholder={t('searchParty')}
                           value={partySearch}
                           onValueChange={setPartySearch}
                           onKeyDown={(e) => {
@@ -793,7 +793,7 @@ export default function ItemManager() {
                           }}
                         />
                         <CommandList className="max-h-[200px]">
-                          <CommandEmpty>No party found.</CommandEmpty>
+                          <CommandEmpty>{t('noPartyFound')}</CommandEmpty>
                           <CommandGroup>
                             {filteredPartiesForSearch.map((party) => (
                               <CommandItem
@@ -815,14 +815,14 @@ export default function ItemManager() {
                     <table className="w-full text-sm">
                       <thead>
                         <tr className="bg-muted text-muted-foreground">
-                          <th className="text-left px-3 py-2 font-medium text-xs">Party Name</th>
-                          <th className="text-left px-3 py-2 font-medium text-xs">Rate</th>
-                          <th className="text-center px-3 py-2 font-medium text-xs">Action</th>
+                          <th className="text-left px-3 py-2 font-medium text-xs">{t('partyName')}</th>
+                          <th className="text-left px-3 py-2 font-medium text-xs">{t('rate')}</th>
+                          <th className="text-center px-3 py-2 font-medium text-xs">{tCommon('action')}</th>
                         </tr>
                       </thead>
                       <tbody>
                         {fields.map((field, index) => {
-                          const partyName = parties.find(p => p.id === field.party_id)?.name || 'Unknown Party'
+                          const partyName = parties.find(p => p.id === field.party_id)?.name || t('unknownParty')
                           return (
                             <tr key={field.id} className="border-t">
                               <td className="px-3 py-2 align-middle">
@@ -837,7 +837,7 @@ export default function ItemManager() {
                                       type="number"
                                       {...priceField}
                                       className="w-32"
-                                      placeholder="Price"
+                                      placeholder={t('price')}
                                     />
                                   )}
                                 />
@@ -849,7 +849,7 @@ export default function ItemManager() {
                                       <Trash className="h-4 w-4 text-red-500" />
                                     </Button>
                                   </TooltipTrigger>
-                                  <TooltipContent>Remove party price</TooltipContent>
+                                  <TooltipContent>{t('removePartyPrice')}</TooltipContent>
                                 </Tooltip>
                               </td>
                             </tr>
@@ -862,8 +862,8 @@ export default function ItemManager() {
               </div>
 
               <DialogFooter>
-                <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)}>Cancel</Button>
-                <Button type="submit" disabled={form.formState.isSubmitting}>Save changes</Button>
+                <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)}>{tCommon('cancel')}</Button>
+                <Button type="submit" disabled={form.formState.isSubmitting}>{t('saveChanges')}</Button>
               </DialogFooter>
             </form>
           </Form>
@@ -890,15 +890,15 @@ export default function ItemManager() {
           else if (bulkRestoreIds) confirmBulkRestore()
           setIsConfirmOpen(false)
         }}
-        title="Are you sure?"
+        title={t('areYouSure')}
         description={
-          bulkDeleteIds ? `This action will mark ${bulkDeleteIds.length} items as deleted. You can restore them from the 'Deleted' tab within 30 days.`
-          : itemToDelete ? "This action will mark the item as deleted. You can restore it from the 'Deleted' tab within 30 days."
-          : itemToRestore ? "This will restore the item and make it active again."
-          : bulkRestoreIds ? `This will restore ${bulkRestoreIds.length} items and make them active again.`
-          : bulkPermanentDeleteIds ? `This action is IRREVERSIBLE. This will permanently delete ${bulkPermanentDeleteIds.length} items and their associated party prices.`
-          : itemToPermanentlyDelete ? "This action is IRREVERSIBLE. This will permanently delete the item and its associated party prices."
-          : "Are you sure you want to proceed?"
+          bulkDeleteIds ? t('moveMultipleToDeleted').replace('{count}', bulkDeleteIds.length.toString())
+          : itemToDelete ? t('moveToDeleted')
+          : itemToRestore ? t('restoreConfirm')
+          : bulkRestoreIds ? t('restoreMultipleConfirm').replace('{count}', bulkRestoreIds.length.toString())
+          : bulkPermanentDeleteIds ? t('permanentDeleteMultipleConfirm').replace('{count}', bulkPermanentDeleteIds.length.toString())
+          : itemToPermanentlyDelete ? t('permanentDeleteConfirm')
+          : t('proceedConfirm')
         }
       />
     </>
