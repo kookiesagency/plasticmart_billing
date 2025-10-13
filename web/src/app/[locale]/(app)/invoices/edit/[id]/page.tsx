@@ -1,6 +1,6 @@
 'use client'
 
-import { InvoiceForm } from '@/app/(app)/invoices/new/invoice-form'
+import { InvoiceForm } from '@/app/[locale]/(app)/invoices/new/invoice-form'
 import { SetHeader } from '@/components/layout/header-context'
 import { useParams, useRouter } from 'next/navigation'
 import { useEffect, useState, useRef } from 'react'

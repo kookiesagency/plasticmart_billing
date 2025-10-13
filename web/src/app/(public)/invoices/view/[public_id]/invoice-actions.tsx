@@ -3,7 +3,7 @@
 import { Button } from '@/components/ui/button'
 import { FileDown, Copy, Share2 } from 'lucide-react'
 import { createRoot } from 'react-dom/client'
-import { PrintableInvoice } from '@/app/(app)/invoices/printable-invoice'
+import { PrintableInvoice } from '@/app/[locale]/(app)/invoices/printable-invoice'
 import { toast } from 'sonner'
 import { usePathname } from 'next/navigation'
 import { formatDate } from '@/lib/utils'
