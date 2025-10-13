@@ -212,6 +212,7 @@
   },
   "settings": {
     "title": "Settings",
+    "generalSettings": "General Settings",
     "units": "Units",
     "bundleRate": "Bundle Rate",
     "active": "Active",
@@ -232,6 +233,30 @@
     "addNewUnit": "Add a new unit to your list.",
     "unitNamePlaceholder": "e.g., Kilogram",
     "saveUnit": "Save Unit"
+  },
+  "categories": {
+    "title": "Categories",
+    "createCategory": "Create Category",
+    "editCategory": "Edit Category",
+    "categoryName": "Category Name",
+    "searchCategories": "Search categories...",
+    "noCategories": "No categories found",
+    "deleteCategory": "Delete Category",
+    "active": "Active",
+    "deleted": "Deleted"
+  },
+  "purchaseParties": {
+    "title": "Purchase Parties",
+    "createPurchaseParty": "Create Purchase Party",
+    "editPurchaseParty": "Edit Purchase Party",
+    "partyName": "Party Name",
+    "contactInfo": "Contact Info",
+    "address": "Address",
+    "searchPurchaseParties": "Search purchase parties...",
+    "noPurchaseParties": "No purchase parties found",
+    "deletePurchaseParty": "Delete Purchase Party",
+    "active": "Active",
+    "deleted": "Deleted"
   },
   "logs": {
     "title": "Activity Logs",

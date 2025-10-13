@@ -25,10 +25,10 @@ const navItems = [
 ]
 
 const settingsItems = [
-  { href: '/settings', label: 'General Settings', icon: Settings },
-  { href: '/categories', label: 'Categories', icon: FolderTree },
-  { href: '/purchase-parties', label: 'Purchase Parties', icon: UserPlus },
-  { href: '/logs', label: 'Activity Logs', icon: History },
+  { href: '/settings', key: 'generalSettings', translationKey: 'settings', icon: Settings },
+  { href: '/categories', key: 'categories', translationKey: 'categories', icon: FolderTree },
+  { href: '/purchase-parties', key: 'purchaseParties', translationKey: 'purchaseParties', icon: UserPlus },
+  { href: '/logs', key: 'activityLogs', translationKey: 'logs', icon: History },
 ]
 
 const languages = [
@@ -46,6 +46,10 @@ export function Sidebar() {
   const [isPending, startTransition] = useTransition()
   const tNav = useTranslations('nav')
   const tCommon = useTranslations('common')
+  const tSettings = useTranslations('settings')
+  const tCategories = useTranslations('categories')
+  const tPurchaseParties = useTranslations('purchaseParties')
+  const tLogs = useTranslations('logs')
 
   const currentLocale = params.locale as string
   const currentLanguage = languages.find(lang => lang.code === currentLocale) || languages[0]
@@ -124,20 +128,37 @@ export function Sidebar() {
 
             {isSettingsOpen && (
               <div className="ml-4 mt-2 flex flex-col gap-2 border-l pl-4">
-                {settingsItems.map((item) => (
-                  <Link
-                    key={item.href}
-                    href={item.href}
-                    onClick={isSidebarOpen ? toggleSidebar : undefined}
-                    className={cn(
-                      'flex items-center gap-3 rounded-lg px-3 py-2 text-sm text-muted-foreground transition-all hover:text-primary',
-                      pathname === item.href && 'bg-muted text-primary'
-                    )}
-                  >
-                    <item.icon className="h-4 w-4" />
-                    {item.label}
-                  </Link>
-                ))}
+                {settingsItems.map((item) => {
+                  const getTranslation = () => {
+                    switch (item.translationKey) {
+                      case 'settings':
+                        return tSettings('generalSettings')
+                      case 'categories':
+                        return tCategories('title')
+                      case 'purchaseParties':
+                        return tPurchaseParties('title')
+                      case 'logs':
+                        return tLogs('title')
+                      default:
+                        return item.key
+                    }
+                  }
+
+                  return (
+                    <Link
+                      key={item.href}
+                      href={item.href}
+                      onClick={isSidebarOpen ? toggleSidebar : undefined}
+                      className={cn(
+                        'flex items-center gap-3 rounded-lg px-3 py-2 text-sm text-muted-foreground transition-all hover:text-primary',
+                        pathname === item.href && 'bg-muted text-primary'
+                      )}
+                    >
+                      <item.icon className="h-4 w-4" />
+                      {getTranslation()}
+                    </Link>
+                  )
+                })}
               </div>
             )}
           </div>

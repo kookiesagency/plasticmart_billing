@@ -212,6 +212,7 @@
   },
   "settings": {
     "title": "سیٹنگ",
+    "generalSettings": "جنرل سیٹنگ",
     "units": "یونٹ",
     "bundleRate": "بنڈل ریٹ",
     "active": "ایکٹو",
@@ -232,6 +233,30 @@
     "addNewUnit": "اپنی لسٹ میں نیا یونٹ ایڈ کریں۔",
     "unitNamePlaceholder": "جیسے، کلوگرام",
     "saveUnit": "یونٹ سیو کریں"
+  },
+  "categories": {
+    "title": "کیٹیگری",
+    "createCategory": "کیٹیگری بنائیں",
+    "editCategory": "کیٹیگری ایڈٹ کریں",
+    "categoryName": "کیٹیگری نیم",
+    "searchCategories": "کیٹیگری سرچ کریں...",
+    "noCategories": "کوئی کیٹیگری نہیں",
+    "deleteCategory": "کیٹیگری ڈیلیٹ کریں",
+    "active": "ایکٹو",
+    "deleted": "ڈیلیٹڈ"
+  },
+  "purchaseParties": {
+    "title": "پرچیز پارٹی",
+    "createPurchaseParty": "پرچیز پارٹی بنائیں",
+    "editPurchaseParty": "پرچیز پارٹی ایڈٹ کریں",
+    "partyName": "پارٹی نیم",
+    "contactInfo": "کانٹیکٹ انفو",
+    "address": "ایڈریس",
+    "searchPurchaseParties": "پرچیز پارٹی سرچ کریں...",
+    "noPurchaseParties": "کوئی پرچیز پارٹی نہیں",
+    "deletePurchaseParty": "پرچیز پارٹی ڈیلیٹ کریں",
+    "active": "ایکٹو",
+    "deleted": "ڈیلیٹڈ"
   },
   "logs": {
     "title": "ایکٹویٹی لاگ",

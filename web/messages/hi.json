@@ -212,6 +212,7 @@
   },
   "settings": {
     "title": "सेटिंग",
+    "generalSettings": "जनरल सेटिंग",
     "units": "यूनिट",
     "bundleRate": "बंडल रेट",
     "active": "एक्टिव",
@@ -232,6 +233,30 @@
     "addNewUnit": "अपनी लिस्ट में नया यूनिट ऐड करें।",
     "unitNamePlaceholder": "जैसे, किलोग्राम",
     "saveUnit": "यूनिट सेव करें"
+  },
+  "categories": {
+    "title": "कैटेगरी",
+    "createCategory": "कैटेगरी बनाएं",
+    "editCategory": "कैटेगरी एडिट करें",
+    "categoryName": "कैटेगरी नेम",
+    "searchCategories": "कैटेगरी सर्च करें...",
+    "noCategories": "कोई कैटेगरी नहीं",
+    "deleteCategory": "कैटेगरी डिलीट करें",
+    "active": "एक्टिव",
+    "deleted": "डिलीटेड"
+  },
+  "purchaseParties": {
+    "title": "परचेज पार्टी",
+    "createPurchaseParty": "परचेज पार्टी बनाएं",
+    "editPurchaseParty": "परचेज पार्टी एडिट करें",
+    "partyName": "पार्टी नेम",
+    "contactInfo": "कॉन्टैक्ट इन्फो",
+    "address": "एड्रेस",
+    "searchPurchaseParties": "परचेज पार्टी सर्च करें...",
+    "noPurchaseParties": "कोई परचेज पार्टी नहीं",
+    "deletePurchaseParty": "परचेज पार्टी डिलीट करें",
+    "active": "एक्टिव",
+    "deleted": "डिलीटेड"
   },
   "logs": {
     "title": "एक्टिविटी लॉग",
