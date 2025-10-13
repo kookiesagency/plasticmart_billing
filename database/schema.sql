@@ -10,6 +10,7 @@ CREATE TABLE public.activity_logs (
   target_id text,
   details jsonb,
   deleted_at timestamp with time zone,
+  platform text DEFAULT 'web' CHECK (platform IN ('web', 'mobile')),
   CONSTRAINT activity_logs_pkey PRIMARY KEY (id)
 );
 CREATE TABLE public.app_settings (

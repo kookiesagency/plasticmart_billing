@@ -101,5 +101,6 @@ export type ActivityLog = {
   old_values?: Record<string, any> | null
   new_values?: Record<string, any> | null
   user_id?: string | null
+  platform?: 'web' | 'mobile'
   created_at: string
 }

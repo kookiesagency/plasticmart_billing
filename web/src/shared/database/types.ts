@@ -244,6 +244,7 @@ export interface Database {
           old_values: any | null
           new_values: any | null
           user_id: string | null
+          platform: 'web' | 'mobile'
           created_at: string
         }
         Insert: {
@@ -253,6 +254,7 @@ export interface Database {
           old_values?: any | null
           new_values?: any | null
           user_id?: string | null
+          platform?: 'web' | 'mobile'
           created_at?: string
         }
         Update: {
@@ -262,6 +264,7 @@ export interface Database {
           old_values?: any | null
           new_values?: any | null
           user_id?: string | null
+          platform?: 'web' | 'mobile'
         }
       }
     }

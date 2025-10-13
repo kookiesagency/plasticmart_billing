@@ -14,7 +14,7 @@ import {
 } from '@/components/ui/table'
 import { formatDistanceToNow } from 'date-fns'
 import Link from 'next/link'
-import { CheckCircle, Pencil, Trash, Undo, Trash2 } from 'lucide-react'
+import { CheckCircle, Pencil, Trash, Undo, Trash2, Monitor, Smartphone } from 'lucide-react'
 import { format, isToday, isYesterday } from 'date-fns'
 import { useState, useEffect, useRef } from 'react'
 import { Input } from '@/components/ui/input'
@@ -36,6 +36,7 @@ type ActivityLog = {
   action: 'INSERT' | 'UPDATE' | 'DELETE';
   target_table: string;
   target_id: string;
+  platform?: 'web' | 'mobile';
   details: {
     old_data?: any;
     new_data?: any;
@@ -503,9 +504,25 @@ export default function LogsPage() {
                                 <div dangerouslySetInnerHTML={{ __html: formatLogMessage(log) }} />
                               </TableCell>
                               <TableCell>
-                                <Badge variant="outline" className="text-xs font-mono px-2 py-1 bg-muted/50 border border-muted-foreground/20">
-                                  {log.user_email || 'System'}
-                                </Badge>
+                                <div className="flex items-center gap-2">
+                                  <Badge variant="outline" className="text-xs font-mono px-2 py-1 bg-muted/50 border border-muted-foreground/20">
+                                    {log.user_email || 'System'}
+                                  </Badge>
+                                  {log.platform && (
+                                    <Badge
+                                      variant="secondary"
+                                      className="text-xs px-2 py-1 flex items-center gap-1"
+                                      title={`From ${log.platform}`}
+                                    >
+                                      {log.platform === 'mobile' ? (
+                                        <Smartphone className="h-3 w-3" />
+                                      ) : (
+                                        <Monitor className="h-3 w-3" />
+                                      )}
+                                      <span className="capitalize">{log.platform}</span>
+                                    </Badge>
+                                  )}
+                                </div>
                               </TableCell>
                               <TableCell className="text-right text-sm text-muted-foreground">
                                 {formatDistanceToNow(new Date(log.created_at), { addSuffix: true })}
