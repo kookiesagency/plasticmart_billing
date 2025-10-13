@@ -275,6 +275,7 @@ class _InvoiceFilterBottomSheetState extends State<InvoiceFilterBottomSheet> {
                   style: TextStyle(
                     color: isSelected ? Colors.white : statusColor,
                     fontWeight: FontWeight.w600,
+                    fontSize: 13, // Smaller font
                   ),
                 ),
                 selected: isSelected,
@@ -282,6 +283,8 @@ class _InvoiceFilterBottomSheetState extends State<InvoiceFilterBottomSheet> {
                 backgroundColor: statusColor.withOpacity(0.1),
                 selectedColor: statusColor,
                 checkmarkColor: Colors.white,
+                labelPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2), // Reduced padding
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6), // Reduced padding
                 side: BorderSide(
                   color: isSelected ? statusColor : statusColor.withOpacity(0.3),
                   width: 1.5,
