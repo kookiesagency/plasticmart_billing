@@ -89,7 +89,9 @@
     "createItem": "Create Item",
     "editItem": "Edit Item",
     "itemName": "Item Name",
+    "name": "Name",
     "defaultRate": "Default Rate",
+    "rate": "Rate",
     "purchaseRate": "Purchase Rate",
     "unit": "Unit",
     "purchasedFrom": "Purchased From",
@@ -101,7 +103,12 @@
     "noPartyFound": "No party found.",
     "partySpecificPrices": "Party-Specific Prices",
     "addPartyPrice": "Add Party Price",
-    "deleteItem": "Delete Item"
+    "deleteItem": "Delete Item",
+    "deletedAt": "Deleted At",
+    "restoreItem": "Restore Item",
+    "deletePermanently": "Delete Permanently",
+    "active": "Active",
+    "deleted": "Deleted"
   },
   "parties": {
     "title": "Parties",

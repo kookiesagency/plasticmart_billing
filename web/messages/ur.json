@@ -89,7 +89,9 @@
     "createItem": "آئٹم بنائیں",
     "editItem": "آئٹم ایڈٹ کریں",
     "itemName": "آئٹم کا نام",
+    "name": "نیم",
     "defaultRate": "بیچنے کا ریٹ",
+    "rate": "ریٹ",
     "purchaseRate": "خریدنے کا ریٹ",
     "unit": "ناپ (پیس/کلو)",
     "purchasedFrom": "کس سے خریدا",
@@ -101,7 +103,12 @@
     "noPartyFound": "کوئی پارٹی نہیں",
     "partySpecificPrices": "پارٹی کے حساب سے ریٹ",
     "addPartyPrice": "پارٹی ریٹ ایڈ کریں",
-    "deleteItem": "آئٹم ڈیلیٹ"
+    "deleteItem": "آئٹم ڈیلیٹ",
+    "deletedAt": "ڈیلیٹ کی تاریخ",
+    "restoreItem": "آئٹم ریسٹور کریں",
+    "deletePermanently": "پرمننٹلی ڈیلیٹ کریں",
+    "active": "ایکٹو",
+    "deleted": "ڈیلیٹڈ"
   },
   "parties": {
     "title": "پارٹی",

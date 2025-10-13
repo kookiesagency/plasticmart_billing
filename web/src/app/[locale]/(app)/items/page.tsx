@@ -106,8 +106,8 @@ export default function ItemManager() {
   const fetchData = async () => {
     setLoading(true)
     const [itemsRes, deletedItemsRes, unitsRes, partiesRes] = await Promise.all([
-      supabase.from('items').select('*, units(id, name), purchase_party:parties!purchase_party_id(id, name)').is('deleted_at', null).order('created_at', { ascending: false }),
-      supabase.from('items').select('*, units(id, name), purchase_party:parties!purchase_party_id(id, name)').not('deleted_at', 'is', null).order('deleted_at', { ascending: false }),
+      supabase.from('items').select('*, units(id, name), purchase_party:purchase_parties!purchase_party_id(id, name)').is('deleted_at', null).order('created_at', { ascending: false }),
+      supabase.from('items').select('*, units(id, name), purchase_party:purchase_parties!purchase_party_id(id, name)').not('deleted_at', 'is', null).order('deleted_at', { ascending: false }),
       supabase.from('units').select('id, name').is('deleted_at', null),
       supabase.from('parties').select('id, name').is('deleted_at', null),
     ])
@@ -404,30 +404,30 @@ export default function ItemManager() {
       enableSorting: false,
       enableHiding: false,
     },
-    { 
-      accessorKey: 'name', 
+    {
+      accessorKey: 'name',
       header: ({ column }) => (
         <div className="flex items-center cursor-pointer" onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}>
-          Name
+          {t('name')}
           <ArrowUpDown className="ml-2 h-4 w-4" />
         </div>
       ),
     },
-    { 
-      accessorKey: 'units.name', 
+    {
+      accessorKey: 'units.name',
       header: ({ column }) => (
         <div className="flex items-center cursor-pointer" onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}>
-          Unit
+          {t('unit')}
           <ArrowUpDown className="ml-2 h-4 w-4" />
         </div>
       ),
-      cell: ({ row }) => row.original.units?.name || 'N/A' 
+      cell: ({ row }) => row.original.units?.name || 'N/A'
     },
-    { 
-      accessorKey: 'default_rate', 
+    {
+      accessorKey: 'default_rate',
       header: ({ column }) => (
         <div className="flex items-center cursor-pointer" onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}>
-          Rate
+          {t('rate')}
           <ArrowUpDown className="ml-2 h-4 w-4" />
         </div>
       ),
@@ -436,7 +436,7 @@ export default function ItemManager() {
       accessorKey: 'purchase_rate',
       header: ({ column }) => (
         <div className="flex items-center cursor-pointer" onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}>
-          Purchase Rate
+          {t('purchaseRate')}
           <ArrowUpDown className="ml-2 h-4 w-4" />
         </div>
       ),
@@ -450,11 +450,11 @@ export default function ItemManager() {
         return <div className="font-medium">{formatted}</div>
       },
     },
-    { 
-      accessorKey: 'deleted_at', 
+    {
+      accessorKey: 'deleted_at',
       header: ({ column }) => (
         <div className="flex items-center cursor-pointer" onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}>
-          Deleted At
+          {t('deletedAt')}
           <ArrowUpDown className="ml-2 h-4 w-4" />
         </div>
       ),
@@ -474,7 +474,7 @@ export default function ItemManager() {
               </Button>
             </TooltipTrigger>
             <TooltipContent>
-              <p>Restore Item</p>
+              <p>{t('restoreItem')}</p>
             </TooltipContent>
           </Tooltip>
           <Tooltip>
@@ -484,7 +484,7 @@ export default function ItemManager() {
               </Button>
             </TooltipTrigger>
             <TooltipContent>
-              <p>Delete Permanently</p>
+              <p>{t('deletePermanently')}</p>
             </TooltipContent>
           </Tooltip>
         </div>
@@ -529,8 +529,8 @@ export default function ItemManager() {
       
       <Tabs defaultValue="active">
         <TabsList>
-          <TabsTrigger value="active">Active</TabsTrigger>
-          <TabsTrigger value="deleted">Deleted</TabsTrigger>
+          <TabsTrigger value="active">{t('active')}</TabsTrigger>
+          <TabsTrigger value="deleted">{t('deleted')}</TabsTrigger>
         </TabsList>
         <TabsContent value="active">
           <DataTable

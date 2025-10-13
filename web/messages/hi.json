@@ -89,7 +89,9 @@
     "createItem": "आइटम बनाएं",
     "editItem": "आइटम एडिट करें",
     "itemName": "आइटम का नाम",
+    "name": "नेम",
     "defaultRate": "बिक्री रेट",
+    "rate": "रेट",
     "purchaseRate": "खरीद रेट",
     "unit": "नाप (पीसी/किलो)",
     "purchasedFrom": "किससे खरीदा",
@@ -101,7 +103,12 @@
     "noPartyFound": "कोई पार्टी नहीं",
     "partySpecificPrices": "पार्टी के हिसाब से रेट",
     "addPartyPrice": "पार्टी रेट ऐड करें",
-    "deleteItem": "आइटम डिलीट"
+    "deleteItem": "आइटम डिलीट",
+    "deletedAt": "डिलीट की तारीख",
+    "restoreItem": "आइटम रिस्टोर करें",
+    "deletePermanently": "परमानेंटली डिलीट करें",
+    "active": "एक्टिव",
+    "deleted": "डिलीटेड"
   },
   "parties": {
     "title": "पार्टी",
