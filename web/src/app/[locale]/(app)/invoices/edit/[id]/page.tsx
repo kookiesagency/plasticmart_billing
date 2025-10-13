@@ -68,7 +68,7 @@ export default function EditInvoicePage() {
       .single()
 
     if (invoiceError || !invoiceData) {
-      toast.error('Failed to fetch invoice data')
+      toast.error(t('failedToFetchInvoiceData'))
       return
     }
 
@@ -95,7 +95,7 @@ export default function EditInvoicePage() {
     ])
 
     if (latestItemsRes.error || latestPartyRes.error) {
-      toast.error('Failed to fetch latest data')
+      toast.error(t('failedToFetchLatestData'))
       return
     }
 
@@ -170,11 +170,11 @@ export default function EditInvoicePage() {
         if (error) throw error
       }
 
-      toast.success('Invoice updated successfully!')
+      toast.success(t('invoiceUpdatedSuccess'))
       setIsFetchDialogOpen(false)
       setRefreshKey(prev => prev + 1)
     } catch (error: any) {
-      toast.error('Failed to apply updates: ' + error.message)
+      toast.error(t('failedToApplyUpdates').replace('{error}', error.message))
     }
   }
 
@@ -186,13 +186,13 @@ export default function EditInvoicePage() {
             <Button variant="ghost" size="icon" onClick={() => router.back()}>
               <ArrowLeft className="h-5 w-5" />
             </Button>
-            <span>{invoiceNumber ? `Edit Invoice - ${invoiceNumber}` : 'Edit Invoice'}</span>
+            <span>{invoiceNumber ? `${t('editInvoice')} - ${invoiceNumber}` : t('editInvoice')}</span>
           </div>
         }
         actions={
           <Button variant="outline" onClick={handleFetchUpdates}>
             <RefreshCw className="mr-2 h-4 w-4" />
-            Fetch Updates
+            {t('fetchUpdates')}
           </Button>
         }
       />

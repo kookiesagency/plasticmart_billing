@@ -275,7 +275,11 @@
   },
   "invoiceEdit": {
     "editInvoice": "Edit Invoice",
-    "fetchUpdates": "Fetch Updates"
+    "fetchUpdates": "Fetch Updates",
+    "failedToFetchInvoiceData": "Failed to fetch invoice data",
+    "failedToFetchLatestData": "Failed to fetch latest data",
+    "invoiceUpdatedSuccess": "Invoice updated successfully!",
+    "failedToApplyUpdates": "Failed to apply updates: {error}"
   },
   "partiesList": {
     "active": "Active",

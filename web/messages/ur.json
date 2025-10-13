@@ -275,7 +275,11 @@
   },
   "invoiceEdit": {
     "editInvoice": "انوائس ایڈٹ کریں",
-    "fetchUpdates": "اپڈیٹ فیچ کریں"
+    "fetchUpdates": "اپڈیٹ فیچ کریں",
+    "failedToFetchInvoiceData": "انوائس ڈیٹا فیچ نہیں ہو سکا",
+    "failedToFetchLatestData": "لیٹسٹ ڈیٹا فیچ نہیں ہو سکا",
+    "invoiceUpdatedSuccess": "انوائس کامیابی سے اپڈیٹ ہوا!",
+    "failedToApplyUpdates": "اپڈیٹ لاگو کرنے میں فیل: {error}"
   },
   "partiesList": {
     "active": "ایکٹو",

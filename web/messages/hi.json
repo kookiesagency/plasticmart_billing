@@ -275,7 +275,11 @@
   },
   "invoiceEdit": {
     "editInvoice": "इनवॉयस एडिट करें",
-    "fetchUpdates": "अपडेट फेच करें"
+    "fetchUpdates": "अपडेट फेच करें",
+    "failedToFetchInvoiceData": "इनवॉयस डेटा फेच नहीं हो सका",
+    "failedToFetchLatestData": "लेटेस्ट डेटा फेच नहीं हो सका",
+    "invoiceUpdatedSuccess": "इनवॉयस सफलतापूर्वक अपडेट हुआ!",
+    "failedToApplyUpdates": "अपडेट लागू करने में फेल: {error}"
   },
   "partiesList": {
     "active": "एक्टिव",
