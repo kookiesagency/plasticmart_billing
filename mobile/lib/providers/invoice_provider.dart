@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../config/supabase_config.dart';
 import '../models/invoice.dart';
 import '../models/invoice_item.dart';
@@ -9,10 +10,34 @@ class InvoiceProvider with ChangeNotifier {
   bool _isLoading = false;
   String? _errorMessage;
 
+  // Filter state
+  DateTime? _filterStartDate;
+  DateTime? _filterEndDate;
+  List<String> _filterStatuses = [];
+
   List<Invoice> get invoices => _invoices;
   List<Invoice> get deletedInvoices => _deletedInvoices;
   bool get isLoading => _isLoading;
   String? get errorMessage => _errorMessage;
+
+  // Filter getters
+  DateTime? get filterStartDate => _filterStartDate;
+  DateTime? get filterEndDate => _filterEndDate;
+  List<String> get filterStatuses => _filterStatuses;
+
+  // Check if any filters are active
+  bool get hasActiveFilters =>
+    _filterStartDate != null ||
+    _filterEndDate != null ||
+    _filterStatuses.isNotEmpty;
+
+  // Count of active filters
+  int get activeFilterCount {
+    int count = 0;
+    if (_filterStartDate != null || _filterEndDate != null) count++;
+    if (_filterStatuses.isNotEmpty) count++;
+    return count;
+  }
 
   final _supabase = SupabaseConfig.client;
 
@@ -525,6 +550,143 @@ class InvoiceProvider with ChangeNotifier {
       _isLoading = false;
       notifyListeners();
       return {'success': false, 'error': e.toString()};
+    }
+  }
+
+  // Filter methods
+  Future<void> setFilters({
+    DateTime? startDate,
+    DateTime? endDate,
+    List<String>? statuses,
+  }) async {
+    _filterStartDate = startDate;
+    _filterEndDate = endDate;
+    _filterStatuses = statuses ?? [];
+
+    // Save to SharedPreferences
+    await _saveFiltersToPrefs();
+
+    notifyListeners();
+  }
+
+  Future<void> clearFilters() async {
+    _filterStartDate = null;
+    _filterEndDate = null;
+    _filterStatuses = [];
+
+    // Clear from SharedPreferences
+    await _clearFiltersFromPrefs();
+
+    notifyListeners();
+  }
+
+  List<Invoice> getFilteredInvoices(List<Invoice> invoices) {
+    if (!hasActiveFilters) return invoices;
+
+    return invoices.where((invoice) {
+      // Date range filter
+      if (_filterStartDate != null || _filterEndDate != null) {
+        try {
+          final invoiceDate = DateTime.parse(invoice.invoiceDate);
+
+          if (_filterStartDate != null) {
+            final startOfDay = DateTime(
+              _filterStartDate!.year,
+              _filterStartDate!.month,
+              _filterStartDate!.day,
+            );
+            if (invoiceDate.isBefore(startOfDay)) return false;
+          }
+
+          if (_filterEndDate != null) {
+            final endOfDay = DateTime(
+              _filterEndDate!.year,
+              _filterEndDate!.month,
+              _filterEndDate!.day,
+              23, 59, 59,
+            );
+            if (invoiceDate.isAfter(endOfDay)) return false;
+          }
+        } catch (e) {
+          // If date parsing fails, skip this invoice
+          return false;
+        }
+      }
+
+      // Status filter
+      if (_filterStatuses.isNotEmpty) {
+        final normalizedStatus = invoice.status.toLowerCase();
+        final normalizedFilters = _filterStatuses.map((s) => s.toLowerCase()).toList();
+
+        if (!normalizedFilters.contains(normalizedStatus)) {
+          return false;
+        }
+      }
+
+      return true;
+    }).toList();
+  }
+
+  // Persistence methods
+  Future<void> _saveFiltersToPrefs() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+
+      if (_filterStartDate != null) {
+        await prefs.setString('filter_start_date', _filterStartDate!.toIso8601String());
+      } else {
+        await prefs.remove('filter_start_date');
+      }
+
+      if (_filterEndDate != null) {
+        await prefs.setString('filter_end_date', _filterEndDate!.toIso8601String());
+      } else {
+        await prefs.remove('filter_end_date');
+      }
+
+      if (_filterStatuses.isNotEmpty) {
+        await prefs.setStringList('filter_statuses', _filterStatuses);
+      } else {
+        await prefs.remove('filter_statuses');
+      }
+    } catch (e) {
+      print('Error saving filters: $e');
+    }
+  }
+
+  Future<void> _clearFiltersFromPrefs() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.remove('filter_start_date');
+      await prefs.remove('filter_end_date');
+      await prefs.remove('filter_statuses');
+    } catch (e) {
+      print('Error clearing filters: $e');
+    }
+  }
+
+  Future<void> loadFiltersFromPrefs() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+
+      final startDateStr = prefs.getString('filter_start_date');
+      if (startDateStr != null) {
+        _filterStartDate = DateTime.parse(startDateStr);
+      }
+
+      final endDateStr = prefs.getString('filter_end_date');
+      if (endDateStr != null) {
+        _filterEndDate = DateTime.parse(endDateStr);
+      }
+
+      final statuses = prefs.getStringList('filter_statuses');
+      if (statuses != null) {
+        _filterStatuses = statuses;
+      }
+
+      notifyListeners();
+    } catch (e) {
+      print('Error loading filters: $e');
     }
   }
 }

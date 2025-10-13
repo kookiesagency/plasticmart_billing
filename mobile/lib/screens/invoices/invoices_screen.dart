@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import '../../models/invoice.dart';
 import '../../providers/invoice_provider.dart';
+import '../../widgets/invoice_filter_bottom_sheet.dart';
 import 'create_invoice_screen.dart';
 import 'view_invoice_screen.dart';
 
@@ -29,8 +30,14 @@ class _InvoicesScreenState extends State<InvoicesScreen> with SingleTickerProvid
       });
     });
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      _loadData();
+      _loadFiltersAndData();
     });
+  }
+
+  Future<void> _loadFiltersAndData() async {
+    final invoiceProvider = Provider.of<InvoiceProvider>(context, listen: false);
+    await invoiceProvider.loadFiltersFromPrefs();
+    await _loadData();
   }
 
   @override
@@ -47,16 +54,42 @@ class _InvoicesScreenState extends State<InvoicesScreen> with SingleTickerProvid
     ]);
   }
 
-  List<Invoice> _getFilteredInvoices(List<Invoice> invoices) {
-    if (_searchQuery.isEmpty) return invoices;
+  List<Invoice> _getFilteredInvoices(List<Invoice> invoices, InvoiceProvider provider) {
+    // First apply provider filters (date range, status)
+    List<Invoice> filtered = provider.getFilteredInvoices(invoices);
 
-    return invoices.where((invoice) {
+    // Then apply search query
+    if (_searchQuery.isEmpty) return filtered;
+
+    return filtered.where((invoice) {
       final partyName = invoice.partyName?.toLowerCase() ?? '';
       final invoiceNumber = invoice.invoiceNumber?.toLowerCase() ?? '';
       final query = _searchQuery.toLowerCase();
 
       return partyName.contains(query) || invoiceNumber.contains(query);
     }).toList();
+  }
+
+  void _showFilterBottomSheet() {
+    final invoiceProvider = Provider.of<InvoiceProvider>(context, listen: false);
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => InvoiceFilterBottomSheet(
+        initialStartDate: invoiceProvider.filterStartDate,
+        initialEndDate: invoiceProvider.filterEndDate,
+        initialStatuses: invoiceProvider.filterStatuses,
+        onApply: (startDate, endDate, statuses) {
+          invoiceProvider.setFilters(
+            startDate: startDate,
+            endDate: endDate,
+            statuses: statuses,
+          );
+        },
+      ),
+    );
   }
 
   String _formatDate(String dateStr) {
@@ -81,8 +114,17 @@ class _InvoicesScreenState extends State<InvoicesScreen> with SingleTickerProvid
     }
   }
 
-  String _getStatusText(String status) {
-    return status[0].toUpperCase() + status.substring(1);
+  String _getStatusText(String status, AppLocalizations l10n) {
+    switch (status.toLowerCase()) {
+      case 'paid':
+        return l10n.invoices_paid;
+      case 'pending':
+        return l10n.invoices_pending;
+      case 'partial':
+        return l10n.invoices_partial;
+      default:
+        return status[0].toUpperCase() + status.substring(1);
+    }
   }
 
   Future<void> _deleteInvoice(int id) async {
@@ -175,7 +217,7 @@ class _InvoicesScreenState extends State<InvoicesScreen> with SingleTickerProvid
     final isDarkTheme = theme.brightness == Brightness.dark;
 
     final invoices = _showDeleted ? invoiceProvider.deletedInvoices : invoiceProvider.invoices;
-    final filteredInvoices = _getFilteredInvoices(invoices);
+    final filteredInvoices = _getFilteredInvoices(invoices, invoiceProvider);
 
     return Column(
       children: [
@@ -188,29 +230,90 @@ class _InvoicesScreenState extends State<InvoicesScreen> with SingleTickerProvid
         ),
         Padding(
           padding: const EdgeInsets.all(16.0),
-          child: TextField(
-            decoration: InputDecoration(
-              hintText: l10n.invoices_searchInvoices,
-              prefixIcon: const Icon(Icons.search),
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-                borderSide: BorderSide(color: isDarkTheme ? Colors.white.withOpacity(0.2) : Colors.grey.shade300, width: 1),
+          child: Row(
+            children: [
+              Expanded(
+                child: TextField(
+                  decoration: InputDecoration(
+                    hintText: l10n.invoices_searchInvoices,
+                    prefixIcon: const Icon(Icons.search),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide(color: isDarkTheme ? Colors.white.withOpacity(0.2) : Colors.grey.shade300, width: 1),
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide(color: isDarkTheme ? Colors.white.withOpacity(0.2) : Colors.grey.shade300, width: 1),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide(color: colorScheme.primary, width: 1),
+                    ),
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  ),
+                  onChanged: (value) {
+                    setState(() {
+                      _searchQuery = value;
+                    });
+                  },
+                ),
               ),
-              enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-                borderSide: BorderSide(color: isDarkTheme ? Colors.white.withOpacity(0.2) : Colors.grey.shade300, width: 1),
+              const SizedBox(width: 12),
+              // Filter Button
+              Stack(
+                children: [
+                  Container(
+                    decoration: BoxDecoration(
+                      border: Border.all(
+                        color: invoiceProvider.hasActiveFilters
+                            ? colorScheme.primary
+                            : (isDarkTheme ? Colors.white.withOpacity(0.2) : Colors.grey.shade300),
+                        width: 1,
+                      ),
+                      borderRadius: BorderRadius.circular(12),
+                      color: invoiceProvider.hasActiveFilters
+                          ? colorScheme.primary.withOpacity(0.1)
+                          : null,
+                    ),
+                    child: IconButton(
+                      icon: Icon(
+                        Icons.filter_list,
+                        color: invoiceProvider.hasActiveFilters
+                            ? colorScheme.primary
+                            : theme.iconTheme.color,
+                      ),
+                      onPressed: _showFilterBottomSheet,
+                      tooltip: l10n.common_filter,
+                    ),
+                  ),
+                  if (invoiceProvider.hasActiveFilters)
+                    Positioned(
+                      right: 6,
+                      top: 6,
+                      child: Container(
+                        padding: const EdgeInsets.all(4),
+                        decoration: BoxDecoration(
+                          color: colorScheme.primary,
+                          shape: BoxShape.circle,
+                        ),
+                        constraints: const BoxConstraints(
+                          minWidth: 18,
+                          minHeight: 18,
+                        ),
+                        child: Text(
+                          '${invoiceProvider.activeFilterCount}',
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 10,
+                            fontWeight: FontWeight.bold,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                      ),
+                    ),
+                ],
               ),
-              focusedBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-                borderSide: BorderSide(color: colorScheme.primary, width: 1),
-              ),
-              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-            ),
-            onChanged: (value) {
-              setState(() {
-                _searchQuery = value;
-              });
-            },
+            ],
           ),
         ),
         Expanded(
@@ -336,7 +439,7 @@ class _InvoicesScreenState extends State<InvoicesScreen> with SingleTickerProvid
                                         children: [
                                           Expanded(
                                             child: Text(
-                                              invoice.partyName ?? 'Unknown Party',
+                                              invoice.partyName ?? l10n.dashboard_unknownParty,
                                               style: const TextStyle(
                                                 fontWeight: FontWeight.w600,
                                                 fontSize: 16,
@@ -356,9 +459,9 @@ class _InvoicesScreenState extends State<InvoicesScreen> with SingleTickerProvid
                                                       color: const Color(0xFFFFF7ED), // bg-orange-100
                                                       borderRadius: BorderRadius.circular(4),
                                                     ),
-                                                    child: const Text(
-                                                      'OFFLINE',
-                                                      style: TextStyle(
+                                                    child: Text(
+                                                      l10n.invoices_offline,
+                                                      style: const TextStyle(
                                                         color: Color(0xFFC2410C), // text-orange-700
                                                         fontSize: 9,
                                                         fontWeight: FontWeight.bold,
@@ -378,7 +481,7 @@ class _InvoicesScreenState extends State<InvoicesScreen> with SingleTickerProvid
                                                     borderRadius: BorderRadius.circular(4),
                                                   ),
                                                   child: Text(
-                                                    _getStatusText(invoice.status),
+                                                    _getStatusText(invoice.status, l10n),
                                                     style: TextStyle(
                                                       color: _getStatusColor(invoice.status),
                                                       fontSize: 9,
