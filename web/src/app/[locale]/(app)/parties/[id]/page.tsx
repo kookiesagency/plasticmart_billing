@@ -18,6 +18,7 @@ import { SetHeader } from '@/components/layout/header-context'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { FileDown } from 'lucide-react'
 import { PartyMiniReportDialog } from '@/components/reports/party-mini-report-dialog'
+import { useTranslations } from 'next-intl'
 
 type PartyDetails = {
   name: string
@@ -26,6 +27,7 @@ type PartyDetails = {
 }
 
 export default function PartyReportPage() {
+  const t = useTranslations('invoices')
   const params = useParams<{ id: string }>()
   const supabase = createClient()
   const [party, setParty] = useState<PartyDetails | null>(null)
@@ -145,7 +147,7 @@ export default function PartyReportPage() {
   if (loading && !party) return <div className="p-6">Loading party report...</div>
   if (!party) return <div className="p-6">Party not found.</div>
 
-  const invoiceColumns = columns(() => {}, fetchPartyData)
+  const invoiceColumns = columns(() => {}, fetchPartyData, t)
 
   return (
     <>
