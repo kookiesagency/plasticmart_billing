@@ -295,52 +295,64 @@ class _InvoiceFilterBottomSheetState extends State<InvoiceFilterBottomSheet> {
           Row(
             children: [
               Expanded(
-                child: OutlinedButton(
-                  onPressed: _clearFilters,
-                  style: OutlinedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(vertical: 14),
-                    side: BorderSide(
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: isDarkTheme
+                        ? const Color(0xFF2D3748)
+                        : Colors.grey.shade100,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
                       color: isDarkTheme
-                          ? Colors.white.withOpacity(0.5)
-                          : Colors.grey.shade400,
-                      width: 2,
-                    ),
-                    backgroundColor: isDarkTheme
-                        ? Colors.white.withOpacity(0.05)
-                        : Colors.transparent,
-                    foregroundColor: Colors.white,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
+                          ? const Color(0xFF4A5568)
+                          : Colors.grey.shade300,
+                      width: 1,
                     ),
                   ),
-                  child: const Text(
-                    'Clear All',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
+                  child: Material(
+                    color: Colors.transparent,
+                    child: InkWell(
+                      onTap: _clearFilters,
+                      borderRadius: BorderRadius.circular(12),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        alignment: Alignment.center,
+                        child: Text(
+                          'Clear All',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                            color: isDarkTheme ? Colors.white : Colors.grey.shade800,
+                          ),
+                        ),
+                      ),
                     ),
                   ),
                 ),
               ),
               const SizedBox(width: 12),
               Expanded(
-                child: ElevatedButton(
-                  onPressed: _applyFilters,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: theme.colorScheme.primary,
-                    foregroundColor: isDarkTheme ? Colors.black : Colors.white,
-                    elevation: 0,
-                    padding: const EdgeInsets.symmetric(vertical: 14),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF2D7A6E), // Teal/green color matching PDF button
+                    borderRadius: BorderRadius.circular(12),
                   ),
-                  child: Text(
-                    'Apply Filters',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                      color: isDarkTheme ? Colors.black : Colors.white,
+                  child: Material(
+                    color: Colors.transparent,
+                    child: InkWell(
+                      onTap: _applyFilters,
+                      borderRadius: BorderRadius.circular(12),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        alignment: Alignment.center,
+                        child: const Text(
+                          'Apply Filters',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ),
                     ),
                   ),
                 ),
