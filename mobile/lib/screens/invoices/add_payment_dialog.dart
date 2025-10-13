@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import '../../models/payment.dart';
 import '../../services/payment_service.dart';
 import '../../utils/date_picker_theme.dart';
@@ -112,23 +113,25 @@ class _AddPaymentDialogState extends State<AddPaymentDialog> {
       Navigator.pop(context);
       widget.onPaymentSaved();
 
+      final l10n = AppLocalizations.of(context)!;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
             widget.paymentToEdit != null
-                ? 'Payment updated successfully'
-                : 'Payment added successfully',
+                ? l10n.paymentForm_paymentUpdatedSuccess
+                : l10n.paymentForm_paymentAddedSuccess,
           ),
           backgroundColor: Colors.green,
         ),
       );
     } else {
+      final l10n = AppLocalizations.of(context)!;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
             widget.paymentToEdit != null
-                ? 'Failed to update payment'
-                : 'Failed to add payment',
+                ? l10n.paymentForm_failedToUpdate
+                : l10n.paymentForm_failedToAdd,
           ),
           backgroundColor: Colors.red,
         ),
@@ -139,6 +142,7 @@ class _AddPaymentDialogState extends State<AddPaymentDialog> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context)!;
 
     return Dialog(
       backgroundColor: theme.cardColor,
@@ -153,7 +157,7 @@ class _AddPaymentDialogState extends State<AddPaymentDialog> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  widget.paymentToEdit != null ? 'Edit Payment' : 'Add Payment',
+                  widget.paymentToEdit != null ? l10n.paymentForm_editPayment : l10n.paymentForm_addPayment,
                   style: const TextStyle(
                     fontSize: 20,
                     fontWeight: FontWeight.bold,
@@ -166,8 +170,8 @@ class _AddPaymentDialogState extends State<AddPaymentDialog> {
                   controller: _amountController,
                   keyboardType: const TextInputType.numberWithOptions(decimal: true),
                   decoration: InputDecoration(
-                    labelText: 'Amount',
-                    hintText: 'Enter amount',
+                    labelText: l10n.paymentForm_amount,
+                    hintText: l10n.validation_fieldRequired,
                     prefixText: '₹',
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
@@ -175,11 +179,11 @@ class _AddPaymentDialogState extends State<AddPaymentDialog> {
                   ),
                   validator: (value) {
                     if (value == null || value.isEmpty) {
-                      return 'Please enter amount';
+                      return l10n.validation_fieldRequired;
                     }
                     final amount = double.tryParse(value);
                     if (amount == null || amount <= 0) {
-                      return 'Please enter a valid amount';
+                      return l10n.validation_amountPositive;
                     }
                     return null;
                   },
@@ -191,7 +195,7 @@ class _AddPaymentDialogState extends State<AddPaymentDialog> {
                   onTap: _selectDate,
                   child: InputDecorator(
                     decoration: InputDecoration(
-                      labelText: 'Payment Date',
+                      labelText: l10n.paymentForm_paymentDate,
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
                       ),
@@ -210,8 +214,8 @@ class _AddPaymentDialogState extends State<AddPaymentDialog> {
                   controller: _remarkController,
                   maxLines: 3,
                   decoration: InputDecoration(
-                    labelText: 'Remark/Note (Optional)',
-                    hintText: 'Add any remark or note',
+                    labelText: l10n.paymentForm_addRemark,
+                    hintText: l10n.paymentForm_addRemark,
                     alignLabelWithHint: true,
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
@@ -227,7 +231,7 @@ class _AddPaymentDialogState extends State<AddPaymentDialog> {
                   children: [
                     TextButton(
                       onPressed: _isLoading ? null : () => Navigator.pop(context),
-                      child: const Text('Cancel'),
+                      child: Text(l10n.common_cancel),
                     ),
                     const SizedBox(width: 12),
                     ElevatedButton(
@@ -245,7 +249,7 @@ class _AddPaymentDialogState extends State<AddPaymentDialog> {
                                 valueColor: AlwaysStoppedAnimation(Colors.white),
                               ),
                             )
-                          : const Text('Save', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+                          : Text(l10n.common_save, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
                     ),
                   ],
                 ),

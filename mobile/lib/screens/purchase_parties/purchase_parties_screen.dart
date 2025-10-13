@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import '../../providers/purchase_party_provider.dart';
 import '../../models/purchase_party.dart';
 
@@ -67,71 +68,75 @@ class _PurchasePartiesScreenState extends State<PurchasePartiesScreen> with Sing
     _editingParty = party;
     _partyCodeController.text = party?.partyCode ?? '';
     _nameController.text = party?.name ?? '';
+    final l10n = AppLocalizations.of(context)!;
 
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        title: Text(party == null ? 'Add Purchase Party' : 'Edit Purchase Party'),
-        content: Form(
-          key: _formKey,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextFormField(
-                controller: _nameController,
-                decoration: const InputDecoration(
-                  labelText: 'Party Name',
-                  hintText: 'Full party name',
-                  border: OutlineInputBorder(),
-                  prefixIcon: Icon(Icons.business),
+      builder: (dialogContext) {
+        final dialogL10n = AppLocalizations.of(dialogContext)!;
+        return AlertDialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          title: Text(party == null ? dialogL10n.purchaseParties_createParty : dialogL10n.purchaseParties_editParty),
+          content: Form(
+            key: _formKey,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                TextFormField(
+                  controller: _nameController,
+                  decoration: InputDecoration(
+                    labelText: dialogL10n.purchaseParties_partyName,
+                    hintText: dialogL10n.purchaseParties_partyName,
+                    border: const OutlineInputBorder(),
+                    prefixIcon: const Icon(Icons.business),
+                  ),
+                  textCapitalization: TextCapitalization.words,
+                  validator: (value) {
+                    if (value == null || value.trim().isEmpty) {
+                      return dialogL10n.validation_nameRequired;
+                    }
+                    return null;
+                  },
+                  autofocus: true,
                 ),
-                textCapitalization: TextCapitalization.words,
-                validator: (value) {
-                  if (value == null || value.trim().isEmpty) {
-                    return 'Please enter a party name';
-                  }
-                  return null;
-                },
-                autofocus: true,
-              ),
-              const SizedBox(height: 16),
-              TextFormField(
-                controller: _partyCodeController,
-                decoration: const InputDecoration(
-                  labelText: 'Party Code',
-                  hintText: 'e.g., BPN, JY',
-                  border: OutlineInputBorder(),
-                  prefixIcon: Icon(Icons.tag),
+                const SizedBox(height: 16),
+                TextFormField(
+                  controller: _partyCodeController,
+                  decoration: InputDecoration(
+                    labelText: dialogL10n.purchaseParties_partyCode,
+                    hintText: 'e.g., BPN, JY',
+                    border: const OutlineInputBorder(),
+                    prefixIcon: const Icon(Icons.tag),
+                  ),
+                  textCapitalization: TextCapitalization.characters,
+                  validator: (value) {
+                    if (value == null || value.trim().isEmpty) {
+                      return dialogL10n.validation_fieldRequired;
+                    }
+                    if (value.length > 10) {
+                      return 'Party code must be less than 10 characters'; // TODO: Add translation key
+                    }
+                    if (!RegExp(r'^[A-Z0-9]+$').hasMatch(value.toUpperCase())) {
+                      return 'Only letters and numbers allowed'; // TODO: Add translation key
+                    }
+                    return null;
+                  },
                 ),
-                textCapitalization: TextCapitalization.characters,
-                validator: (value) {
-                  if (value == null || value.trim().isEmpty) {
-                    return 'Please enter a party code';
-                  }
-                  if (value.length > 10) {
-                    return 'Party code must be less than 10 characters';
-                  }
-                  if (!RegExp(r'^[A-Z0-9]+$').hasMatch(value.toUpperCase())) {
-                    return 'Only letters and numbers allowed';
-                  }
-                  return null;
-                },
-              ),
-            ],
+              ],
+            ),
           ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
-          ),
-          FilledButton(
-            onPressed: () => _savePurchaseParty(),
-            child: const Text('Save'),
-          ),
-        ],
-      ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(dialogContext),
+              child: Text(dialogL10n.common_cancel),
+            ),
+            FilledButton(
+              onPressed: () => _savePurchaseParty(),
+              child: Text(dialogL10n.common_save),
+            ),
+          ],
+        );
+      },
     );
   }
 
@@ -151,12 +156,11 @@ class _PurchasePartiesScreenState extends State<PurchasePartiesScreen> with Sing
 
       if (!mounted) return;
 
+      final l10n = AppLocalizations.of(context)!;
       Navigator.pop(context);
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(_editingParty == null
-              ? 'Purchase party created successfully'
-              : 'Purchase party updated successfully'),
+          content: Text(l10n.purchaseParties_saveSuccess),
           backgroundColor: Colors.green,
           behavior: SnackBarBehavior.floating,
         ),
@@ -166,9 +170,10 @@ class _PurchasePartiesScreenState extends State<PurchasePartiesScreen> with Sing
       _editingParty = null;
     } catch (e) {
       if (!mounted) return;
+      final l10n = AppLocalizations.of(context)!;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(partyProvider.errorMessage ?? 'Failed to save purchase party'),
+          content: Text(partyProvider.errorMessage ?? l10n.purchaseParties_saveFailed),
           backgroundColor: Colors.red,
           behavior: SnackBarBehavior.floating,
         ),
@@ -178,6 +183,7 @@ class _PurchasePartiesScreenState extends State<PurchasePartiesScreen> with Sing
 
   Future<void> _restorePurchaseParty(int id) async {
     final partyProvider = Provider.of<PurchasePartyProvider>(context, listen: false);
+    final l10n = AppLocalizations.of(context)!;
 
     try {
       await partyProvider.restorePurchaseParty(id);
@@ -185,8 +191,8 @@ class _PurchasePartiesScreenState extends State<PurchasePartiesScreen> with Sing
       if (!mounted) return;
 
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Purchase party restored successfully'),
+        SnackBar(
+          content: Text(l10n.purchaseParties_restoreSuccess),
           backgroundColor: Colors.green,
           behavior: SnackBarBehavior.floating,
         ),
@@ -194,8 +200,8 @@ class _PurchasePartiesScreenState extends State<PurchasePartiesScreen> with Sing
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Failed to restore purchase party'),
+        SnackBar(
+          content: Text(l10n.purchaseParties_restoreFailed),
           backgroundColor: Colors.red,
           behavior: SnackBarBehavior.floating,
         ),
@@ -217,6 +223,7 @@ class _PurchasePartiesScreenState extends State<PurchasePartiesScreen> with Sing
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
     final isDarkTheme = theme.brightness == Brightness.dark;
+    final l10n = AppLocalizations.of(context)!;
 
     final parties = _showDeleted ? partyProvider.deletedPurchaseParties : partyProvider.purchaseParties;
     final filteredParties = _getFilteredParties(parties);
@@ -226,12 +233,12 @@ class _PurchasePartiesScreenState extends State<PurchasePartiesScreen> with Sing
       behavior: HitTestBehavior.opaque,
       child: Scaffold(
         appBar: AppBar(
-          title: const Text('Purchase Parties'),
+          title: Text(l10n.purchaseParties_title),
           actions: [
             IconButton(
               icon: const Icon(Icons.add),
               onPressed: () => _showAddEditDialog(),
-              tooltip: 'Add Purchase Party',
+              tooltip: l10n.purchaseParties_createParty,
             ),
           ],
         ),
@@ -239,16 +246,16 @@ class _PurchasePartiesScreenState extends State<PurchasePartiesScreen> with Sing
           children: [
             TabBar(
               controller: _tabController,
-              tabs: const [
-                Tab(text: 'Active'),
-                Tab(text: 'Deleted'),
+              tabs: [
+                Tab(text: l10n.purchaseParties_active),
+                Tab(text: l10n.purchaseParties_deleted),
               ],
             ),
             Padding(
               padding: const EdgeInsets.all(16.0),
               child: TextField(
                 decoration: InputDecoration(
-                  hintText: 'Search purchase parties...',
+                  hintText: l10n.purchaseParties_searchParties,
                   prefixIcon: const Icon(Icons.search),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
@@ -286,7 +293,7 @@ class _PurchasePartiesScreenState extends State<PurchasePartiesScreen> with Sing
                               ),
                               const SizedBox(height: 16),
                               Text(
-                                _showDeleted ? 'No deleted purchase parties' : 'No purchase parties yet',
+                                _showDeleted ? l10n.purchaseParties_noDeletedParties : l10n.purchaseParties_noPartiesYet,
                                 style: const TextStyle(
                                   fontSize: 18,
                                   color: Colors.grey,
@@ -297,7 +304,7 @@ class _PurchasePartiesScreenState extends State<PurchasePartiesScreen> with Sing
                                 TextButton.icon(
                                   onPressed: () => _showAddEditDialog(),
                                   icon: const Icon(Icons.add),
-                                  label: const Text('Add your first purchase party'),
+                                  label: Text(l10n.purchaseParties_createFirstParty),
                                 ),
                               ],
                             ],
@@ -326,24 +333,27 @@ class _PurchasePartiesScreenState extends State<PurchasePartiesScreen> with Sing
                                 confirmDismiss: (direction) async {
                                   return await showDialog<bool>(
                                     context: context,
-                                    builder: (context) => AlertDialog(
-                                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                                      title: const Text('Delete Purchase Party'),
-                                      content: const Text('Are you sure you want to delete this purchase party?'),
-                                      actions: [
-                                        TextButton(
-                                          onPressed: () => Navigator.pop(context, false),
-                                          child: const Text('Cancel'),
-                                        ),
-                                        FilledButton(
-                                          onPressed: () => Navigator.pop(context, true),
-                                          style: FilledButton.styleFrom(
-                                            backgroundColor: Colors.red,
+                                    builder: (dialogContext) {
+                                      final dialogL10n = AppLocalizations.of(dialogContext)!;
+                                      return AlertDialog(
+                                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                        title: Text(dialogL10n.purchaseParties_deleteParty),
+                                        content: Text(dialogL10n.common_areYouSure),
+                                        actions: [
+                                          TextButton(
+                                            onPressed: () => Navigator.pop(dialogContext, false),
+                                            child: Text(dialogL10n.common_cancel),
                                           ),
-                                          child: const Text('Delete'),
-                                        ),
-                                      ],
-                                    ),
+                                          FilledButton(
+                                            onPressed: () => Navigator.pop(dialogContext, true),
+                                            style: FilledButton.styleFrom(
+                                              backgroundColor: Colors.red,
+                                            ),
+                                            child: Text(dialogL10n.common_delete),
+                                          ),
+                                        ],
+                                      );
+                                    },
                                   );
                                 },
                                 onDismissed: (direction) async {
@@ -398,7 +408,7 @@ class _PurchasePartiesScreenState extends State<PurchasePartiesScreen> with Sing
                                                           borderRadius: BorderRadius.circular(10),
                                                         ),
                                                         child: Text(
-                                                          '${party.itemCount} items',
+                                                          '${party.itemCount} ${l10n.items_title.toLowerCase()}',
                                                           style: TextStyle(
                                                             fontSize: 11,
                                                             color: Colors.blue.shade700,
@@ -420,7 +430,7 @@ class _PurchasePartiesScreenState extends State<PurchasePartiesScreen> with Sing
                                                 if (party.createdAt != null) ...[
                                                   const SizedBox(height: 4),
                                                   Text(
-                                                    'Created on ${_formatDate(party.createdAt!)}',
+                                                    '${l10n.settings_createdOn} ${_formatDate(party.createdAt!)}',
                                                     style: TextStyle(
                                                       color: theme.textTheme.bodySmall?.color?.withOpacity(0.7),
                                                       fontSize: 12,
@@ -434,7 +444,7 @@ class _PurchasePartiesScreenState extends State<PurchasePartiesScreen> with Sing
                                               ? IconButton(
                                                   icon: const Icon(Icons.restore, color: Colors.green, size: 22),
                                                   onPressed: () => _restorePurchaseParty(party.id!),
-                                                  tooltip: 'Restore',
+                                                  tooltip: l10n.parties_restoreTooltip,
                                                   padding: EdgeInsets.zero,
                                                   constraints: const BoxConstraints(),
                                                 )
@@ -444,7 +454,7 @@ class _PurchasePartiesScreenState extends State<PurchasePartiesScreen> with Sing
                                                     IconButton(
                                                       icon: Icon(Icons.edit_outlined, color: colorScheme.primary, size: 22),
                                                       onPressed: () => _showAddEditDialog(party: party),
-                                                      tooltip: 'Edit',
+                                                      tooltip: l10n.common_edit,
                                                       padding: EdgeInsets.zero,
                                                       constraints: const BoxConstraints(),
                                                     ),

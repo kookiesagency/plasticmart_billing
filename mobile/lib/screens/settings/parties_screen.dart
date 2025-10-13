@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import '../../providers/party_provider.dart';
 import '../../models/party.dart';
 import 'party_weekly_report_screen.dart';
@@ -47,12 +48,16 @@ class _PartiesScreenState extends State<PartiesScreen> {
     _gstController.text = party?.gst ?? '';
     _addressController.text = party?.address ?? '';
 
+    final l10n = AppLocalizations.of(context)!;
+
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
+      builder: (dialogContext) {
+        final dialogL10n = AppLocalizations.of(dialogContext)!;
+        return AlertDialog(
         backgroundColor: Colors.white,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        title: Text(party == null ? 'Add Party' : 'Edit Party'),
+        title: Text(party == null ? dialogL10n.parties_createParty : dialogL10n.parties_editParty),
         content: SingleChildScrollView(
           child: Form(
             key: _formKey,
@@ -61,15 +66,15 @@ class _PartiesScreenState extends State<PartiesScreen> {
               children: [
                 TextFormField(
                   controller: _nameController,
-                  decoration: const InputDecoration(
-                    labelText: 'Party Name *',
-                    border: OutlineInputBorder(),
-                    prefixIcon: Icon(Icons.person_outline),
+                  decoration: InputDecoration(
+                    labelText: dialogL10n.parties_partyName,
+                    border: const OutlineInputBorder(),
+                    prefixIcon: const Icon(Icons.person_outline),
                   ),
                   textCapitalization: TextCapitalization.words,
                   validator: (value) {
                     if (value == null || value.trim().isEmpty) {
-                      return 'Please enter party name';
+                      return dialogL10n.validation_nameRequired;
                     }
                     return null;
                   },
@@ -78,10 +83,10 @@ class _PartiesScreenState extends State<PartiesScreen> {
                 const SizedBox(height: 16),
                 TextFormField(
                   controller: _phoneController,
-                  decoration: const InputDecoration(
-                    labelText: 'Phone',
-                    border: OutlineInputBorder(),
-                    prefixIcon: Icon(Icons.phone_outlined),
+                  decoration: InputDecoration(
+                    labelText: dialogL10n.parties_phone,
+                    border: const OutlineInputBorder(),
+                    prefixIcon: const Icon(Icons.phone_outlined),
                   ),
                   keyboardType: TextInputType.phone,
                 ),
@@ -99,7 +104,7 @@ class _PartiesScreenState extends State<PartiesScreen> {
                 TextFormField(
                   controller: _gstController,
                   decoration: const InputDecoration(
-                    labelText: 'GST Number',
+                    labelText: 'GST',
                     border: OutlineInputBorder(),
                     prefixIcon: Icon(Icons.numbers),
                   ),
@@ -108,10 +113,10 @@ class _PartiesScreenState extends State<PartiesScreen> {
                 const SizedBox(height: 16),
                 TextFormField(
                   controller: _addressController,
-                  decoration: const InputDecoration(
-                    labelText: 'Address',
-                    border: OutlineInputBorder(),
-                    prefixIcon: Icon(Icons.location_on_outlined),
+                  decoration: InputDecoration(
+                    labelText: dialogL10n.parties_address,
+                    border: const OutlineInputBorder(),
+                    prefixIcon: const Icon(Icons.location_on_outlined),
                   ),
                   maxLines: 3,
                   textCapitalization: TextCapitalization.words,
@@ -122,8 +127,8 @@ class _PartiesScreenState extends State<PartiesScreen> {
         ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
+            onPressed: () => Navigator.pop(dialogContext),
+            child: Text(dialogL10n.common_cancel),
           ),
           ElevatedButton(
             onPressed: () => _saveParty(),
@@ -135,10 +140,11 @@ class _PartiesScreenState extends State<PartiesScreen> {
                 borderRadius: BorderRadius.circular(12),
               ),
             ),
-            child: const Text('Save', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+            child: Text(dialogL10n.common_save, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
           ),
         ],
-      ),
+      );
+      },
     );
   }
 
@@ -169,13 +175,13 @@ class _PartiesScreenState extends State<PartiesScreen> {
 
     if (!mounted) return;
 
+    final l10n = AppLocalizations.of(context)!;
+
     if (success) {
       Navigator.pop(context);
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(_editingParty == null
-              ? 'Party created successfully'
-              : 'Party updated successfully'),
+          content: Text(l10n.parties_saveSuccess),
           backgroundColor: Colors.green,
           behavior: SnackBarBehavior.floating,
         ),
@@ -184,7 +190,7 @@ class _PartiesScreenState extends State<PartiesScreen> {
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(partyProvider.errorMessage ?? 'Failed to save party'),
+          content: Text(partyProvider.errorMessage ?? l10n.parties_saveFailed),
           backgroundColor: Colors.red,
           behavior: SnackBarBehavior.floating,
         ),
@@ -202,21 +208,25 @@ class _PartiesScreenState extends State<PartiesScreen> {
   }
 
   Future<void> _deleteParty(int id) async {
+    final l10n = AppLocalizations.of(context)!;
+
     final confirm = await showDialog<bool>(
       context: context,
-      builder: (context) => AlertDialog(
+      builder: (dialogContext) {
+        final dialogL10n = AppLocalizations.of(dialogContext)!;
+        return AlertDialog(
         backgroundColor: Colors.white,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         icon: const Icon(Icons.warning_amber_rounded, size: 48, color: Colors.orange),
-        title: const Text('Delete Party'),
-        content: const Text('Are you sure you want to delete this party? This action cannot be undone.'),
+        title: Text(dialogL10n.parties_deleteParty),
+        content: Text(dialogL10n.common_areYouSure),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: const Text('Cancel'),
+            onPressed: () => Navigator.pop(dialogContext, false),
+            child: Text(dialogL10n.common_cancel),
           ),
           ElevatedButton(
-            onPressed: () => Navigator.pop(context, true),
+            onPressed: () => Navigator.pop(dialogContext, true),
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.red,
               foregroundColor: Colors.white,
@@ -225,10 +235,11 @@ class _PartiesScreenState extends State<PartiesScreen> {
                 borderRadius: BorderRadius.circular(12),
               ),
             ),
-            child: const Text('Delete', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+            child: Text(dialogL10n.common_delete, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
           ),
         ],
-      ),
+      );
+      },
     );
 
     if (confirm != true) return;
@@ -238,10 +249,12 @@ class _PartiesScreenState extends State<PartiesScreen> {
 
     if (!mounted) return;
 
+    final l10n = AppLocalizations.of(context)!;
+
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(
-          success ? 'Party deleted successfully' : 'Failed to delete party',
+          success ? l10n.parties_deleteSuccess : l10n.parties_deleteFailed,
         ),
         backgroundColor: success ? Colors.green : Colors.red,
         behavior: SnackBarBehavior.floating,
@@ -252,18 +265,19 @@ class _PartiesScreenState extends State<PartiesScreen> {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
+    final l10n = AppLocalizations.of(context)!;
 
     return GestureDetector(
       onTap: () => FocusScope.of(context).unfocus(),
       behavior: HitTestBehavior.opaque,
       child: Scaffold(
         appBar: AppBar(
-          title: const Text('Parties', style: TextStyle(fontWeight: FontWeight.w600)),
+          title: Text(l10n.parties_title, style: const TextStyle(fontWeight: FontWeight.w600)),
         actions: [
           IconButton.filledTonal(
             icon: const Icon(Icons.add),
             onPressed: () => _showAddEditDialog(),
-            tooltip: 'Add Party',
+            tooltip: l10n.parties_createParty,
           ),
           const SizedBox(width: 8),
         ],
@@ -286,14 +300,14 @@ class _PartiesScreenState extends State<PartiesScreen> {
                   ),
                   const SizedBox(height: 24),
                   Text(
-                    'No parties yet',
+                    l10n.parties_noPartiesYet,
                     style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                       color: Colors.grey.shade600,
                     ),
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    'Get started by adding your first party',
+                    l10n.parties_createFirstParty,
                     style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                       color: Colors.grey.shade500,
                     ),
@@ -309,7 +323,7 @@ class _PartiesScreenState extends State<PartiesScreen> {
                         borderRadius: BorderRadius.circular(12),
                       ),
                     ),
-                    child: const Text('Add First Party', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+                    child: Text(l10n.parties_createFirstParty, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
                   ),
                 ],
               ),
@@ -392,8 +406,12 @@ class _PartiesScreenState extends State<PartiesScreen> {
                             children: [
                               Icon(Icons.numbers, size: 14, color: Colors.grey.shade600),
                               const SizedBox(width: 4),
+                              const Text(
+                                'GST: ',
+                                style: TextStyle(fontSize: 13, color: Colors.grey),
+                              ),
                               Text(
-                                'GST: ${party.gst}',
+                                party.gst!,
                                 style: TextStyle(fontSize: 13, color: Colors.grey.shade600),
                               ),
                             ],
@@ -407,12 +425,12 @@ class _PartiesScreenState extends State<PartiesScreen> {
                         IconButton(
                           icon: Icon(Icons.edit_outlined, color: colorScheme.primary),
                           onPressed: () => _showAddEditDialog(party: party),
-                          tooltip: 'Edit',
+                          tooltip: l10n.common_edit,
                         ),
                         IconButton(
                           icon: const Icon(Icons.delete_outlined, color: Colors.red),
                           onPressed: () => _deleteParty(party.id!),
-                          tooltip: 'Delete',
+                          tooltip: l10n.common_delete,
                         ),
                       ],
                     ),
@@ -426,7 +444,7 @@ class _PartiesScreenState extends State<PartiesScreen> {
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => _showAddEditDialog(),
         icon: const Icon(Icons.add),
-        label: const Text('Add Party'),
+        label: Text(l10n.parties_createParty),
       ),
       ),
     );

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import '../../providers/item_category_provider.dart';
 import '../../models/item_category.dart';
 
@@ -69,57 +70,60 @@ class _CategoriesScreenState extends State<CategoriesScreen> with SingleTickerPr
 
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        title: Text(category == null ? 'Add Category' : 'Edit Category'),
-        content: Form(
-          key: _formKey,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextFormField(
-                controller: _nameController,
-                decoration: const InputDecoration(
-                  labelText: 'Category Name',
-                  hintText: 'e.g., Plastic Bags, Containers',
-                  border: OutlineInputBorder(),
-                  prefixIcon: Icon(Icons.category),
+      builder: (dialogContext) {
+        final dialogL10n = AppLocalizations.of(dialogContext)!;
+        return AlertDialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          title: Text(category == null ? dialogL10n.categories_createCategory : dialogL10n.categories_editCategory),
+          content: Form(
+            key: _formKey,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                TextFormField(
+                  controller: _nameController,
+                  decoration: InputDecoration(
+                    labelText: dialogL10n.categories_categoryName,
+                    hintText: dialogL10n.categories_categoryName,
+                    border: const OutlineInputBorder(),
+                    prefixIcon: const Icon(Icons.category),
+                  ),
+                  textCapitalization: TextCapitalization.words,
+                  validator: (value) {
+                    if (value == null || value.trim().isEmpty) {
+                      return dialogL10n.validation_nameRequired;
+                    }
+                    return null;
+                  },
+                  autofocus: true,
                 ),
-                textCapitalization: TextCapitalization.words,
-                validator: (value) {
-                  if (value == null || value.trim().isEmpty) {
-                    return 'Please enter a category name';
-                  }
-                  return null;
-                },
-                autofocus: true,
-              ),
-              const SizedBox(height: 16),
-              TextFormField(
-                controller: _descriptionController,
-                decoration: const InputDecoration(
-                  labelText: 'Description (optional)',
-                  hintText: 'Brief description of the category',
-                  border: OutlineInputBorder(),
-                  prefixIcon: Icon(Icons.description),
+                const SizedBox(height: 16),
+                TextFormField(
+                  controller: _descriptionController,
+                  decoration: InputDecoration(
+                    labelText: '${dialogL10n.common_optional}',
+                    hintText: dialogL10n.common_optional,
+                    border: const OutlineInputBorder(),
+                    prefixIcon: const Icon(Icons.description),
+                  ),
+                  maxLines: 2,
+                  textCapitalization: TextCapitalization.sentences,
                 ),
-                maxLines: 2,
-                textCapitalization: TextCapitalization.sentences,
-              ),
-            ],
+              ],
+            ),
           ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
-          ),
-          FilledButton(
-            onPressed: () => _saveCategory(),
-            child: const Text('Save'),
-          ),
-        ],
-      ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(dialogContext),
+              child: Text(dialogL10n.common_cancel),
+            ),
+            FilledButton(
+              onPressed: () => _saveCategory(),
+              child: Text(dialogL10n.common_save),
+            ),
+          ],
+        );
+      },
     );
   }
 
@@ -146,12 +150,11 @@ class _CategoriesScreenState extends State<CategoriesScreen> with SingleTickerPr
 
       if (!mounted) return;
 
+      final l10n = AppLocalizations.of(context)!;
       Navigator.pop(context);
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(_editingCategory == null
-              ? 'Category created successfully'
-              : 'Category updated successfully'),
+          content: Text(l10n.categories_saveSuccess),
           backgroundColor: Colors.green,
           behavior: SnackBarBehavior.floating,
         ),
@@ -161,9 +164,10 @@ class _CategoriesScreenState extends State<CategoriesScreen> with SingleTickerPr
       _editingCategory = null;
     } catch (e) {
       if (!mounted) return;
+      final l10n = AppLocalizations.of(context)!;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(categoryProvider.errorMessage ?? 'Failed to save category'),
+          content: Text(categoryProvider.errorMessage ?? l10n.categories_saveFailed),
           backgroundColor: Colors.red,
           behavior: SnackBarBehavior.floating,
         ),
@@ -173,6 +177,7 @@ class _CategoriesScreenState extends State<CategoriesScreen> with SingleTickerPr
 
   Future<void> _restoreCategory(int id) async {
     final categoryProvider = Provider.of<ItemCategoryProvider>(context, listen: false);
+    final l10n = AppLocalizations.of(context)!;
 
     try {
       await categoryProvider.restoreCategory(id);
@@ -180,8 +185,8 @@ class _CategoriesScreenState extends State<CategoriesScreen> with SingleTickerPr
       if (!mounted) return;
 
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Category restored successfully'),
+        SnackBar(
+          content: Text(l10n.categories_restoreSuccess),
           backgroundColor: Colors.green,
           behavior: SnackBarBehavior.floating,
         ),
@@ -189,8 +194,8 @@ class _CategoriesScreenState extends State<CategoriesScreen> with SingleTickerPr
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Failed to restore category'),
+        SnackBar(
+          content: Text(l10n.categories_restoreFailed),
           backgroundColor: Colors.red,
           behavior: SnackBarBehavior.floating,
         ),
@@ -204,6 +209,7 @@ class _CategoriesScreenState extends State<CategoriesScreen> with SingleTickerPr
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
     final isDarkTheme = theme.brightness == Brightness.dark;
+    final l10n = AppLocalizations.of(context)!;
 
     final categories = _showDeleted ? categoryProvider.deletedCategories : categoryProvider.categories;
     final filteredCategories = _getFilteredCategories(categories);
@@ -213,12 +219,12 @@ class _CategoriesScreenState extends State<CategoriesScreen> with SingleTickerPr
       behavior: HitTestBehavior.opaque,
       child: Scaffold(
         appBar: AppBar(
-          title: const Text('Item Categories'),
+          title: Text(l10n.categories_title),
           actions: [
             IconButton(
               icon: const Icon(Icons.add),
               onPressed: () => _showAddEditDialog(),
-              tooltip: 'Add Category',
+              tooltip: l10n.categories_createCategory,
             ),
           ],
         ),
@@ -226,16 +232,16 @@ class _CategoriesScreenState extends State<CategoriesScreen> with SingleTickerPr
           children: [
             TabBar(
               controller: _tabController,
-              tabs: const [
-                Tab(text: 'Active'),
-                Tab(text: 'Deleted'),
+              tabs: [
+                Tab(text: l10n.categories_active),
+                Tab(text: l10n.categories_deleted),
               ],
             ),
             Padding(
               padding: const EdgeInsets.all(16.0),
               child: TextField(
                 decoration: InputDecoration(
-                  hintText: 'Search categories...',
+                  hintText: l10n.categories_searchCategories,
                   prefixIcon: const Icon(Icons.search),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
@@ -273,7 +279,7 @@ class _CategoriesScreenState extends State<CategoriesScreen> with SingleTickerPr
                               ),
                               const SizedBox(height: 16),
                               Text(
-                                _showDeleted ? 'No deleted categories' : 'No categories yet',
+                                _showDeleted ? l10n.categories_noDeletedCategories : l10n.categories_noCategoriesYet,
                                 style: const TextStyle(
                                   fontSize: 18,
                                   color: Colors.grey,
@@ -284,7 +290,7 @@ class _CategoriesScreenState extends State<CategoriesScreen> with SingleTickerPr
                                 TextButton.icon(
                                   onPressed: () => _showAddEditDialog(),
                                   icon: const Icon(Icons.add),
-                                  label: const Text('Add your first category'),
+                                  label: Text(l10n.categories_createFirstCategory),
                                 ),
                               ],
                             ],
@@ -313,24 +319,27 @@ class _CategoriesScreenState extends State<CategoriesScreen> with SingleTickerPr
                                 confirmDismiss: (direction) async {
                                   return await showDialog<bool>(
                                     context: context,
-                                    builder: (context) => AlertDialog(
-                                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                                      title: const Text('Delete Category'),
-                                      content: const Text('Are you sure you want to delete this category?'),
-                                      actions: [
-                                        TextButton(
-                                          onPressed: () => Navigator.pop(context, false),
-                                          child: const Text('Cancel'),
-                                        ),
-                                        FilledButton(
-                                          onPressed: () => Navigator.pop(context, true),
-                                          style: FilledButton.styleFrom(
-                                            backgroundColor: Colors.red,
+                                    builder: (dialogContext) {
+                                      final dialogL10n = AppLocalizations.of(dialogContext)!;
+                                      return AlertDialog(
+                                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                        title: Text(dialogL10n.categories_deleteCategory),
+                                        content: Text(dialogL10n.common_areYouSure),
+                                        actions: [
+                                          TextButton(
+                                            onPressed: () => Navigator.pop(dialogContext, false),
+                                            child: Text(dialogL10n.common_cancel),
                                           ),
-                                          child: const Text('Delete'),
-                                        ),
-                                      ],
-                                    ),
+                                          FilledButton(
+                                            onPressed: () => Navigator.pop(dialogContext, true),
+                                            style: FilledButton.styleFrom(
+                                              backgroundColor: Colors.red,
+                                            ),
+                                            child: Text(dialogL10n.common_delete),
+                                          ),
+                                        ],
+                                      );
+                                    },
                                   );
                                 },
                                 onDismissed: (direction) async {
@@ -375,7 +384,7 @@ class _CategoriesScreenState extends State<CategoriesScreen> with SingleTickerPr
                                               if (category.createdAt != null) ...[
                                                 const SizedBox(height: 4),
                                                 Text(
-                                                  'Created on ${_formatDate(category.createdAt!)}',
+                                                  '${l10n.settings_createdOn} ${_formatDate(category.createdAt!)}',
                                                   style: TextStyle(
                                                     color: theme.textTheme.bodySmall?.color?.withOpacity(0.7),
                                                     fontSize: 12,
@@ -389,14 +398,14 @@ class _CategoriesScreenState extends State<CategoriesScreen> with SingleTickerPr
                                             ? IconButton(
                                                 icon: const Icon(Icons.restore, color: Colors.green, size: 22),
                                                 onPressed: () => _restoreCategory(category.id!),
-                                                tooltip: 'Restore',
+                                                tooltip: l10n.parties_restoreTooltip,
                                                 padding: EdgeInsets.zero,
                                                 constraints: const BoxConstraints(),
                                               )
                                             : IconButton(
                                                 icon: Icon(Icons.edit_outlined, color: colorScheme.primary, size: 22),
                                                 onPressed: () => _showAddEditDialog(category: category),
-                                                tooltip: 'Edit',
+                                                tooltip: l10n.common_edit,
                                                 padding: EdgeInsets.zero,
                                                 constraints: const BoxConstraints(),
                                               ),

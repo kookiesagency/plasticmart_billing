@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import '../../models/purchase_party.dart';
 import '../../models/item_category.dart';
 import '../../providers/purchase_party_provider.dart';
@@ -83,11 +84,12 @@ class _PurchasePartyDetailsScreenState extends State<PurchasePartyDetailsScreen>
     _fetchItems(party.id!, categoryId);
   }
 
-  String _getCategoryName(Map<String, dynamic> item) {
+  String _getCategoryName(Map<String, dynamic> item, BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     if (item['item_categories'] != null) {
-      return item['item_categories']['name'] ?? 'Uncategorized';
+      return item['item_categories']['name'] ?? l10n.items_none;
     }
-    return 'Uncategorized';
+    return l10n.items_none;
   }
 
   String _getUnitName(Map<String, dynamic> item) {
@@ -103,6 +105,7 @@ class _PurchasePartyDetailsScreenState extends State<PurchasePartyDetailsScreen>
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
     final isDarkTheme = theme.brightness == Brightness.dark;
+    final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
       appBar: AppBar(
@@ -144,9 +147,9 @@ class _PurchasePartyDetailsScreenState extends State<PurchasePartyDetailsScreen>
               children: [
                 const Icon(Icons.filter_list, size: 20, color: Colors.grey),
                 const SizedBox(width: 8),
-                const Text(
-                  'Filter by Category:',
-                  style: TextStyle(
+                Text(
+                  l10n.common_filter,
+                  style: const TextStyle(
                     fontWeight: FontWeight.w600,
                     fontSize: 14,
                   ),
@@ -172,13 +175,13 @@ class _PurchasePartyDetailsScreenState extends State<PurchasePartyDetailsScreen>
                       isDense: true,
                     ),
                     items: [
-                      const DropdownMenuItem<int?>(
+                      DropdownMenuItem<int?>(
                         value: null,
-                        child: Text('All Categories'),
+                        child: Text(l10n.categories_title),
                       ),
-                      const DropdownMenuItem<int?>(
+                      DropdownMenuItem<int?>(
                         value: -1,
-                        child: Text('Uncategorized'),
+                        child: Text(l10n.items_none),
                       ),
                       ..._categories.map((category) {
                         return DropdownMenuItem<int?>(
@@ -206,14 +209,14 @@ class _PurchasePartyDetailsScreenState extends State<PurchasePartyDetailsScreen>
                             const Icon(Icons.error_outline, size: 64, color: Colors.red),
                             const SizedBox(height: 16),
                             Text(
-                              'Error: $_errorMessage',
+                              '${l10n.common_error}: $_errorMessage',
                               style: const TextStyle(color: Colors.red),
                               textAlign: TextAlign.center,
                             ),
                             const SizedBox(height: 16),
                             ElevatedButton(
                               onPressed: _loadData,
-                              child: const Text('Retry'),
+                              child: Text(l10n.common_back),
                             ),
                           ],
                         ),
@@ -230,9 +233,7 @@ class _PurchasePartyDetailsScreenState extends State<PurchasePartyDetailsScreen>
                                 ),
                                 const SizedBox(height: 16),
                                 Text(
-                                  _selectedCategoryId != null
-                                      ? 'No items in this category'
-                                      : 'No items for this purchase party',
+                                  l10n.items_noItemsYet,
                                   style: const TextStyle(
                                     fontSize: 18,
                                     color: Colors.grey,
@@ -289,7 +290,7 @@ class _PurchasePartyDetailsScreenState extends State<PurchasePartyDetailsScreen>
                                                 borderRadius: BorderRadius.circular(10),
                                               ),
                                               child: Text(
-                                                _getCategoryName(item),
+                                                _getCategoryName(item, context),
                                                 style: TextStyle(
                                                   fontSize: 11,
                                                   color: Colors.purple.shade700,
@@ -312,7 +313,7 @@ class _PurchasePartyDetailsScreenState extends State<PurchasePartyDetailsScreen>
                                                 ),
                                                 const SizedBox(width: 2),
                                                 Text(
-                                                  'Purchase Rate: ',
+                                                  '${l10n.items_purchaseRate}: ',
                                                   style: TextStyle(
                                                     color: theme.textTheme.bodySmall?.color?.withOpacity(0.7),
                                                     fontSize: 13,
@@ -321,7 +322,7 @@ class _PurchasePartyDetailsScreenState extends State<PurchasePartyDetailsScreen>
                                                 Text(
                                                   item['purchase_rate'] != null
                                                       ? '₹${(item['purchase_rate'] as num).toStringAsFixed(2)}'
-                                                      : 'N/A',
+                                                      : l10n.invoiceView_NA,
                                                   style: const TextStyle(
                                                     fontWeight: FontWeight.w600,
                                                     fontSize: 13,
@@ -359,7 +360,7 @@ class _PurchasePartyDetailsScreenState extends State<PurchasePartyDetailsScreen>
                                             ),
                                             const SizedBox(width: 4),
                                             Text(
-                                              'Default Rate: ',
+                                              '${l10n.items_defaultRate}: ',
                                               style: TextStyle(
                                                 color: theme.textTheme.bodySmall?.color?.withOpacity(0.7),
                                                 fontSize: 13,
