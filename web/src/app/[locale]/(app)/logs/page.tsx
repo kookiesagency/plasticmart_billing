@@ -4,6 +4,7 @@ import { createClient } from '@/lib/supabase/client'
 import { SetHeader } from '@/components/layout/header-context'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
+import { useTranslations } from 'next-intl'
 import {
   Table,
   TableBody,
@@ -118,6 +119,8 @@ function formatLogMessage(log: ActivityLog) {
 const PAGE_SIZE = 50;
 
 export default function LogsPage() {
+  const t = useTranslations('logs')
+  const tCommon = useTranslations('common')
   const [logs, setLogs] = useState<ActivityLog[]>([]);
   const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(true);
@@ -189,9 +192,9 @@ export default function LogsPage() {
   const grouped: { [key: string]: typeof paginatedLogs } = {};
   paginatedLogs.forEach(log => {
     const date = new Date(log.created_at);
-    let group = 'Earlier';
-    if (isToday(date)) group = 'Today';
-    else if (isYesterday(date)) group = 'Yesterday';
+    let group = t('earlier');
+    if (isToday(date)) group = t('today');
+    else if (isYesterday(date)) group = t('yesterday');
     if (!grouped[group]) grouped[group] = [];
     grouped[group].push(log);
   });
@@ -231,9 +234,9 @@ export default function LogsPage() {
       .update({ deleted_at: new Date().toISOString() })
       .in('id', bulkDeleteIds);
     if (error) {
-      toast.error(`Failed to delete ${bulkDeleteIds.length} logs.`);
+      toast.error(t('failedToDeleteLogs').replace('{count}', bulkDeleteIds.length.toString()));
     } else {
-      toast.success(`${bulkDeleteIds.length} logs deleted successfully.`);
+      toast.success(t('logsDeletedSuccess').replace('{count}', bulkDeleteIds.length.toString()));
       setLogs((prev) => prev.filter(log => !bulkDeleteIds.includes(log.id)));
       setPage(1);
     }
@@ -251,9 +254,9 @@ export default function LogsPage() {
       .update({ deleted_at: null })
       .in('id', bulkRestoreIds);
     if (error) {
-      toast.error(`Failed to restore ${bulkRestoreIds.length} logs.`);
+      toast.error(t('failedToRestoreLogs').replace('{count}', bulkRestoreIds.length.toString()));
     } else {
-      toast.success(`${bulkRestoreIds.length} logs restored successfully.`);
+      toast.success(t('logsRestoredSuccess').replace('{count}', bulkRestoreIds.length.toString()));
       setLogs((prev) => prev.filter(log => !bulkRestoreIds.includes(log.id)));
       setPage(1);
     }
@@ -268,9 +271,9 @@ export default function LogsPage() {
     const supabase = createClient();
     const { error } = await supabase.from('activity_logs').delete().eq('id', permanentDeleteId);
     if (error) {
-      toast.error('Failed to permanently delete log.');
+      toast.error(t('failedToPermanentlyDeleteLog'));
     } else {
-      toast.success('Log permanently deleted.');
+      toast.success(t('logPermanentlyDeletedSuccess'));
       setLogs((prev) => prev.filter(log => log.id !== permanentDeleteId));
     }
     setPermanentDeleteId(null);
@@ -284,9 +287,9 @@ export default function LogsPage() {
     const supabase = createClient();
     const { error } = await supabase.from('activity_logs').delete().in('id', bulkPermanentDeleteIds);
     if (error) {
-      toast.error(`Failed to permanently delete ${bulkPermanentDeleteIds.length} logs.`);
+      toast.error(t('failedToPermanentlyDeleteLogs').replace('{count}', bulkPermanentDeleteIds.length.toString()));
     } else {
-      toast.success(`${bulkPermanentDeleteIds.length} logs permanently deleted.`);
+      toast.success(t('logsPermanentlyDeletedSuccess').replace('{count}', bulkPermanentDeleteIds.length.toString()));
       setLogs((prev) => prev.filter(log => !bulkPermanentDeleteIds.includes(log.id)));
     }
     setBulkPermanentDeleteIds(null);
@@ -317,9 +320,9 @@ export default function LogsPage() {
     const supabase = createClient();
     const { error } = await supabase.from('activity_logs').update({ deleted_at: null }).eq('id', id);
     if (error) {
-      toast.error('Failed to restore log.');
+      toast.error(t('failedToRestoreLog'));
     } else {
-      toast.success('Log restored successfully.');
+      toast.success(t('logRestoredSuccess'));
       setLogs((prev) => prev.filter(log => log.id !== id));
     }
     setSelected(selected.filter(sel => sel !== id));
@@ -327,19 +330,19 @@ export default function LogsPage() {
 
   return (
     <>
-      <SetHeader title="Activity Logs" />
+      <SetHeader title={t('title')} />
       <Card>
         <CardHeader>
-          <CardTitle>Recent Activity</CardTitle>
-          <CardDescription>A log of the most recent activities in the system.</CardDescription>
+          <CardTitle>{t('recentActivity')}</CardTitle>
+          <CardDescription>{t('recentActivityDescription')}</CardDescription>
         </CardHeader>
         <CardContent>
           {/* Tabs and Bulk Action Bar in a flex row */}
           <div className="flex items-center justify-between mb-4">
             <Tabs value={tab} onValueChange={v => { setTab(v as 'active' | 'deleted'); clearSelection(); }}>
             <TabsList>
-              <TabsTrigger value="active">Active</TabsTrigger>
-              <TabsTrigger value="deleted">Deleted</TabsTrigger>
+              <TabsTrigger value="active">{t('active')}</TabsTrigger>
+              <TabsTrigger value="deleted">{t('deleted')}</TabsTrigger>
             </TabsList>
           </Tabs>
           {selected.length > 0 && (
@@ -347,21 +350,21 @@ export default function LogsPage() {
               {tab === 'active' ? (
                   <Button variant="destructive" size="sm" onClick={handleBulkDelete}>
                     <Trash2 className="mr-2 h-4 w-4" />
-                    Delete ({selected.length})
+                    {t('delete')} ({selected.length})
                   </Button>
               ) : (
                   <>
                     <Button variant="outline" size="sm" onClick={handleBulkRestore}>
                       <Undo className="mr-2 h-4 w-4" />
-                      Restore ({selected.length})
+                      {t('restore')} ({selected.length})
                     </Button>
                     <Button variant="destructive" size="sm" onClick={handleBulkPermanentDelete}>
                       <Trash2 className="mr-2 h-4 w-4" />
-                      Delete Permanently ({selected.length})
+                      {t('deletePermanently')} ({selected.length})
                     </Button>
                   </>
               )}
-              <Button variant="ghost" size="sm" onClick={clearSelection}>Clear</Button>
+              <Button variant="ghost" size="sm" onClick={clearSelection}>{t('clear')}</Button>
             </div>
             )}
           </div>
@@ -377,12 +380,12 @@ export default function LogsPage() {
               if (bulkDeleteIds) confirmBulkDelete();
               else if (bulkRestoreIds) confirmBulkRestore();
             }}
-            title="Are you sure?"
+            title={t('areYouSure')}
             description={
               bulkDeleteIds
-                ? `This action will mark ${bulkDeleteIds.length} logs as deleted. You can restore them from the Deleted tab within 90 days.`
+                ? t('deleteLogsConfirm').replace('{count}', bulkDeleteIds.length.toString())
                 : bulkRestoreIds
-                ? `This will restore ${bulkRestoreIds.length} logs and make them active again.`
+                ? t('restoreLogsConfirm').replace('{count}', bulkRestoreIds.length.toString())
                 : ''
             }
           />
@@ -393,8 +396,8 @@ export default function LogsPage() {
               setPermanentDeleteId(null);
             }}
             onConfirm={confirmPermanentDelete}
-            title="Are you sure?"
-            description="This action is IRREVERSIBLE. This will permanently delete the log."
+            title={t('areYouSure')}
+            description={t('permanentDeleteLogConfirm')}
           />
           {Array.isArray(bulkPermanentDeleteIds) && bulkPermanentDeleteIds.length > 0 && (
             <ConfirmationDialog
@@ -404,34 +407,34 @@ export default function LogsPage() {
                 setBulkPermanentDeleteIds(null);
               }}
               onConfirm={confirmBulkPermanentDelete}
-              title="Are you sure?"
-              description={`This action is IRREVERSIBLE. This will permanently delete ${bulkPermanentDeleteIds.length} logs.`}
+              title={t('areYouSure')}
+              description={t('permanentDeleteLogsConfirm').replace('{count}', bulkPermanentDeleteIds.length.toString())}
             />
           )}
           {/* Filters */}
           <div className="flex flex-wrap gap-4 mb-6 items-end">
             <div>
-              <label className="block text-xs mb-1">Action</label>
+              <label className="block text-xs mb-1">{t('action')}</label>
               <Select value={actionFilter} onValueChange={setActionFilter}>
                 <SelectTrigger className="w-32">
-                  <SelectValue placeholder="All Actions" />
+                  <SelectValue placeholder={t('allActions')} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">All Actions</SelectItem>
-                  <SelectItem value="INSERT">Created</SelectItem>
-                  <SelectItem value="UPDATE">Updated</SelectItem>
-                  <SelectItem value="DELETE">Deleted</SelectItem>
+                  <SelectItem value="all">{t('allActions')}</SelectItem>
+                  <SelectItem value="INSERT">{t('created')}</SelectItem>
+                  <SelectItem value="UPDATE">{t('updated')}</SelectItem>
+                  <SelectItem value="DELETE">{t('deleted')}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
             <div>
-              <label className="block text-xs mb-1">User</label>
+              <label className="block text-xs mb-1">{t('user')}</label>
               <Select value={userFilter} onValueChange={setUserFilter}>
                 <SelectTrigger className="w-48">
-                  <SelectValue placeholder="All Users" />
+                  <SelectValue placeholder={t('allUsers')} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">All Users</SelectItem>
+                  <SelectItem value="all">{t('allUsers')}</SelectItem>
                   {userOptions.map(u => (
                     <SelectItem key={u} value={u}>{u}</SelectItem>
                   ))}
@@ -439,17 +442,17 @@ export default function LogsPage() {
               </Select>
             </div>
             <div>
-              <label className="block text-xs mb-1">Date Range</label>
+              <label className="block text-xs mb-1">{t('dateRange')}</label>
               <DateRangePicker date={dateRange} onDateChange={setDateRange} />
             </div>
             <div className="flex-1">
-              <label className="block text-xs mb-1">Search</label>
-              <Input type="text" placeholder="Search logs..." value={search} onChange={e => setSearch(e.target.value)} />
+              <label className="block text-xs mb-1">{tCommon('search')}</label>
+              <Input type="text" placeholder={t('searchLogs')} value={search} onChange={e => setSearch(e.target.value)} />
             </div>
           </div>
           <div className="space-y-8">
             {loading ? (
-              <div className="text-center py-8 text-muted-foreground">Loading logs...</div>
+              <div className="text-center py-8 text-muted-foreground">{t('loadingLogs')}</div>
             ) : (
               Object.entries(grouped).map(([group, groupLogs]) => {
                 const groupIds = groupLogs.map(log => log.id);
@@ -499,10 +502,10 @@ export default function LogsPage() {
                       <TableHeader>
                         <TableRow>
                           <TableHead className="w-8"></TableHead>
-                          <TableHead>Activity</TableHead>
-                          <TableHead>User</TableHead>
-                          <TableHead className="text-right">When</TableHead>
-                          <TableHead className="text-right">Actions</TableHead>
+                          <TableHead>{t('activity')}</TableHead>
+                          <TableHead>{t('user')}</TableHead>
+                          <TableHead className="text-right">{t('when')}</TableHead>
+                          <TableHead className="text-right">{t('actions')}</TableHead>
                         </TableRow>
                       </TableHeader>
                       <TableBody>
@@ -523,7 +526,7 @@ export default function LogsPage() {
                               <TableCell>
                                 <div className="flex items-center gap-2">
                                   <Badge variant="outline" className="text-xs font-mono px-2 py-1 bg-muted/50 border border-muted-foreground/20">
-                                    {log.user_email || 'System'}
+                                    {log.user_email || t('system')}
                                   </Badge>
                                   {log.platform && (
                                     <Badge
@@ -553,7 +556,7 @@ export default function LogsPage() {
                                     className="h-8"
                                   >
                                     <Info className="h-4 w-4 mr-1" />
-                                    Details
+                                    {t('details')}
                                   </Button>
                                 ) : (
                                   <div className="flex gap-1 justify-end">
@@ -583,17 +586,17 @@ export default function LogsPage() {
               onClick={() => setPage(page - 1)}
               disabled={page === 1}
             >
-              Previous
+              {t('previous')}
             </button>
             <span className="text-sm text-muted-foreground">
-              Page {page} of {totalPages}
+              {t('pageOf').replace('{current}', page.toString()).replace('{total}', totalPages.toString())}
             </span>
             <button
               className="px-4 py-2 rounded bg-muted text-muted-foreground disabled:opacity-50"
               onClick={() => setPage(page + 1)}
               disabled={page === totalPages || totalPages === 0}
             >
-              Next
+              {t('next')}
             </button>
           </div>
         </CardContent>
@@ -603,9 +606,9 @@ export default function LogsPage() {
       <Dialog open={!!detailsLog} onOpenChange={(open) => !open && setDetailsLog(null)}>
         <DialogContent className="max-w-3xl max-h-[80vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>Activity Log Details</DialogTitle>
+            <DialogTitle>{t('activityLogDetails')}</DialogTitle>
             <DialogDescription>
-              Detailed information about this activity
+              {t('detailedInformation')}
             </DialogDescription>
           </DialogHeader>
           {detailsLog && (
@@ -613,31 +616,31 @@ export default function LogsPage() {
               {/* Basic Info */}
               <div className="grid grid-cols-2 gap-4 p-4 bg-muted rounded-lg">
                 <div>
-                  <div className="text-sm font-medium text-muted-foreground">Action</div>
+                  <div className="text-sm font-medium text-muted-foreground">{t('action')}</div>
                   <div className="text-lg font-semibold capitalize">{detailsLog.action.toLowerCase()}</div>
                 </div>
                 <div>
-                  <div className="text-sm font-medium text-muted-foreground">Table</div>
+                  <div className="text-sm font-medium text-muted-foreground">{t('table')}</div>
                   <div className="text-lg font-semibold capitalize">{detailsLog.target_table.replace(/_/g, ' ')}</div>
                 </div>
                 <div className="col-span-2">
-                  <div className="text-sm font-medium text-muted-foreground">User</div>
-                  <div className="text-base font-semibold truncate" title={detailsLog.user_email || 'System'}>
-                    {detailsLog.user_email || 'System'}
+                  <div className="text-sm font-medium text-muted-foreground">{t('user')}</div>
+                  <div className="text-base font-semibold truncate" title={detailsLog.user_email || t('system')}>
+                    {detailsLog.user_email || t('system')}
                   </div>
                 </div>
                 <div>
-                  <div className="text-sm font-medium text-muted-foreground">Platform</div>
+                  <div className="text-sm font-medium text-muted-foreground">{t('platform')}</div>
                   <div className="text-lg font-semibold flex items-center gap-2">
                     {detailsLog.platform === 'mobile' ? (
-                      <><Smartphone className="h-4 w-4" /> Mobile</>
+                      <><Smartphone className="h-4 w-4" /> {t('mobile')}</>
                     ) : (
-                      <><Monitor className="h-4 w-4" /> Web</>
+                      <><Monitor className="h-4 w-4" /> {t('web')}</>
                     )}
                   </div>
                 </div>
                 <div>
-                  <div className="text-sm font-medium text-muted-foreground">Time</div>
+                  <div className="text-sm font-medium text-muted-foreground">{t('time')}</div>
                   <div className="text-base font-semibold">{format(new Date(detailsLog.created_at), 'PPpp')}</div>
                 </div>
               </div>
@@ -656,7 +659,7 @@ export default function LogsPage() {
 
                 return (
                   <div>
-                    <h3 className="text-lg font-semibold mb-3">Changes</h3>
+                    <h3 className="text-lg font-semibold mb-3">{t('changes')}</h3>
                     <div className="space-y-3">
                       {changes.map((key) => {
                         const oldValue = detailsLog.details.old_data?.[key];
@@ -668,13 +671,13 @@ export default function LogsPage() {
                             </div>
                             <div className="grid grid-cols-2 divide-x">
                               <div className="p-4">
-                                <div className="text-xs font-medium text-muted-foreground uppercase mb-2">Before</div>
+                                <div className="text-xs font-medium text-muted-foreground uppercase mb-2">{t('before')}</div>
                                 <div className="font-mono text-sm bg-red-50 dark:bg-red-950/20 text-red-900 dark:text-red-100 p-3 rounded border border-red-200 dark:border-red-900">
                                   {formatValue(oldValue)}
                                 </div>
                               </div>
                               <div className="p-4">
-                                <div className="text-xs font-medium text-muted-foreground uppercase mb-2">After</div>
+                                <div className="text-xs font-medium text-muted-foreground uppercase mb-2">{t('after')}</div>
                                 <div className="font-mono text-sm bg-green-50 dark:bg-green-950/20 text-green-900 dark:text-green-100 p-3 rounded border border-green-200 dark:border-green-900">
                                   {formatValue(newValue)}
                                 </div>
@@ -691,7 +694,7 @@ export default function LogsPage() {
               {/* New Data for INSERT */}
               {detailsLog.action === 'INSERT' && detailsLog.details.new_data && (
                 <div>
-                  <h3 className="text-lg font-semibold mb-2">Created Data</h3>
+                  <h3 className="text-lg font-semibold mb-2">{t('createdData')}</h3>
                   <div className="p-4 bg-muted rounded-lg font-mono text-sm">
                     <pre className="whitespace-pre-wrap">{JSON.stringify(detailsLog.details.new_data, null, 2)}</pre>
                   </div>
@@ -701,7 +704,7 @@ export default function LogsPage() {
               {/* Old Data for DELETE */}
               {detailsLog.action === 'DELETE' && detailsLog.details.old_data && (
                 <div>
-                  <h3 className="text-lg font-semibold mb-2">Deleted Data</h3>
+                  <h3 className="text-lg font-semibold mb-2">{t('deletedData')}</h3>
                   <div className="p-4 bg-muted rounded-lg font-mono text-sm">
                     <pre className="whitespace-pre-wrap">{JSON.stringify(detailsLog.details.old_data, null, 2)}</pre>
                   </div>
