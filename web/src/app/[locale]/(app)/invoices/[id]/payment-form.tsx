@@ -3,6 +3,7 @@
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
+import { useTranslations } from 'next-intl'
 import {
   Dialog,
   DialogContent,
@@ -56,6 +57,8 @@ export function PaymentForm({
   open,
   onOpenChange
 }: PaymentFormProps) {
+  const t = useTranslations('paymentForm')
+  const tCommon = useTranslations('common')
   const supabase = createClient()
   const isEditMode = !!paymentToEdit
 
@@ -101,9 +104,9 @@ export function PaymentForm({
         .match({ id: paymentToEdit.id })
 
       if (error) {
-        toast.error('Failed to update payment.')
+        toast.error(t('failedToUpdatePayment'))
       } else {
-        toast.success('Payment updated successfully!')
+        toast.success(t('paymentUpdatedSuccess'))
         onPaymentAdded() // This is the refresh function
       }
     } else {
@@ -116,9 +119,9 @@ export function PaymentForm({
       ])
 
       if (error) {
-        toast.error('Failed to add payment.')
+        toast.error(t('failedToAddPayment'))
       } else {
-        toast.success('Payment added successfully!')
+        toast.success(t('paymentAddedSuccess'))
         onPaymentAdded()
       }
     }
@@ -130,7 +133,7 @@ export function PaymentForm({
       {children && <DialogTrigger asChild>{children}</DialogTrigger>}
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>{isEditMode ? 'Edit' : 'Add'} Payment</DialogTitle>
+          <DialogTitle>{isEditMode ? t('editPayment') : t('addPayment')}</DialogTitle>
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
@@ -139,7 +142,7 @@ export function PaymentForm({
               name="amount"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Amount</FormLabel>
+                  <FormLabel>{t('amount')}</FormLabel>
                   <FormControl>
                     <Input type="number" step="0.01" {...field} />
                   </FormControl>
@@ -152,7 +155,7 @@ export function PaymentForm({
               name="payment_date"
               render={({ field }) => (
                 <FormItem className="flex flex-col">
-                  <FormLabel>Payment Date</FormLabel>
+                  <FormLabel>{t('paymentDate')}</FormLabel>
                   <Popover>
                     <PopoverTrigger asChild>
                       <FormControl>
@@ -166,7 +169,7 @@ export function PaymentForm({
                           {field.value ? (
                             format(parseLocalDate(field.value), "PPP")
                           ) : (
-                            <span>Pick a date</span>
+                            <span>{t('pickADate')}</span>
                           )}
                           <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
                         </Button>
@@ -190,13 +193,13 @@ export function PaymentForm({
               name="remark"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Remark/Note</FormLabel>
+                  <FormLabel>{t('remarkNote')}</FormLabel>
                   <FormControl>
                     <textarea
                       {...field}
                       rows={3}
                       className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-                      placeholder="Add any remark or note (optional)"
+                      placeholder={t('addRemark')}
                     />
                   </FormControl>
                   <FormMessage />
@@ -209,11 +212,11 @@ export function PaymentForm({
                   type="button"
                   variant="secondary"
                 >
-                  Cancel
+                  {tCommon('cancel')}
                 </Button>
               </DialogClose>
               <Button type="submit" disabled={form.formState.isSubmitting}>
-                {form.formState.isSubmitting ? 'Saving...' : 'Save'}
+                {form.formState.isSubmitting ? t('saving') : tCommon('save')}
               </Button>
             </div>
           </form>

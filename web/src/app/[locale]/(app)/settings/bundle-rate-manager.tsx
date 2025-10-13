@@ -5,6 +5,7 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { toast } from 'sonner'
+import { useTranslations } from 'next-intl'
 
 import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
@@ -23,6 +24,7 @@ const bundleRateSchema = z.object({
 })
 
 export default function BundleRateManager() {
+  const t = useTranslations('settings')
   const supabase = createClient()
   const [loading, setLoading] = useState(false)
 
@@ -68,9 +70,9 @@ export default function BundleRateManager() {
 
   return (
     <div>
-      <h3 className="text-lg font-medium">Default Bundle Rate</h3>
+      <h3 className="text-lg font-medium">{t('defaultBundleRate')}</h3>
       <p className="text-sm text-muted-foreground mb-4">
-        Set the default rate used for calculating invoice totals based on bundle quantity.
+        {t('bundleRateDescription')}
       </p>
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 max-w-sm">
@@ -79,7 +81,7 @@ export default function BundleRateManager() {
             name="rate"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Bundle Rate</FormLabel>
+                <FormLabel>{t('bundleRateLabel')}</FormLabel>
                 <FormControl>
                   <Input type="number" placeholder="Enter default rate" {...field} />
                 </FormControl>
@@ -88,7 +90,7 @@ export default function BundleRateManager() {
             )}
           />
           <Button type="submit" disabled={loading || form.formState.isSubmitting}>
-            {form.formState.isSubmitting ? 'Saving...' : 'Save Rate'}
+            {form.formState.isSubmitting ? t('saving') : t('saveRate')}
           </Button>
         </form>
       </Form>

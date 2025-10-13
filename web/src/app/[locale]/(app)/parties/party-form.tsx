@@ -4,6 +4,7 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { toast } from 'sonner'
+import { useTranslations } from 'next-intl'
 import { createClient } from '@/lib/supabase/client'
 import { Party } from '@/lib/types'
 import { Button } from '@/components/ui/button'
@@ -41,6 +42,8 @@ interface PartyFormProps {
 }
 
 export function PartyForm({ isOpen, onClose, onSubmit, partyId }: PartyFormProps) {
+  const t = useTranslations('partyForm')
+  const tCommon = useTranslations('common')
   const supabase = createClient()
   const form = useForm<PartyFormValues>({
     resolver: zodResolver(partySchema),
@@ -61,7 +64,7 @@ export function PartyForm({ isOpen, onClose, onSubmit, partyId }: PartyFormProps
           .single()
         
         if (error) {
-          toast.error('Failed to fetch party details.')
+          toast.error(t('failedToFetchParty'))
         } else if (data) {
           form.reset({
             name: data.name,
@@ -88,7 +91,7 @@ export function PartyForm({ isOpen, onClose, onSubmit, partyId }: PartyFormProps
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>{partyId ? 'Edit Party' : 'Create Party'}</DialogTitle>
+          <DialogTitle>{partyId ? t('editParty') : t('createParty')}</DialogTitle>
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(handleFormSubmit)} className="space-y-4">
@@ -97,9 +100,9 @@ export function PartyForm({ isOpen, onClose, onSubmit, partyId }: PartyFormProps
               name="name"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Party Name</FormLabel>
+                  <FormLabel>{t('partyName')}</FormLabel>
                   <FormControl>
-                    <Input placeholder="e.g., John Doe" {...field} />
+                    <Input placeholder={t('partyNamePlaceholder')} {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -110,9 +113,9 @@ export function PartyForm({ isOpen, onClose, onSubmit, partyId }: PartyFormProps
               name="bundle_rate"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Specific Bundle Rate (Optional)</FormLabel>
+                  <FormLabel>{t('specificBundleRate')}</FormLabel>
                   <FormControl>
-                    <Input type="number" placeholder="Enter bundle rate" {...field} />
+                    <Input type="number" placeholder={t('enterBundleRate')} {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -123,26 +126,26 @@ export function PartyForm({ isOpen, onClose, onSubmit, partyId }: PartyFormProps
               name="opening_balance"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Opening Balance (Optional)</FormLabel>
+                  <FormLabel>{t('openingBalance')}</FormLabel>
                   <FormControl>
                     <Input
                       type="number"
                       step="0.01"
-                      placeholder="Enter opening balance"
+                      placeholder={t('enterOpeningBalance')}
                       {...field}
                     />
                   </FormControl>
                   <p className="text-xs text-muted-foreground">
-                    Initial amount owed at the start (can be positive or negative)
+                    {t('openingBalanceHint')}
                   </p>
                   <FormMessage />
                 </FormItem>
               )}
             />
             <DialogFooter>
-              <Button type="button" variant="outline" onClick={onClose}>Cancel</Button>
+              <Button type="button" variant="outline" onClick={onClose}>{tCommon('cancel')}</Button>
               <Button type="submit" disabled={form.formState.isSubmitting}>
-                {form.formState.isSubmitting ? 'Saving...' : 'Save'}
+                {form.formState.isSubmitting ? t('saving') : tCommon('save')}
               </Button>
             </DialogFooter>
           </form>

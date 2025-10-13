@@ -1,20 +1,27 @@
 'use client'
 
-import Link from 'next/link'
 import Image from 'next/image'
-import { usePathname, useRouter } from 'next/navigation'
-import { Home, FileText, Users, Package, Settings, History, FolderTree, UserPlus, ChevronDown, ChevronRight } from 'lucide-react'
+import { useTransition, useState } from 'react'
+import { useParams } from 'next/navigation'
+import { Home, FileText, Users, Package, Settings, History, FolderTree, UserPlus, ChevronDown, ChevronRight, Languages, Check } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useHeader } from './header-context'
 import { Button } from '../ui/button'
 import { createClient } from '@/lib/supabase/client'
-import { useState } from 'react'
+import { Link, usePathname, useRouter } from '@/i18n/routing'
+import { useTranslations } from 'next-intl'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
 
 const navItems = [
-  { href: '/', label: 'Dashboard', icon: Home },
-  { href: '/invoices', label: 'Invoices', icon: FileText },
-  { href: '/parties', label: 'Parties', icon: Users },
-  { href: '/items', label: 'Items', icon: Package },
+  { href: '/', key: 'dashboard', icon: Home },
+  { href: '/invoices', key: 'invoices', icon: FileText },
+  { href: '/parties', key: 'parties', icon: Users },
+  { href: '/items', key: 'items', icon: Package },
 ]
 
 const settingsItems = [
@@ -24,11 +31,24 @@ const settingsItems = [
   { href: '/logs', label: 'Activity Logs', icon: History },
 ]
 
+const languages = [
+  { code: 'en', name: 'English', nativeName: 'English' },
+  { code: 'hi', name: 'Hindi', nativeName: 'हिन्दी' },
+  { code: 'ur', name: 'Urdu', nativeName: 'اردو' },
+]
+
 export function Sidebar() {
   const pathname = usePathname()
   const { isSidebarOpen, toggleSidebar } = useHeader()
   const router = useRouter()
   const supabase = createClient()
+  const params = useParams()
+  const [isPending, startTransition] = useTransition()
+  const tNav = useTranslations('nav')
+  const tCommon = useTranslations('common')
+
+  const currentLocale = params.locale as string
+  const currentLanguage = languages.find(lang => lang.code === currentLocale) || languages[0]
 
   // Check if any settings route is active
   const isSettingsActive = settingsItems.some(item => pathname === item.href)
@@ -39,6 +59,16 @@ export function Sidebar() {
   const handleLogout = async () => {
     await supabase.auth.signOut()
     router.replace('/login')
+  }
+
+  function onSelectLanguage(locale: string) {
+    startTransition(() => {
+      router.replace(
+        // @ts-expect-error -- TypeScript will validate that only known locales are used
+        pathname,
+        { locale }
+      )
+    })
   }
 
   return (
@@ -70,7 +100,7 @@ export function Sidebar() {
               )}
             >
               <item.icon className="h-4 w-4" />
-              {item.label}
+              {tNav(item.key as any)}
             </Link>
           ))}
 
@@ -84,7 +114,7 @@ export function Sidebar() {
               )}
             >
               <Settings className="h-4 w-4" />
-              <span className="flex-1 text-left">Settings</span>
+              <span className="flex-1 text-left">{tNav('settings')}</span>
               {isSettingsOpen ? (
                 <ChevronDown className="h-4 w-4" />
               ) : (
@@ -112,9 +142,29 @@ export function Sidebar() {
             )}
           </div>
         </nav>
-        <div className="absolute bottom-0 left-0 w-full p-4 border-t bg-background">
+        <div className="absolute bottom-0 left-0 w-full p-4 border-t bg-background space-y-2">
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" className="w-full justify-start" disabled={isPending}>
+                <Languages className="h-4 w-4 mr-2" />
+                <span className="flex-1 text-left">{currentLanguage.nativeName}</span>
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="center" side="top" className="w-56">
+              {languages.map((lang) => (
+                <DropdownMenuItem
+                  key={lang.code}
+                  onClick={() => onSelectLanguage(lang.code)}
+                  className="cursor-pointer"
+                >
+                  <Check className={cn("mr-2 h-4 w-4", currentLocale === lang.code ? "opacity-100" : "opacity-0")} />
+                  <span className="font-medium">{lang.nativeName}</span>
+                </DropdownMenuItem>
+              ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
           <Button variant="outline" className="w-full" onClick={handleLogout}>
-            Logout
+            {tCommon('logout')}
           </Button>
         </div>
       </aside>
@@ -126,4 +176,4 @@ export function Sidebar() {
       )}
     </>
   )
-} 
+}

@@ -1,3 +1,6 @@
+'use client'
+
+import { useTranslations } from 'next-intl'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -18,6 +21,7 @@ interface ConfirmationDialogProps {
 }
 
 export function ConfirmationDialog({ isOpen, onClose, onConfirm, title, description }: ConfirmationDialogProps) {
+  const t = useTranslations('common')
   if (!isOpen) return null;
 
   return (
@@ -30,11 +34,11 @@ export function ConfirmationDialog({ isOpen, onClose, onConfirm, title, descript
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel onClick={onClose}>Cancel</AlertDialogCancel>
+          <AlertDialogCancel onClick={onClose}>{t('cancel')}</AlertDialogCancel>
           <AlertDialogAction onClick={() => {
             onConfirm();
             onClose();
-          }}>Confirm</AlertDialogAction>
+          }}>{t('confirm')}</AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>

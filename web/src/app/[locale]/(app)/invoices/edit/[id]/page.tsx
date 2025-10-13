@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button'
 import { ArrowLeft, RefreshCw } from 'lucide-react'
 import { FetchUpdatesDialog } from '@/components/invoice/fetch-updates-dialog'
 import { toast } from 'sonner'
+import { useTranslations } from 'next-intl'
 
 type ItemUpdate = {
   index: number
@@ -28,6 +29,7 @@ type PartyUpdate = {
 type UpdateItem = ItemUpdate | PartyUpdate
 
 export default function EditInvoicePage() {
+  const t = useTranslations('invoiceEdit')
   const params = useParams<{ id: string }>()
   const router = useRouter()
   const [invoiceNumber, setInvoiceNumber] = useState<string>('')
