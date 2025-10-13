@@ -187,7 +187,8 @@ export default function Dashboard() {
                       invoice.status === 'Paid' ? 'paid' :
                       invoice.status === 'Partial' ? 'partial' : 'destructive'
                     }>
-                      {invoice.status}
+                      {invoice.status === 'Paid' ? t('paid') :
+                       invoice.status === 'Partial' ? t('partial') : t('pending')}
                     </Badge>
                     <Button asChild variant="ghost" size="sm" className="ml-4">
                       <Link href={`/invoices/${invoice.id}`}>{tCommon('view')}</Link>

@@ -148,7 +148,18 @@
     "thisWeek": "اس ہفتے",
     "thisMonth": "اس مہینے",
     "thisYear": "اس سال",
-    "recentInvoices": "ریسنٹ انوائس"
+    "recentInvoices": "ریسنٹ انوائس",
+    "salesOverview": "سیلز اوور ویو",
+    "salesOverviewDescription": "منتخب مدت کے ٹوٹل سیلز دکھا رہا ہے۔",
+    "financialSummary": "فائنانشل سمری",
+    "financialSummaryDescription": "ٹوٹل ریسیوڈ بمقابلہ آؤٹ سٹینڈنگ",
+    "received": "ریسیوڈ",
+    "outstanding": "آؤٹ سٹینڈنگ",
+    "sales": "سیلز",
+    "amount": "اماؤنٹ",
+    "paid": "پیڈ",
+    "partial": "پارشل",
+    "pending": "پینڈنگ"
   },
   "invoicesList": {
     "active": "ایکٹو",

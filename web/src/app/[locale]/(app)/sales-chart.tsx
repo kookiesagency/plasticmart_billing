@@ -5,6 +5,7 @@ import { createClient } from '@/lib/supabase/client'
 import { DateRange } from 'react-day-picker'
 import { Bar, BarChart, CartesianGrid, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts'
 import { format, parseISO } from 'date-fns'
+import { useTranslations } from 'next-intl'
 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart'
@@ -21,6 +22,7 @@ type ChartData = {
 }
 
 export function SalesChart({ dateRange }: SalesChartProps) {
+  const t = useTranslations('dashboard')
   const supabase = createClient()
   const [data, setData] = useState<ChartData[]>([])
   const [loading, setLoading] = useState(true)
@@ -49,7 +51,7 @@ export function SalesChart({ dateRange }: SalesChartProps) {
 
   const chartConfig = {
     total_billed: {
-      label: 'Sales',
+      label: t('sales'),
       color: 'hsl(var(--primary))',
     },
   }
@@ -57,9 +59,9 @@ export function SalesChart({ dateRange }: SalesChartProps) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Sales Overview</CardTitle>
+        <CardTitle>{t('salesOverview')}</CardTitle>
         <CardDescription>
-          Showing total sales for the selected period.
+          {t('salesOverviewDescription')}
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -89,7 +91,7 @@ export function SalesChart({ dateRange }: SalesChartProps) {
                         <div className="p-2 bg-background border rounded-md shadow-lg">
                            <p className="font-bold">{format(parseISO(payload[0].payload.date), 'PPP')}</p>
                            <p style={{ color: chartConfig.total_billed.color }}>
-                            Sales: {formatCurrency(payload[0].value as number)}
+                            {t('sales')}: {formatCurrency(payload[0].value as number)}
                           </p>
                         </div>
                       );

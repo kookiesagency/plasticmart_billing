@@ -148,7 +148,18 @@
     "thisWeek": "This Week",
     "thisMonth": "This Month",
     "thisYear": "This Year",
-    "recentInvoices": "Recent Invoices"
+    "recentInvoices": "Recent Invoices",
+    "salesOverview": "Sales Overview",
+    "salesOverviewDescription": "Showing total sales for the selected period.",
+    "financialSummary": "Financial Summary",
+    "financialSummaryDescription": "Total Received vs. Outstanding",
+    "received": "Received",
+    "outstanding": "Outstanding",
+    "sales": "Sales",
+    "amount": "Amount",
+    "paid": "Paid",
+    "partial": "Partial",
+    "pending": "Pending"
   },
   "invoicesList": {
     "active": "Active",

@@ -148,7 +148,18 @@
     "thisWeek": "इस हफ्ते",
     "thisMonth": "इस महीने",
     "thisYear": "इस साल",
-    "recentInvoices": "रीसेंट इनवॉयस"
+    "recentInvoices": "रीसेंट इनवॉयस",
+    "salesOverview": "सेल्स ओवरव्यू",
+    "salesOverviewDescription": "सेलेक्टेड पीरियड के टोटल सेल्स दिखा रहा है।",
+    "financialSummary": "फाइनेंशियल समरी",
+    "financialSummaryDescription": "टोटल रिसीव्ड बनाम आउटस्टैंडिंग",
+    "received": "रिसीव्ड",
+    "outstanding": "आउटस्टैंडिंग",
+    "sales": "सेल्स",
+    "amount": "अमाउंट",
+    "paid": "पेड",
+    "partial": "पार्शल",
+    "pending": "पेंडिंग"
   },
   "invoicesList": {
     "active": "एक्टिव",

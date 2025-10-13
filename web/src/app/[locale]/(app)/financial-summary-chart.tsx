@@ -2,6 +2,7 @@
 
 import * as React from "react"
 import { Bar, BarChart, Cell, XAxis, YAxis } from "recharts"
+import { useTranslations } from 'next-intl'
 
 import {
   Card,
@@ -26,28 +27,30 @@ export function FinancialSummaryChart({
   totalReceived,
   totalOutstanding,
 }: FinancialSummaryChartProps) {
+  const t = useTranslations('dashboard')
+
   const chartData = [
     {
-      name: "Received",
+      name: t('received'),
       value: totalReceived,
     },
     {
-      name: "Outstanding",
+      name: t('outstanding'),
       value: totalOutstanding,
     },
   ]
 
   const chartConfig = {
-    value: { label: "Amount" },
-    received: { label: "Received", color: "hsl(var(--chart-2))" },
-    outstanding: { label: "Outstanding", color: "hsl(var(--chart-5))" },
+    value: { label: t('amount') },
+    received: { label: t('received'), color: "hsl(var(--chart-2))" },
+    outstanding: { label: t('outstanding'), color: "hsl(var(--chart-5))" },
   }
 
   return (
     <Card className="flex flex-col">
       <CardHeader className="items-center pb-0">
-        <CardTitle>Financial Summary</CardTitle>
-        <CardDescription>Total Received vs. Outstanding</CardDescription>
+        <CardTitle>{t('financialSummary')}</CardTitle>
+        <CardDescription>{t('financialSummaryDescription')}</CardDescription>
       </CardHeader>
       <CardContent className="flex-1 pb-0">
         <ChartContainer
