@@ -4,6 +4,7 @@ import { useState } from 'react'
 import Papa from 'papaparse'
 import { toast } from 'sonner'
 import { createClient } from '@/lib/supabase/client'
+import { useTranslations } from 'next-intl'
 
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
@@ -21,6 +22,7 @@ interface ItemImportDialogProps {
 }
 
 export function ItemImportDialog({ isOpen, onOpenChange, onPreview, units }: ItemImportDialogProps) {
+  const t = useTranslations('items')
   const supabase = createClient()
   const [file, setFile] = useState<File | null>(null)
   const [isDragOver, setIsDragOver] = useState(false)
@@ -38,7 +40,7 @@ export function ItemImportDialog({ isOpen, onOpenChange, onPreview, units }: Ite
     if (droppedFile && (droppedFile.type === 'text/csv' || droppedFile.name.endsWith('.csv'))) {
       setFile(droppedFile)
     } else {
-      toast.error('Please drop a valid CSV file.')
+      toast.error(t('invalidCsvFile'))
     }
   }
 
@@ -50,7 +52,7 @@ export function ItemImportDialog({ isOpen, onOpenChange, onPreview, units }: Ite
   }
 
   const handleFileParse = () => {
-    if (!file) return toast.error('Please select a file to parse.')
+    if (!file) return toast.error(t('selectFileToParseError'))
     setIsLoading(true)
     Papa.parse<any>(file, {
       header: true,
@@ -60,7 +62,7 @@ export function ItemImportDialog({ isOpen, onOpenChange, onPreview, units }: Ite
           const requiredFields = ['name', 'rate', 'unit']
           const headers = results.meta.fields || []
           if (!requiredFields.every(field => headers.includes(field))) {
-            toast.error(`CSV must contain the following headers: ${requiredFields.join(', ')}`)
+            toast.error(t('csvHeadersError').replace('{headers}', requiredFields.join(', ')))
             setIsLoading(false)
             return
           }
@@ -74,7 +76,7 @@ export function ItemImportDialog({ isOpen, onOpenChange, onPreview, units }: Ite
             .in('name', parsedNames)
 
           if (dbError) {
-            toast.error('Could not check for existing items: ' + dbError.message)
+            toast.error(t('couldNotCheckExistingItems').replace('{error}', dbError.message))
             setIsLoading(false)
             return
           }
@@ -131,7 +133,7 @@ export function ItemImportDialog({ isOpen, onOpenChange, onPreview, units }: Ite
         }
       },
       error: (error) => {
-        toast.error('Error parsing CSV: ' + error.message)
+        toast.error(t('errorParsingCsv').replace('{error}', error.message))
         setIsLoading(false)
       },
     })
@@ -147,7 +149,7 @@ export function ItemImportDialog({ isOpen, onOpenChange, onPreview, units }: Ite
     <Dialog open={isOpen} onOpenChange={resetAndClose}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Import Items from CSV</DialogTitle>
+          <DialogTitle>{t('importItemsFromCsv')}</DialogTitle>
         </DialogHeader>
         <div className="relative">
           {isLoading && (
@@ -158,9 +160,9 @@ export function ItemImportDialog({ isOpen, onOpenChange, onPreview, units }: Ite
               </svg>
             </div>
           )}
-          <p className="mb-2">Select a CSV file to import. The file must contain <b>'name'</b>, <b>'rate'</b>, <b>'purchase_rate'</b> (optional), and <b>'unit'</b> columns.</p>
+          <p className="mb-2" dangerouslySetInnerHTML={{ __html: t('csvInstructions') }} />
           <a href="/sample-items.csv" download className="text-sm text-blue-500 hover:underline mb-4 block">
-            Download sample CSV template
+            {t('downloadSampleTemplate')}
           </a>
           <div
             className={`border-2 border-dashed rounded-lg p-8 text-center cursor-pointer
@@ -173,14 +175,14 @@ export function ItemImportDialog({ isOpen, onOpenChange, onPreview, units }: Ite
           >
             <Input id="file-upload-input" type="file" accept=".csv" className="hidden" onChange={handleFileSelect} disabled={isLoading} />
             <FileUp className="mx-auto h-10 w-10 text-muted-foreground mb-2" />
-            {file ? 
-              <p className="text-muted-foreground"><span className="font-semibold text-primary">{file.name}</span> selected.</p> :
-              <p className="text-muted-foreground">Drag & drop a CSV file here, or click to select a file.</p>
+            {file ?
+              <p className="text-muted-foreground" dangerouslySetInnerHTML={{ __html: t('fileSelected').replace('{fileName}', file.name) }} /> :
+              <p className="text-muted-foreground">{t('dragDropText')}</p>
             }
           </div>
           <DialogFooter className="mt-4">
             <Button onClick={handleFileParse} disabled={!file || isLoading}>
-              {isLoading ? 'Parsing...' : 'Parse File and Preview'}
+              {isLoading ? t('parsing') : t('parseFilePreview')}
             </Button>
           </DialogFooter>
         </div>

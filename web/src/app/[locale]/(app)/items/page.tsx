@@ -534,7 +534,7 @@ export default function ItemManager() {
         </TabsList>
         <TabsContent value="active">
           <DataTable
-            columns={columns(openDialog, handleDeleteRequest, handleDuplicate, fetchData)}
+            columns={columns(openDialog, handleDeleteRequest, handleDuplicate, fetchData, t)}
             data={items}
             loading={loading}
             onBulkDelete={handleBulkDelete}

@@ -9,6 +9,7 @@ import { Input } from '@/components/ui/input'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { createClient } from '@/lib/supabase/client'
 import { toast } from 'sonner'
+import { useTranslations } from 'next-intl'
 
 export type Item = {
   id: number
@@ -47,6 +48,7 @@ const InlineEditableCell = ({
   formatValue?: (val: any) => string;
   parseValue?: (val: string) => any;
 }) => {
+  const t = useTranslations('items')
   const [isEditing, setIsEditing] = useState(false);
   const [editValue, setEditValue] = useState(formatValue(value));
   const [isLoading, setIsLoading] = useState(false);
@@ -62,7 +64,7 @@ const InlineEditableCell = ({
       await onSave(parseValue(editValue));
       setIsEditing(false);
     } catch (error) {
-      toast.error('Failed to update item');
+      toast.error(t('failedToUpdateItem').replace('{error}', ''));
     } finally {
       setIsLoading(false);
     }
@@ -128,11 +130,17 @@ const InlineEditableCell = ({
   );
 };
 
+export const ColumnsWrapper = () => {
+  const t = useTranslations('items')
+  return { t }
+}
+
 export const columns = (
   openDialog: (item: Item) => void,
   handleDelete: (itemId: number) => void,
   handleDuplicate: (item: Item) => void,
-  onItemUpdate?: () => void
+  onItemUpdate?: () => void,
+  t?: any
 ): ColumnDef<Item>[] => {
   const supabase = createClient();
 
@@ -141,12 +149,12 @@ export const columns = (
       .from('items')
       .update({ [field]: value })
       .eq('id', itemId);
-    
+
     if (error) {
       throw new Error(error.message);
     }
-    
-    toast.success('Item updated successfully!');
+
+    toast.success(t?.('itemUpdatedSuccess') || 'Item updated successfully!');
     onItemUpdate?.();
   };
 
@@ -180,7 +188,7 @@ export const columns = (
         className="flex items-center cursor-pointer"
         onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
       >
-        Name
+        {t?.('name') || 'Name'}
         <ArrowUpDown className="ml-2 h-4 w-4" />
       </div>
     ),
@@ -199,7 +207,7 @@ export const columns = (
             className="flex items-center cursor-pointer"
             onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
         >
-            Rate
+            {t?.('rate') || 'Rate'}
             <ArrowUpDown className="ml-2 h-4 w-4" />
         </div>
     ),
@@ -228,7 +236,7 @@ export const columns = (
         className="flex items-center cursor-pointer"
         onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
       >
-        Purchase Rate
+        {t?.('purchaseRate') || 'Purchase Rate'}
         <ArrowUpDown className="ml-2 h-4 w-4" />
       </div>
     ),
@@ -264,11 +272,11 @@ export const columns = (
             className="flex items-center cursor-pointer"
             onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
         >
-            Unit
+            {t?.('unit') || 'Unit'}
             <ArrowUpDown className="ml-2 h-4 w-4" />
         </div>
     ),
-    cell: ({ row }) => row.original.units?.name ?? 'N/A',
+    cell: ({ row }) => row.original.units?.name ?? (t?.('na') || 'N/A'),
   },
   {
     accessorKey: 'purchase_party.party_code',
@@ -277,7 +285,7 @@ export const columns = (
             className="flex items-center cursor-pointer"
             onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
         >
-            Purchase Party
+            {t?.('purchaseParty') || 'Purchase Party'}
             <ArrowUpDown className="ml-2 h-4 w-4" />
         </div>
     ),
@@ -300,7 +308,7 @@ export const columns = (
             className="flex items-center cursor-pointer"
             onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
         >
-            Category
+            {t?.('category') || 'Category'}
             <ArrowUpDown className="ml-2 h-4 w-4" />
         </div>
     ),
@@ -313,7 +321,7 @@ export const columns = (
         className="flex items-center cursor-pointer"
         onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
       >
-        Created At
+        {t?.('createdAt') || 'Created At'}
         <ArrowUpDown className="ml-2 h-4 w-4" />
       </div>
     ),
@@ -332,7 +340,7 @@ export const columns = (
               </Button>
             </TooltipTrigger>
             <TooltipContent>
-              <p>Duplicate Item</p>
+              <p>{t?.('duplicateItem') || 'Duplicate Item'}</p>
             </TooltipContent>
           </Tooltip>
           <Tooltip>
@@ -342,7 +350,7 @@ export const columns = (
               </Button>
             </TooltipTrigger>
             <TooltipContent>
-              <p>Edit Item</p>
+              <p>{t?.('editItem') || 'Edit Item'}</p>
             </TooltipContent>
           </Tooltip>
           <Tooltip>
@@ -352,7 +360,7 @@ export const columns = (
               </Button>
             </TooltipTrigger>
             <TooltipContent>
-              <p>Delete Item</p>
+              <p>{t?.('deleteItem') || 'Delete Item'}</p>
             </TooltipContent>
           </Tooltip>
         </div>

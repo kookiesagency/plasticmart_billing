@@ -6,6 +6,7 @@ import { useDebouncedCallback } from 'use-debounce'
 import { toast } from 'sonner'
 import { Trash, Undo } from 'lucide-react'
 import { Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip'
+import { useTranslations } from 'next-intl'
 
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
@@ -38,6 +39,9 @@ interface ItemPreviewDialogProps {
 }
 
 export function ItemPreviewDialog({ isOpen, onOpenChange, onSuccess, units, initialData }: ItemPreviewDialogProps) {
+  const t = useTranslations('items')
+  const tCommon = useTranslations('common')
+  const tInvoices = useTranslations('invoices')
   const supabase = createClient()
   const [parsedData, setParsedData] = useState<ItemToImport[]>(initialData)
   const [restoringIndex, setRestoringIndex] = useState<number | null>(null)
@@ -126,9 +130,9 @@ export function ItemPreviewDialog({ isOpen, onOpenChange, onSuccess, units, init
       .not('deleted_at', 'is', null)
       .select('id')
     if (error) {
-      toast.error('Failed to restore item: ' + error.message)
+      toast.error(t('failedToRestoreItem').replace('{error}', error.message))
     } else {
-      toast.success('Item restored!')
+      toast.success(t('itemRestoredSuccess'))
       // Update preview row: no longer a duplicate
       const updated = [...parsedData]
       updated[index].is_duplicate = false
@@ -149,7 +153,7 @@ export function ItemPreviewDialog({ isOpen, onOpenChange, onSuccess, units, init
     setIsLoading(true)
     try {
       if (parsedData.some(item => !item.unit_id)) {
-        toast.error('Please map all items to a unit.')
+        toast.error(t('mapAllItemsError'))
         return
       }
       // Use normalized names for duplicate check
@@ -161,7 +165,7 @@ export function ItemPreviewDialog({ isOpen, onOpenChange, onSuccess, units, init
         .in('name', finalItemNames)
 
       if (dbError) {
-        toast.error('Could not verify item names before import: ' + dbError.message)
+        toast.error(t('couldNotVerifyNames').replace('{error}', dbError.message))
         return
       }
       // Build normalized set of existing names
@@ -186,7 +190,7 @@ export function ItemPreviewDialog({ isOpen, onOpenChange, onSuccess, units, init
       let newUnits: Unit[] = []
       if (newUnitNames.length > 0) {
         const { data, error } = await supabase.from('units').insert(newUnitNames.map(name => ({ name: name }))).select()
-        if (error) { toast.error('Failed to create new units: ' + error.message); return }
+        if (error) { toast.error(t('failedToCreateUnits').replace('{error}', error.message)); return }
         newUnits = data as Unit[]
       }
       // Merge all units (existing + new) into normalized map
@@ -205,12 +209,12 @@ export function ItemPreviewDialog({ isOpen, onOpenChange, onSuccess, units, init
       })
 
       if (itemsToInsert.some(item => !item.unit_id)) {
-          toast.error("Some units couldn't be mapped. Please review your selections.");
+          toast.error(t('unitsCouldNotBeMapped'));
           return
       }
 
       const { error: insertError, data: insertedItems } = await supabase.from('items').insert(itemsToInsert).select('id, name');
-      if (insertError) { toast.error('Failed to import items: ' + insertError.message); return }
+      if (insertError) { toast.error(t('failedToCreateItem').replace('{error}', insertError.message)); return }
 
       // Patch activity_logs for each imported item to add imported_via: 'import'
       if (insertedItems && Array.isArray(insertedItems)) {
@@ -246,9 +250,9 @@ export function ItemPreviewDialog({ isOpen, onOpenChange, onSuccess, units, init
       // Restore the dialog UI
       const finalDuplicates = finalParsedData.filter(item => item.is_duplicate).length
       const finalErrors = finalParsedData.filter(item => item.is_invalid).length
-      toast.success(`${itemsToInsert.length} items imported successfully!`)
-      if (finalDuplicates > 0) toast.info(`${finalDuplicates} duplicate items were skipped.`)
-      if (finalErrors > 0) toast.warning(`${finalErrors} items with errors were skipped.`)
+      toast.success(t('itemsImportedSuccess').replace('{count}', itemsToInsert.length.toString()))
+      if (finalDuplicates > 0) toast.info(t('duplicateItemsSkipped').replace('{count}', finalDuplicates.toString()))
+      if (finalErrors > 0) toast.warning(t('itemsWithErrorsSkipped').replace('{count}', finalErrors.toString()))
       onSuccess()
     } finally {
       setIsLoading(false)
@@ -299,22 +303,22 @@ export function ItemPreviewDialog({ isOpen, onOpenChange, onSuccess, units, init
           )}
           <div className="flex flex-col h-full p-6">
             <DialogHeader className="p-0 pb-6">
-              <DialogTitle>Preview and Map Units</DialogTitle>
+              <DialogTitle>{t('previewMapUnits')}</DialogTitle>
               <DialogDescription>
-                Preview and map units for the items you're importing.
+                {t('previewMapDescription')}
               </DialogDescription>
             </DialogHeader>
             <div className="flex-grow overflow-auto">
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead className="min-w-[250px]">Name</TableHead>
-                    <TableHead className="w-[15%]">Default Rate</TableHead>
-                    <TableHead className="w-[15%]">Purchase Rate</TableHead>
-                    <TableHead className="w-[15%]">Unit Name from CSV</TableHead>
-                    <TableHead className="w-[20%]">Map to Unit</TableHead>
-                    <TableHead className="w-[15%]">Status</TableHead>
-                    <TableHead className="w-[5%] text-right">Actions</TableHead>
+                    <TableHead className="min-w-[250px]">{t('name')}</TableHead>
+                    <TableHead className="w-[15%]">{t('defaultRate')}</TableHead>
+                    <TableHead className="w-[15%]">{t('purchaseRate')}</TableHead>
+                    <TableHead className="w-[15%]">{t('unitNameFromCsv')}</TableHead>
+                    <TableHead className="w-[20%]">{t('mapToUnit')}</TableHead>
+                    <TableHead className="w-[15%]">{tInvoices('status')}</TableHead>
+                    <TableHead className="w-[5%] text-right">{tCommon('actions')}</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -342,7 +346,7 @@ export function ItemPreviewDialog({ isOpen, onOpenChange, onSuccess, units, init
                           value={item.default_rate ? String(item.default_rate) : ''}
                           onChange={(e) => handleRowChange(index, 'default_rate', e.target.value.replace(/[^\d.]/g, ''))}
                           className={item.is_invalid ? 'border-red-500' : 'border-transparent focus:border-primary bg-transparent'}
-                          placeholder="Enter rate"
+                          placeholder={t('enterRate')}
                           type="text"
                           onFocus={e => setTimeout(() => e.target.select(), 0)}
                           onMouseDown={e => {
@@ -365,7 +369,7 @@ export function ItemPreviewDialog({ isOpen, onOpenChange, onSuccess, units, init
                             setParsedData(updatedData);
                           }}
                           className="border-transparent focus:border-primary bg-transparent"
-                          placeholder="Enter purchase rate"
+                          placeholder={t('enterPurchaseRate')}
                           type="text"
                           onFocus={e => setTimeout(() => e.target.select(), 0)}
                           onMouseDown={e => {
@@ -380,11 +384,11 @@ export function ItemPreviewDialog({ isOpen, onOpenChange, onSuccess, units, init
                       <TableCell>{item.unit_name}</TableCell>
                       <TableCell>
                         <Select onValueChange={(value) => handleUnitChange(index, value.startsWith('new::') ? value : parseInt(value, 10))} defaultValue={String(item.unit_id)} disabled={item.is_duplicate || item.is_invalid}>
-                          <SelectTrigger><SelectValue placeholder="Select Unit" /></SelectTrigger>
+                          <SelectTrigger><SelectValue placeholder={t('selectUnit')} /></SelectTrigger>
                           <SelectContent>
                             {/* Only show 'Create new unit' if not present in normalized units */}
                             {!units.some(u => normalizeName(u.name) === normalizeName(item.unit_name)) && (
-                              <SelectItem value={String(item.unit_id)}>Create new unit: "{item.unit_name}"</SelectItem>
+                              <SelectItem value={String(item.unit_id)}>{t('createNewUnit')}: "{item.unit_name}"</SelectItem>
                             )}
                             {units.map(unit => <SelectItem key={unit.id} value={String(unit.id)}>{unit.name}</SelectItem>)}
                           </SelectContent>
@@ -392,10 +396,10 @@ export function ItemPreviewDialog({ isOpen, onOpenChange, onSuccess, units, init
                       </TableCell>
                       <TableCell>
                         <div className="flex flex-wrap items-center gap-2">
-                          {item.is_duplicate && !item.is_deleted_duplicate && <Badge variant="destructive" className="text-xs">Duplicate</Badge>}
+                          {item.is_duplicate && !item.is_deleted_duplicate && <Badge variant="destructive" className="text-xs">{t('duplicate')}</Badge>}
                           {item.is_deleted_duplicate && (
                             <span className="flex items-center gap-2">
-                              <span className="text-xs px-2 py-0.5 rounded-full font-medium border border-yellow-300 bg-yellow-100 text-yellow-800">Duplicate (in Deleted Tab)</span>
+                              <span className="text-xs px-2 py-0.5 rounded-full font-medium border border-yellow-300 bg-yellow-100 text-yellow-800">{t('duplicateInDeleted')}</span>
                               <Tooltip>
                                 <TooltipTrigger asChild>
                                   <Button
@@ -412,13 +416,13 @@ export function ItemPreviewDialog({ isOpen, onOpenChange, onSuccess, units, init
                                     )}
                                   </Button>
                                 </TooltipTrigger>
-                                <TooltipContent>Restore Item</TooltipContent>
+                                <TooltipContent>{t('restoreItem')}</TooltipContent>
                               </Tooltip>
                             </span>
                           )}
                           {item.is_invalid && <Badge variant="destructive" className="text-xs">{item.error_message}</Badge>}
-                          {item.is_new_unit && !item.is_duplicate && !item.is_invalid && <Badge variant="secondary" className="text-xs">New Unit</Badge>}
-                          {!item.is_duplicate && !item.is_invalid && !item.is_new_unit && <Badge variant="success" className="text-xs">Ready</Badge>}
+                          {item.is_new_unit && !item.is_duplicate && !item.is_invalid && <Badge variant="secondary" className="text-xs">{t('newUnit')}</Badge>}
+                          {!item.is_duplicate && !item.is_invalid && !item.is_new_unit && <Badge variant="success" className="text-xs">{t('ready')}</Badge>}
                         </div>
                       </TableCell>
                       <TableCell className="text-right">
@@ -432,9 +436,9 @@ export function ItemPreviewDialog({ isOpen, onOpenChange, onSuccess, units, init
               </Table>
             </div>
             <DialogFooter className="mt-4 flex-shrink-0 p-0 pt-6">
-              <Button variant="outline" onClick={() => onOpenChange(false)} disabled={isLoading}>Close</Button>
+              <Button variant="outline" onClick={() => onOpenChange(false)} disabled={isLoading}>{tCommon('close')}</Button>
               <Button onClick={handleImportConfirm} disabled={isLoading}>
-                {isLoading ? 'Importing...' : 'Confirm and Import'}
+                {isLoading ? t('importing') : t('confirmImport')}
               </Button>
             </DialogFooter>
           </div>
