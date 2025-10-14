@@ -9,6 +9,7 @@ import { ColumnDef } from '@tanstack/react-table'
 import { ArrowUpDown, Undo, Trash } from 'lucide-react'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { Checkbox } from '@/components/ui/checkbox'
+import { useTranslations } from 'next-intl'
 
 import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
@@ -36,8 +37,8 @@ import { columns, ItemCategory } from './category-columns'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 
 // Define the schema for the form validation
-const categorySchema = z.object({
-  name: z.string().min(1, 'Name is required').max(100, 'Name must be less than 100 characters'),
+const getCategorySchema = (t: any) => z.object({
+  name: z.string().min(1, t('nameRequired')).max(100, t('nameMaxLength')),
   description: z.string().optional(),
 })
 
@@ -46,6 +47,7 @@ export interface CategoryManagerRef {
 }
 
 const CategoryManager = forwardRef<CategoryManagerRef>((props, ref) => {
+  const t = useTranslations('categories')
   const supabase = createClient()
   const [categories, setCategories] = useState<ItemCategory[]>([])
   const [deletedCategories, setDeletedCategories] = useState<ItemCategory[]>([])
@@ -60,6 +62,7 @@ const CategoryManager = forwardRef<CategoryManagerRef>((props, ref) => {
   const [bulkPermanentlyDeleteIds, setBulkPermanentlyDeleteIds] = useState<number[] | null>(null)
   const [bulkRestoreIds, setBulkRestoreIds] = useState<number[] | null>(null)
 
+  const categorySchema = getCategorySchema(t)
   const form = useForm<z.infer<typeof categorySchema>>({
     resolver: zodResolver(categorySchema),
     defaultValues: { name: '', description: '' },
@@ -80,10 +83,10 @@ const CategoryManager = forwardRef<CategoryManagerRef>((props, ref) => {
       supabase.from('item_categories').select('*').not('deleted_at', 'is', null).order('deleted_at', { ascending: false })
     ])
 
-    if (activeRes.error) toast.error('Error fetching categories: ' + activeRes.error.message)
+    if (activeRes.error) toast.error(t('errorFetchingCategories', { error: activeRes.error.message }))
     else setCategories(activeRes.data as ItemCategory[])
 
-    if (deletedRes.error) toast.error('Error fetching deleted categories: ' + deletedRes.error.message)
+    if (deletedRes.error) toast.error(t('errorFetchingDeletedCategories', { error: deletedRes.error.message }))
     else setDeletedCategories(deletedRes.data as ItemCategory[])
 
     setLoading(false)
@@ -111,16 +114,16 @@ const CategoryManager = forwardRef<CategoryManagerRef>((props, ref) => {
         .select('id, name, deleted_at')
 
       if (checkError) {
-        return toast.error('Validation check failed: ' + checkError.message)
+        return toast.error(t('validationCheckFailed', { error: checkError.message }))
       }
 
       const normalizedNew = normalizeName(values.name)
       const duplicate = allCategories.find(cat => normalizeName(cat.name) === normalizedNew && cat.id !== editingCategory?.id)
       if (duplicate) {
         if (duplicate.deleted_at) {
-          return toast.error('A category with this name is currently deleted. Please restore it from the deleted tab.')
+          return toast.error(t('categoryDeletedRestore'))
         } else {
-          return toast.error('A category with this name already exists.')
+          return toast.error(t('categoryAlreadyExists'))
         }
       }
       // 2. Proceed with update or insert
@@ -133,14 +136,14 @@ const CategoryManager = forwardRef<CategoryManagerRef>((props, ref) => {
         error = insertError
       }
       if (error) {
-        toast.error('Failed to save category: ' + error.message)
+        toast.error(t('failedToSaveCategory', { error: error.message }))
       } else {
-        toast.success(`Category ${editingCategory ? 'updated' : 'created'} successfully!`)
+        toast.success(t(editingCategory ? 'categoryUpdated' : 'categoryCreated'))
         setIsDialogOpen(false)
         fetchData()
       }
     } catch (error: any) {
-      toast.error('Failed to save category: ' + error.message)
+      toast.error(t('failedToSaveCategory', { error: error.message }))
     }
   }
 
@@ -158,20 +161,20 @@ const CategoryManager = forwardRef<CategoryManagerRef>((props, ref) => {
       .eq('category_id', deletingCategoryId)
 
     if (checkError) {
-      return toast.error('Failed to check item usage: ' + checkError.message)
+      return toast.error(t('failedToCheckItemUsage', { error: checkError.message }))
     }
 
     if (count && count > 0) {
       setIsConfirmOpen(false)
       setDeletingCategoryId(null)
-      return toast.error(`Cannot delete. This category is used by ${count} item(s). Please update those items first.`)
+      return toast.error(t('cannotDeleteInUse', { count }))
     }
 
     const { error } = await supabase.from('item_categories').update({ deleted_at: new Date().toISOString() }).eq('id', deletingCategoryId)
     if (error) {
-      toast.error('Failed to delete category: ' + error.message)
+      toast.error(t('failedToDeleteCategory', { error: error.message }))
     } else {
-      toast.success('Category deleted successfully!')
+      toast.success(t('categoryDeletedSuccess'))
       fetchData()
     }
     setDeletingCategoryId(null)
@@ -186,9 +189,9 @@ const CategoryManager = forwardRef<CategoryManagerRef>((props, ref) => {
     if (!permanentlyDeletingCategoryId) return
     const { error } = await supabase.from('item_categories').delete().eq('id', permanentlyDeletingCategoryId)
     if (error) {
-      toast.error('Failed to permanently delete category: ' + error.message)
+      toast.error(t('failedToPermanentlyDeleteCategory', { error: error.message }))
     } else {
-      toast.success('Category permanently deleted successfully!')
+      toast.success(t('categoryPermanentlyDeletedSuccess'))
       fetchData()
     }
     setPermanentlyDeletingCategoryId(null)
@@ -203,9 +206,9 @@ const CategoryManager = forwardRef<CategoryManagerRef>((props, ref) => {
     if (!restoringCategoryId) return
     const { error } = await supabase.from('item_categories').update({ deleted_at: null }).eq('id', restoringCategoryId)
     if (error) {
-      toast.error('Failed to restore category: ' + error.message)
+      toast.error(t('failedToRestoreCategory', { error: error.message }))
     } else {
-      toast.success('Category restored successfully!')
+      toast.success(t('categoryRestoredSuccess'))
       fetchData()
     }
     setRestoringCategoryId(null)
@@ -228,7 +231,7 @@ const CategoryManager = forwardRef<CategoryManagerRef>((props, ref) => {
     if (usageError) {
       setIsConfirmOpen(false)
       setBulkDeleteIds(null)
-      return toast.error('Failed to check item usage: ' + usageError.message);
+      return toast.error(t('failedToCheckItemUsage', { error: usageError.message }));
     }
 
     if (usageData && usageData.length > 0) {
@@ -239,19 +242,19 @@ const CategoryManager = forwardRef<CategoryManagerRef>((props, ref) => {
       }, {} as Record<string, number>);
 
       const errorMessages = Object.entries(usageCounts)
-        .map(([name, count]) => `${name} is used by ${count} item(s)`)
+        .map(([name, count]) => t('isUsedByItems', { name, count }))
         .join(', ');
 
       setIsConfirmOpen(false)
       setBulkDeleteIds(null)
-      return toast.error(`Cannot delete categories in use: ${errorMessages}.`);
+      return toast.error(t('cannotDeleteCategoriesInUse', { details: errorMessages }));
     }
 
     const { error } = await supabase.from('item_categories').update({ deleted_at: new Date().toISOString() }).in('id', bulkDeleteIds)
     if (error) {
-      toast.error(`Failed to delete ${bulkDeleteIds.length} categories: ` + error.message)
+      toast.error(t('failedToDeleteCategories', { count: bulkDeleteIds.length, error: error.message }))
     } else {
-      toast.success(`${bulkDeleteIds.length} categories deleted successfully!`)
+      toast.success(t('categoriesDeletedSuccess', { count: bulkDeleteIds.length }))
       fetchData()
     }
     setBulkDeleteIds(null);
@@ -266,9 +269,9 @@ const CategoryManager = forwardRef<CategoryManagerRef>((props, ref) => {
     if (!bulkPermanentlyDeleteIds) return
     const { error } = await supabase.from('item_categories').delete().in('id', bulkPermanentlyDeleteIds)
     if (error) {
-      toast.error(`Failed to permanently delete ${bulkPermanentlyDeleteIds.length} categories: ` + error.message)
+      toast.error(t('failedToPermanentlyDeleteCategories', { count: bulkPermanentlyDeleteIds.length, error: error.message }))
     } else {
-      toast.success(`${bulkPermanentlyDeleteIds.length} categories permanently deleted successfully!`)
+      toast.success(t('categoriesPermanentlyDeletedSuccess', { count: bulkPermanentlyDeleteIds.length }))
       fetchData()
     }
     setBulkPermanentlyDeleteIds(null)
@@ -283,9 +286,9 @@ const CategoryManager = forwardRef<CategoryManagerRef>((props, ref) => {
     if (!bulkRestoreIds) return;
     const { error } = await supabase.from('item_categories').update({ deleted_at: null }).in('id', bulkRestoreIds)
     if (error) {
-      toast.error(`Failed to restore ${bulkRestoreIds.length} categories: ` + error.message)
+      toast.error(t('failedToRestoreCategories', { count: bulkRestoreIds.length, error: error.message }))
     } else {
-      toast.success(`${bulkRestoreIds.length} categories restored successfully!`)
+      toast.success(t('categoriesRestoredSuccess', { count: bulkRestoreIds.length }))
       fetchData()
     }
     setBulkRestoreIds(null);
@@ -318,21 +321,21 @@ const CategoryManager = forwardRef<CategoryManagerRef>((props, ref) => {
       accessorKey: 'name',
       header: ({ column }) => (
         <div className="flex items-center cursor-pointer" onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}>
-          Name
+          {t('name')}
           <ArrowUpDown className="ml-2 h-4 w-4" />
         </div>
       ),
     },
     {
       accessorKey: 'description',
-      header: 'Description',
+      header: t('description'),
       cell: ({ row }) => row.original.description || '-',
     },
     {
       accessorKey: 'deleted_at',
       header: ({ column }) => (
         <div className="flex items-center cursor-pointer" onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}>
-          Deleted At
+          {t('deletedAt')}
           <ArrowUpDown className="ml-2 h-4 w-4" />
         </div>
       ),
@@ -350,7 +353,7 @@ const CategoryManager = forwardRef<CategoryManagerRef>((props, ref) => {
                 </Button>
               </TooltipTrigger>
               <TooltipContent>
-                <p>Restore Category</p>
+                <p>{t('restoreCategory')}</p>
               </TooltipContent>
             </Tooltip>
             <Tooltip>
@@ -360,7 +363,7 @@ const CategoryManager = forwardRef<CategoryManagerRef>((props, ref) => {
                 </Button>
               </TooltipTrigger>
               <TooltipContent>
-                <p>Delete Permanently</p>
+                <p>{t('deletePermanently')}</p>
               </TooltipContent>
             </Tooltip>
           </div>
@@ -370,14 +373,14 @@ const CategoryManager = forwardRef<CategoryManagerRef>((props, ref) => {
   ];
 
   const getDialogInfo = () => {
-    let description = "Are you sure you want to proceed?";
+    let description = t('proceedConfirm');
 
-    if (deletingCategoryId) description = "This will mark the category as deleted. You can restore it within 30 days. This action will fail if the category is currently in use by any items."
-    if (restoringCategoryId) description = "This will restore the category and make it active again."
-    if (permanentlyDeletingCategoryId) description = "This action is IRREVERSIBLE and will permanently delete the category."
-    if (bulkDeleteIds) description = `This will mark ${bulkDeleteIds.length} categories as deleted. You can restore them within 30 days. This action will fail if any of the selected categories are currently in use by items.`
-    if (bulkRestoreIds) description = `This will restore ${bulkRestoreIds.length} categories and make them active again.`
-    if (bulkPermanentlyDeleteIds) description = `This action is IRREVERSIBLE and will permanently delete ${bulkPermanentlyDeleteIds.length} categories.`
+    if (deletingCategoryId) description = t('confirmDeleteDescription')
+    if (restoringCategoryId) description = t('confirmRestoreDescription')
+    if (permanentlyDeletingCategoryId) description = t('confirmPermanentDeleteDescription')
+    if (bulkDeleteIds) description = t('confirmBulkDeleteDescription', { count: bulkDeleteIds.length })
+    if (bulkRestoreIds) description = t('confirmBulkRestoreDescription', { count: bulkRestoreIds.length })
+    if (bulkPermanentlyDeleteIds) description = t('confirmBulkPermanentDeleteDescription', { count: bulkPermanentlyDeleteIds.length })
 
     return { description };
   }
@@ -396,8 +399,8 @@ const CategoryManager = forwardRef<CategoryManagerRef>((props, ref) => {
     <div>
       <Tabs defaultValue="active">
         <TabsList>
-          <TabsTrigger value="active">Active</TabsTrigger>
-          <TabsTrigger value="deleted">Deleted</TabsTrigger>
+          <TabsTrigger value="active">{t('active')}</TabsTrigger>
+          <TabsTrigger value="deleted">{t('deleted')}</TabsTrigger>
         </TabsList>
         <TabsContent value="active">
           <DataTable
@@ -405,7 +408,7 @@ const CategoryManager = forwardRef<CategoryManagerRef>((props, ref) => {
             data={categories}
             loading={loading}
             onBulkDelete={handleBulkDelete}
-            searchPlaceholder="Search categories..."
+            searchPlaceholder={t('searchCategories')}
           />
         </TabsContent>
         <TabsContent value="deleted">
@@ -414,7 +417,7 @@ const CategoryManager = forwardRef<CategoryManagerRef>((props, ref) => {
             data={deletedCategories as any}
             loading={loading}
             filterColumn="name"
-            filterPlaceholder="Filter by name..."
+            filterPlaceholder={t('filterByName')}
             onBulkRestore={handleBulkRestore}
             onBulkPermanentDelete={handleBulkPermanentDelete}
           />
@@ -424,9 +427,9 @@ const CategoryManager = forwardRef<CategoryManagerRef>((props, ref) => {
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>{editingCategory ? 'Edit Category' : 'Create Category'}</DialogTitle>
+            <DialogTitle>{t(editingCategory ? 'editCategory' : 'createCategory')}</DialogTitle>
             <DialogDescription>
-              {editingCategory ? 'Update the details of your category.' : 'Add a new category to organize your items.'}
+              {t(editingCategory ? 'updateDetails' : 'addNewCategory')}
             </DialogDescription>
           </DialogHeader>
           <Form {...form}>
@@ -436,9 +439,9 @@ const CategoryManager = forwardRef<CategoryManagerRef>((props, ref) => {
                 name="name"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Category Name</FormLabel>
+                    <FormLabel>{t('categoryName')}</FormLabel>
                     <FormControl>
-                      <Input placeholder="e.g., Plastic Bags" {...field} />
+                      <Input placeholder={t('categoryNamePlaceholder')} {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -449,10 +452,10 @@ const CategoryManager = forwardRef<CategoryManagerRef>((props, ref) => {
                 name="description"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Description (Optional)</FormLabel>
+                    <FormLabel>{t('descriptionOptional')}</FormLabel>
                     <FormControl>
                       <Textarea
-                        placeholder="Brief description of the category..."
+                        placeholder={t('descriptionPlaceholder')}
                         {...field}
                         rows={3}
                       />
@@ -463,9 +466,9 @@ const CategoryManager = forwardRef<CategoryManagerRef>((props, ref) => {
               />
               <DialogFooter>
                 <Button type="button" variant="secondary" onClick={() => setIsDialogOpen(false)}>
-                  Cancel
+                  {t('cancel')}
                 </Button>
-                <Button type="submit">Save Category</Button>
+                <Button type="submit">{t('saveCategory')}</Button>
               </DialogFooter>
             </form>
           </Form>
@@ -483,7 +486,7 @@ const CategoryManager = forwardRef<CategoryManagerRef>((props, ref) => {
           setBulkRestoreIds(null)
         }}
         onConfirm={handleConfirmation}
-        title="Are you sure?"
+        title={t('areYouSure')}
         description={getDialogInfo().description}
       />
     </div>
