@@ -19,9 +19,10 @@ export type PurchaseParty = {
 interface ColumnsProps {
   onEdit: (party: PurchaseParty) => void
   onDelete: (partyId: number) => void
+  t: (key: string) => string
 }
 
-export const columns = ({ onEdit, onDelete }: ColumnsProps): ColumnDef<PurchaseParty>[] => [
+export const columns = ({ onEdit, onDelete, t }: ColumnsProps): ColumnDef<PurchaseParty>[] => [
   {
     id: 'select',
     header: ({ table }) => (
@@ -48,7 +49,7 @@ export const columns = ({ onEdit, onDelete }: ColumnsProps): ColumnDef<PurchaseP
     accessorKey: 'name',
     header: ({ column }) => (
       <div className="flex items-center cursor-pointer" onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}>
-        Name
+        {t('name')}
         <ArrowUpDown className="ml-2 h-4 w-4" />
       </div>
     ),
@@ -57,7 +58,7 @@ export const columns = ({ onEdit, onDelete }: ColumnsProps): ColumnDef<PurchaseP
     accessorKey: 'party_code',
     header: ({ column }) => (
       <div className="flex items-center cursor-pointer" onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}>
-        Party Code
+        {t('partyCode')}
         <ArrowUpDown className="ml-2 h-4 w-4" />
       </div>
     ),
@@ -67,7 +68,7 @@ export const columns = ({ onEdit, onDelete }: ColumnsProps): ColumnDef<PurchaseP
     accessorKey: 'item_count',
     header: ({ column }) => (
       <div className="flex items-center cursor-pointer" onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}>
-        No. of Items
+        {t('numberOfItems')}
         <ArrowUpDown className="ml-2 h-4 w-4" />
       </div>
     ),
@@ -77,7 +78,7 @@ export const columns = ({ onEdit, onDelete }: ColumnsProps): ColumnDef<PurchaseP
     accessorKey: 'created_at',
     header: ({ column }) => (
       <div className="flex items-center cursor-pointer" onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}>
-        Created On
+        {t('createdOn')}
         <ArrowUpDown className="ml-2 h-4 w-4" />
       </div>
     ),
@@ -98,7 +99,7 @@ export const columns = ({ onEdit, onDelete }: ColumnsProps): ColumnDef<PurchaseP
               </Button>
             </TooltipTrigger>
             <TooltipContent>
-              <p>View Items</p>
+              <p>{t('viewItems')}</p>
             </TooltipContent>
           </Tooltip>
           <Tooltip>
@@ -112,7 +113,7 @@ export const columns = ({ onEdit, onDelete }: ColumnsProps): ColumnDef<PurchaseP
               </Button>
             </TooltipTrigger>
             <TooltipContent>
-              <p>Edit Purchase Party</p>
+              <p>{t('editPurchaseParty')}</p>
             </TooltipContent>
           </Tooltip>
           <Tooltip>
@@ -129,7 +130,7 @@ export const columns = ({ onEdit, onDelete }: ColumnsProps): ColumnDef<PurchaseP
               </Button>
             </TooltipTrigger>
             <TooltipContent>
-              <p>Delete Purchase Party</p>
+              <p>{t('deletePurchaseParty')}</p>
             </TooltipContent>
           </Tooltip>
         </div>

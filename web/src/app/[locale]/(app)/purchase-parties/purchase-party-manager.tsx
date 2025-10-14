@@ -480,7 +480,7 @@ const PurchasePartyManager = forwardRef<PurchasePartyManagerRef>((props, ref) =>
         </TabsList>
           <TabsContent value="active">
             <DataTable
-              columns={columns({ onEdit: openDialog, onDelete: handleDelete })}
+              columns={columns({ onEdit: openDialog, onDelete: handleDelete, t })}
               data={parties}
               loading={loading}
               onBulkDelete={handleBulkDelete}

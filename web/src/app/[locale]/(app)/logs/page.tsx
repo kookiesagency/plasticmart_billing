@@ -234,9 +234,9 @@ export default function LogsPage() {
       .update({ deleted_at: new Date().toISOString() })
       .in('id', bulkDeleteIds);
     if (error) {
-      toast.error(t('failedToDeleteLogs').replace('{count}', bulkDeleteIds.length.toString()));
+      toast.error(t('failedToDeleteLogs', { count: bulkDeleteIds.length }));
     } else {
-      toast.success(t('logsDeletedSuccess').replace('{count}', bulkDeleteIds.length.toString()));
+      toast.success(t('logsDeletedSuccess', { count: bulkDeleteIds.length }));
       setLogs((prev) => prev.filter(log => !bulkDeleteIds.includes(log.id)));
       setPage(1);
     }
@@ -254,9 +254,9 @@ export default function LogsPage() {
       .update({ deleted_at: null })
       .in('id', bulkRestoreIds);
     if (error) {
-      toast.error(t('failedToRestoreLogs').replace('{count}', bulkRestoreIds.length.toString()));
+      toast.error(t('failedToRestoreLogs', { count: bulkRestoreIds.length }));
     } else {
-      toast.success(t('logsRestoredSuccess').replace('{count}', bulkRestoreIds.length.toString()));
+      toast.success(t('logsRestoredSuccess', { count: bulkRestoreIds.length }));
       setLogs((prev) => prev.filter(log => !bulkRestoreIds.includes(log.id)));
       setPage(1);
     }
@@ -287,9 +287,9 @@ export default function LogsPage() {
     const supabase = createClient();
     const { error } = await supabase.from('activity_logs').delete().in('id', bulkPermanentDeleteIds);
     if (error) {
-      toast.error(t('failedToPermanentlyDeleteLogs').replace('{count}', bulkPermanentDeleteIds.length.toString()));
+      toast.error(t('failedToPermanentlyDeleteLogs', { count: bulkPermanentDeleteIds.length }));
     } else {
-      toast.success(t('logsPermanentlyDeletedSuccess').replace('{count}', bulkPermanentDeleteIds.length.toString()));
+      toast.success(t('logsPermanentlyDeletedSuccess', { count: bulkPermanentDeleteIds.length }));
       setLogs((prev) => prev.filter(log => !bulkPermanentDeleteIds.includes(log.id)));
     }
     setBulkPermanentDeleteIds(null);
@@ -383,9 +383,9 @@ export default function LogsPage() {
             title={t('areYouSure')}
             description={
               bulkDeleteIds
-                ? t('deleteLogsConfirm').replace('{count}', bulkDeleteIds.length.toString())
+                ? t('deleteLogsConfirm', { count: bulkDeleteIds.length })
                 : bulkRestoreIds
-                ? t('restoreLogsConfirm').replace('{count}', bulkRestoreIds.length.toString())
+                ? t('restoreLogsConfirm', { count: bulkRestoreIds.length })
                 : ''
             }
           />
@@ -408,7 +408,7 @@ export default function LogsPage() {
               }}
               onConfirm={confirmBulkPermanentDelete}
               title={t('areYouSure')}
-              description={t('permanentDeleteLogsConfirm').replace('{count}', bulkPermanentDeleteIds.length.toString())}
+              description={t('permanentDeleteLogsConfirm', { count: bulkPermanentDeleteIds.length })}
             />
           )}
           {/* Filters */}
@@ -589,7 +589,7 @@ export default function LogsPage() {
               {t('previous')}
             </button>
             <span className="text-sm text-muted-foreground">
-              {t('pageOf').replace('{current}', page.toString()).replace('{total}', totalPages.toString())}
+              {t('pageOf', { current: page, total: totalPages })}
             </span>
             <button
               className="px-4 py-2 rounded bg-muted text-muted-foreground disabled:opacity-50"
