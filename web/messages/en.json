@@ -8,6 +8,7 @@
     "view": "View",
     "search": "Search",
     "filter": "Filter",
+    "action": "Action",
     "actions": "Actions",
     "loading": "Loading...",
     "noResults": "No results found",
@@ -258,7 +259,9 @@
     "unitsCouldNotBeMapped": "Some units couldn't be mapped. Please review your selections.",
     "itemsImportedSuccess": "{count} items imported successfully!",
     "duplicateItemsSkipped": "{count} duplicate items were skipped.",
-    "itemsWithErrorsSkipped": "{count} items with errors were skipped."
+    "itemsWithErrorsSkipped": "{count} items with errors were skipped.",
+    "enterRate": "Enter rate",
+    "enterPurchaseRate": "Enter purchase rate"
   },
   "parties": {
     "title": "Parties",

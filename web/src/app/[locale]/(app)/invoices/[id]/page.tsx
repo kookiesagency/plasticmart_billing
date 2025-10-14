@@ -211,7 +211,7 @@ export default function InvoiceDetailsPage() {
         isOpen={!!paymentToDelete}
         onClose={() => setPaymentToDelete(null)}
         onConfirm={handleDeletePayment}
-        title={t('deletePaymentConfirm').replace('{amount}', formatCurrency(paymentToDelete?.amount || 0))}
+        title={t('deletePaymentConfirm', { amount: formatCurrency(paymentToDelete?.amount || 0) })}
         description={t('deleteConfirmMessage')}
       />
       <div className="grid md:grid-cols-3 gap-6">

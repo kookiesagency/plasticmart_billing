@@ -1,11 +1,12 @@
-import type { Metadata } from "next";
 import { Toaster } from '@/components/ui/sonner'
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { cn } from '@/lib/utils';
+import { Geist } from "next/font/google";
 
-export const metadata: Metadata = {
-  title: "PlasticMart",
-  description: "Invoice management for PlasticMart",
-};
+const geist = Geist({
+  subsets: ["latin"],
+  variable: "--font-geist-sans",
+});
 
 export default function PublicLayout({
   children,
@@ -13,7 +14,10 @@ export default function PublicLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <div className="bg-gray-50">
+    <div className={cn(
+      "min-h-screen bg-gray-50 font-sans antialiased",
+      geist.variable
+    )}>
       <TooltipProvider>
         {children}
       </TooltipProvider>

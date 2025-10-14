@@ -174,7 +174,7 @@ export default function EditInvoicePage() {
       setIsFetchDialogOpen(false)
       setRefreshKey(prev => prev + 1)
     } catch (error: any) {
-      toast.error(t('failedToApplyUpdates').replace('{error}', error.message))
+      toast.error(t('failedToApplyUpdates', { error: error.message }))
     }
   }
 

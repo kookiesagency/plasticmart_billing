@@ -31,7 +31,6 @@ type PrintableInvoiceProps = {
 }
 
 export function PrintableInvoice({ invoiceId, onReady }: PrintableInvoiceProps) {
-  const t = useTranslations('invoices')
   const supabase = createClient()
   const [invoice, setInvoice] = useState<FullInvoice | null>(null)
   const [settings, setSettings] = useState<{ [key: string]: string }>({})
@@ -49,7 +48,7 @@ export function PrintableInvoice({ invoiceId, onReady }: PrintableInvoiceProps) 
         .select('*')
 
       if (invoiceError || settingsError || !invoiceData || !settingsData) {
-        toast.error(t('failedToFetchInvoiceForPrinting', { error: invoiceError?.message || settingsError?.message || 'Unknown error' }))
+        toast.error('Failed to fetch invoice for printing: ' + (invoiceError?.message || settingsError?.message || 'Unknown error'))
         return
       }
       
