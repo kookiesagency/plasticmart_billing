@@ -485,7 +485,12 @@
     "failedToPermanentlyDeleteUnits": "Failed to permanently delete {count} units: ",
     "unitsPermanentlyDeletedSuccess": "{count} units permanently deleted successfully!",
     "failedToRestoreUnits": "Failed to restore {count} units: ",
-    "unitsRestoredSuccess": "{count} units restored successfully!"
+    "unitsRestoredSuccess": "{count} units restored successfully!",
+    "ratePositiveValidation": "Rate must be a positive number",
+    "failedToFetchBundleRate": "Failed to fetch bundle rate: {error}",
+    "failedToSaveBundleRate": "Failed to save bundle rate: {error}",
+    "bundleRateSavedSuccess": "Default bundle rate saved successfully!",
+    "enterDefaultRatePlaceholder": "Enter default rate"
   },
   "categories": {
     "title": "Categories",

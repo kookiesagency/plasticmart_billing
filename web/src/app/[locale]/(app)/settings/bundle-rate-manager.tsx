@@ -19,12 +19,12 @@ import {
 } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
 
-const bundleRateSchema = z.object({
-  rate: z.coerce.number().min(0, 'Rate must be a positive number'),
-})
-
 export default function BundleRateManager() {
   const t = useTranslations('settings')
+
+  const bundleRateSchema = z.object({
+    rate: z.coerce.number().min(0, t('ratePositiveValidation')),
+  })
   const supabase = createClient()
   const [loading, setLoading] = useState(false)
 
@@ -48,7 +48,7 @@ export default function BundleRateManager() {
         form.setValue('rate', parseFloat(data.value))
       }
       if (error && error.code !== 'PGRST116') { // Ignore 'exact one row' error if no setting exists
-        toast.error('Failed to fetch bundle rate: ' + error.message)
+        toast.error(t('failedToFetchBundleRate', { error: error.message }))
       }
       setLoading(false)
     }
@@ -62,9 +62,9 @@ export default function BundleRateManager() {
       .upsert({ key: 'default_bundle_rate', value: values.rate.toString() })
 
     if (error) {
-      toast.error('Failed to save bundle rate: ' + error.message)
+      toast.error(t('failedToSaveBundleRate', { error: error.message }))
     } else {
-      toast.success('Default bundle rate saved successfully!')
+      toast.success(t('bundleRateSavedSuccess'))
     }
   }
 
@@ -83,7 +83,7 @@ export default function BundleRateManager() {
               <FormItem>
                 <FormLabel>{t('bundleRateLabel')}</FormLabel>
                 <FormControl>
-                  <Input type="number" placeholder="Enter default rate" {...field} />
+                  <Input type="number" placeholder={t('enterDefaultRatePlaceholder')} {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
