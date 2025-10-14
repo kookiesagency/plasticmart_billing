@@ -320,7 +320,20 @@
     "restoreConfirm": "یہ انوائس کو ریسٹور کرے گا اور ایکٹو بنا دے گا۔",
     "restoreMultipleConfirm": "یہ {count} انوائس کو ریسٹور کرے گا اور ایکٹو بنا دے گا۔",
     "permanentDeleteConfirm": "یہ ایکشن IRREVERSIBLE ہے۔ یہ انوائس اور اس کا سارا ڈیٹا پرمننٹلی ڈیلیٹ کر دے گا۔",
-    "permanentDeleteMultipleConfirm": "یہ ایکشن IRREVERSIBLE ہے۔ یہ {count} انوائس اور ان کا سارا ڈیٹا پرمننٹلی ڈیلیٹ کر دے گا۔"
+    "permanentDeleteMultipleConfirm": "یہ ایکشن IRREVERSIBLE ہے۔ یہ {count} انوائس اور ان کا سارا ڈیٹا پرمننٹلی ڈیلیٹ کر دے گا۔",
+    "failedToFetchInvoices": "انوائس فیچ کرنے میں فیل: {error}",
+    "failedToDeleteInvoice": "انوائس ڈیلیٹ کرنے میں فیل۔",
+    "invoiceMovedToDeleted": "انوائس ڈیلیٹڈ ٹیب میں منتقل ہو گیا۔",
+    "failedToDeleteInvoices": "{count} انوائس ڈیلیٹ کرنے میں فیل۔",
+    "invoicesMovedToDeleted": "{count} انوائس ڈیلیٹڈ ٹیب میں منتقل ہو گئے۔",
+    "failedToRestoreInvoice": "انوائس ریسٹور کرنے میں فیل۔",
+    "invoiceRestoredSuccess": "انوائس کامیابی سے ریسٹور ہو گیا۔",
+    "failedToRestoreInvoices": "{count} انوائس ریسٹور کرنے میں فیل۔",
+    "invoicesRestoredSuccess": "{count} انوائس کامیابی سے ریسٹور ہو گئے۔",
+    "failedToPermanentlyDeleteInvoice": "انوائس مستقل طور پر ڈیلیٹ کرنے میں فیل۔",
+    "invoicePermanentlyDeletedSuccess": "انوائس مستقل طور پر ڈیلیٹ ہو گیا۔",
+    "failedToPermanentlyDeleteInvoices": "{count} انوائس مستقل طور پر ڈیلیٹ کرنے میں فیل۔",
+    "invoicesPermanentlyDeletedSuccess": "{count} انوائس مستقل طور پر ڈیلیٹ ہو گئے۔"
   },
   "invoiceView": {
     "invoice": "انوائس",

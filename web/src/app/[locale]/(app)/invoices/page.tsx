@@ -73,7 +73,7 @@ export default function InvoicesPage() {
       .order('deleted_at', { ascending: false })
 
     if (activeError || deletedError) {
-      toast.error('Failed to fetch invoices: ' + (activeError?.message || deletedError?.message))
+      toast.error(t('failedToFetchInvoices', { error: (activeError?.message || deletedError?.message) }))
     } else {
         const parseData = (data: any[]) => data.map(d => {
             const totalAmount = d.total_amount || 0;
@@ -125,9 +125,9 @@ export default function InvoicesPage() {
   const confirmDelete = async () => {
     if (!invoiceToDelete) return;
     const { error } = await supabase.from('invoices').update({ deleted_at: new Date().toISOString() }).eq('id', invoiceToDelete);
-    if (error) toast.error('Failed to delete invoice.');
+    if (error) toast.error(t('failedToDeleteInvoice'));
     else {
-      toast.success('Invoice moved to deleted tab.');
+      toast.success(t('invoiceMovedToDeleted'));
       fetchData();
     }
   };
@@ -140,9 +140,9 @@ export default function InvoicesPage() {
   const confirmBulkDelete = async () => {
     if (!bulkDeleteIds) return;
     const { error } = await supabase.from('invoices').update({ deleted_at: new Date().toISOString() }).in('id', bulkDeleteIds);
-    if (error) toast.error(`Failed to delete ${bulkDeleteIds.length} invoices.`);
+    if (error) toast.error(t('failedToDeleteInvoices', { count: bulkDeleteIds.length }));
     else {
-      toast.success(`${bulkDeleteIds.length} invoices moved to deleted tab.`);
+      toast.success(t('invoicesMovedToDeleted', { count: bulkDeleteIds.length }));
       fetchData();
     }
   };
@@ -155,9 +155,9 @@ export default function InvoicesPage() {
   const confirmRestore = async () => {
     if (!invoiceToRestore) return;
     const { error } = await supabase.from('invoices').update({ deleted_at: null }).eq('id', invoiceToRestore);
-    if (error) toast.error('Failed to restore invoice.');
+    if (error) toast.error(t('failedToRestoreInvoice'));
     else {
-      toast.success('Invoice restored successfully.');
+      toast.success(t('invoiceRestoredSuccess'));
       fetchData();
     }
   };
@@ -170,9 +170,9 @@ export default function InvoicesPage() {
   const confirmBulkRestore = async () => {
     if (!bulkRestoreIds) return;
     const { error } = await supabase.from('invoices').update({ deleted_at: null }).in('id', bulkRestoreIds);
-    if (error) toast.error(`Failed to restore ${bulkRestoreIds.length} invoices.`);
+    if (error) toast.error(t('failedToRestoreInvoices', { count: bulkRestoreIds.length }));
     else {
-      toast.success(`${bulkRestoreIds.length} invoices restored successfully.`);
+      toast.success(t('invoicesRestoredSuccess', { count: bulkRestoreIds.length }));
       fetchData();
     }
   };
@@ -188,10 +188,10 @@ export default function InvoicesPage() {
     await supabase.from('payments').delete().eq('invoice_id', invoiceToPermanentlyDelete);
     await supabase.from('invoice_items').delete().eq('invoice_id', invoiceToPermanentlyDelete);
     const { error } = await supabase.from('invoices').delete().eq('id', invoiceToPermanentlyDelete);
-    
-    if (error) toast.error('Failed to permanently delete invoice.');
+
+    if (error) toast.error(t('failedToPermanentlyDeleteInvoice'));
     else {
-      toast.success('Invoice permanently deleted.');
+      toast.success(t('invoicePermanentlyDeletedSuccess'));
       fetchData();
     }
   };
@@ -208,9 +208,9 @@ export default function InvoicesPage() {
     await supabase.from('invoice_items').delete().in('invoice_id', bulkPermanentDeleteIds);
     const { error } = await supabase.from('invoices').delete().in('id', bulkPermanentDeleteIds);
 
-    if (error) toast.error(`Failed to delete ${bulkPermanentDeleteIds.length} invoices permanently.`);
+    if (error) toast.error(t('failedToPermanentlyDeleteInvoices', { count: bulkPermanentDeleteIds.length }));
     else {
-      toast.success(`${bulkPermanentDeleteIds.length} invoices permanently deleted.`);
+      toast.success(t('invoicesPermanentlyDeletedSuccess', { count: bulkPermanentDeleteIds.length }));
       fetchData();
     }
   };

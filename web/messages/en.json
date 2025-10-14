@@ -320,7 +320,20 @@
     "restoreConfirm": "This will restore the invoice and make it active again.",
     "restoreMultipleConfirm": "This will restore {count} invoices and make them active again.",
     "permanentDeleteConfirm": "This action is IRREVERSIBLE. This will permanently delete the invoice and all its associated data.",
-    "permanentDeleteMultipleConfirm": "This action is IRREVERSIBLE. This will permanently delete {count} invoices and all their associated data."
+    "permanentDeleteMultipleConfirm": "This action is IRREVERSIBLE. This will permanently delete {count} invoices and all their associated data.",
+    "failedToFetchInvoices": "Failed to fetch invoices: {error}",
+    "failedToDeleteInvoice": "Failed to delete invoice.",
+    "invoiceMovedToDeleted": "Invoice moved to deleted tab.",
+    "failedToDeleteInvoices": "Failed to delete {count} invoices.",
+    "invoicesMovedToDeleted": "{count} invoices moved to deleted tab.",
+    "failedToRestoreInvoice": "Failed to restore invoice.",
+    "invoiceRestoredSuccess": "Invoice restored successfully.",
+    "failedToRestoreInvoices": "Failed to restore {count} invoices.",
+    "invoicesRestoredSuccess": "{count} invoices restored successfully.",
+    "failedToPermanentlyDeleteInvoice": "Failed to permanently delete invoice.",
+    "invoicePermanentlyDeletedSuccess": "Invoice permanently deleted.",
+    "failedToPermanentlyDeleteInvoices": "Failed to delete {count} invoices permanently.",
+    "invoicesPermanentlyDeletedSuccess": "{count} invoices permanently deleted."
   },
   "invoiceView": {
     "invoice": "Invoice",

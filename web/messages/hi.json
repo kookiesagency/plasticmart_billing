@@ -320,7 +320,20 @@
     "restoreConfirm": "यह इनवॉयस को रिस्टोर करेगा और एक्टिव बना देगा।",
     "restoreMultipleConfirm": "यह {count} इनवॉयस को रिस्टोर करेगा और एक्टिव बना देगा।",
     "permanentDeleteConfirm": "यह एक्शन IRREVERSIBLE है। यह इनवॉयस और इसका सारा डेटा परमानेंटली डिलीट कर देगा।",
-    "permanentDeleteMultipleConfirm": "यह एक्शन IRREVERSIBLE है। यह {count} इनवॉयस और उनका सारा डेटा परमानेंटली डिलीट कर देगा।"
+    "permanentDeleteMultipleConfirm": "यह एक्शन IRREVERSIBLE है। यह {count} इनवॉयस और उनका सारा डेटा परमानेंटली डिलीट कर देगा।",
+    "failedToFetchInvoices": "इनवॉयस फेच करने में फेल: {error}",
+    "failedToDeleteInvoice": "इनवॉयस डिलीट करने में फेल।",
+    "invoiceMovedToDeleted": "इनवॉयस डिलीटेड टैब में मूव हो गया।",
+    "failedToDeleteInvoices": "{count} इनवॉयस डिलीट करने में फेल।",
+    "invoicesMovedToDeleted": "{count} इनवॉयस डिलीटेड टैब में मूव हो गए।",
+    "failedToRestoreInvoice": "इनवॉयस रिस्टोर करने में फेल।",
+    "invoiceRestoredSuccess": "इनवॉयस सफलतापूर्वक रिस्टोर हो गया।",
+    "failedToRestoreInvoices": "{count} इनवॉयस रिस्टोर करने में फेल।",
+    "invoicesRestoredSuccess": "{count} इनवॉयस सफलतापूर्वक रिस्टोर हो गए।",
+    "failedToPermanentlyDeleteInvoice": "इनवॉयस परमानेंटली डिलीट करने में फेल।",
+    "invoicePermanentlyDeletedSuccess": "इनवॉयस परमानेंटली डिलीट हो गया।",
+    "failedToPermanentlyDeleteInvoices": "{count} इनवॉयस परमानेंटली डिलीट करने में फेल।",
+    "invoicesPermanentlyDeletedSuccess": "{count} इनवॉयस परमानेंटली डिलीट हो गए।"
   },
   "invoiceView": {
     "invoice": "इनवॉयस",
