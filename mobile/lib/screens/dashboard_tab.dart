@@ -88,7 +88,7 @@ class _DashboardTabState extends State<DashboardTab> {
           ),
         ),
         const SizedBox(height: 12),
-        // Show only Add Item and Add Party one by one in Basic Mode
+        // Show only Add Item and Purchase Party in Basic Mode
         if (isBasicMode)
           Column(
             children: [
@@ -109,16 +109,11 @@ class _DashboardTabState extends State<DashboardTab> {
               const SizedBox(height: 12),
               _buildQuickActionButton(
                 context: context,
-                icon: Icons.people_outlined,
-                label: l10n.dashboard_addParty,
+                icon: Icons.business_outlined,
+                label: l10n.settings_purchaseParties,
                 color: const Color(0xFFF59E0B), // Amber/Orange
                 onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => const AddEditPartyScreen(),
-                    ),
-                  );
+                  Navigator.pushNamed(context, '/purchase-parties');
                 },
               ),
             ],

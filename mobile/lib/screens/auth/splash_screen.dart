@@ -20,14 +20,17 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
   void initState() {
     super.initState();
 
-    // Setup fade animation
+    // Setup simple fade animation
     _animationController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 1500),
+      duration: const Duration(milliseconds: 1200),
     );
 
     _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
-      CurvedAnimation(parent: _animationController, curve: Curves.easeIn),
+      CurvedAnimation(
+        parent: _animationController,
+        curve: Curves.easeInOut,
+      ),
     );
 
     _animationController.forward();
@@ -65,78 +68,78 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
     final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
-      backgroundColor: const Color(0xFFC5E5DC),
-      body: FadeTransition(
-        opacity: _fadeAnimation,
-        child: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              // App Logo
-              Container(
-                padding: const EdgeInsets.all(24),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(24),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.2),
-                      blurRadius: 20,
-                      offset: const Offset(0, 10),
-                    ),
-                  ],
-                ),
-                child: Image.asset(
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+      body: SafeArea(
+        child: FadeTransition(
+          opacity: _fadeAnimation,
+          child: SizedBox(
+            width: double.infinity,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                // Top spacer for lots of whitespace
+                const Spacer(flex: 3),
+
+                // Logo centered with ample space
+                Image.asset(
                   'assets/images/logo.png',
-                  width: 80,
-                  height: 80,
+                  width: 100,
+                  height: 100,
                 ),
-              ),
-              const SizedBox(height: 32),
+                const SizedBox(height: 24),
 
-              // App Name
-              const Text(
-                'PlasticMart',
-                style: TextStyle(
-                  fontSize: 32,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.black87,
-                  letterSpacing: 1.2,
+                // App name - corporate font style
+                Text(
+                  'PlasticMart',
+                  style: TextStyle(
+                    fontSize: 28,
+                    fontWeight: FontWeight.w600,
+                    color: Theme.of(context).textTheme.headlineMedium?.color ?? Colors.black87,
+                    letterSpacing: 0.5,
+                  ),
                 ),
-              ),
-              const SizedBox(height: 8),
+                const SizedBox(height: 8),
 
-              // Tagline
-              Text(
-                l10n.splash_tagline,
-                style: const TextStyle(
-                  fontSize: 16,
-                  color: Colors.black54,
-                  letterSpacing: 0.5,
+                // Tagline - subtle and professional
+                Text(
+                  l10n.splash_tagline,
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w400,
+                    color: Theme.of(context).textTheme.bodyMedium?.color?.withOpacity(0.6) ?? Colors.grey.shade500,
+                    letterSpacing: 0.2,
+                  ),
                 ),
-              ),
-              const SizedBox(height: 48),
 
-              // Loading Indicator
-              const SizedBox(
-                width: 40,
-                height: 40,
-                child: CircularProgressIndicator(
-                  valueColor: AlwaysStoppedAnimation<Color>(Colors.black87),
-                  strokeWidth: 3,
-                ),
-              ),
-              const SizedBox(height: 24),
+                // Bottom spacer for lots of whitespace
+                const Spacer(flex: 3),
 
-              // Version Number
-              Text(
-                l10n.splash_version,
-                style: const TextStyle(
-                  fontSize: 12,
-                  color: Colors.black38,
+                // Minimal loading indicator
+                SizedBox(
+                  width: 28,
+                  height: 28,
+                  child: CircularProgressIndicator(
+                    valueColor: AlwaysStoppedAnimation<Color>(
+                      Theme.of(context).textTheme.bodyMedium?.color?.withOpacity(0.4) ?? Colors.grey.shade400,
+                    ),
+                    strokeWidth: 2,
+                  ),
                 ),
-              ),
-            ],
+                const SizedBox(height: 48),
+
+                // Version at bottom - very subtle
+                Text(
+                  l10n.splash_version,
+                  style: TextStyle(
+                    fontSize: 10,
+                    fontWeight: FontWeight.w400,
+                    color: Theme.of(context).textTheme.bodyMedium?.color?.withOpacity(0.3) ?? Colors.grey.shade300,
+                    letterSpacing: 1.0,
+                  ),
+                ),
+                const SizedBox(height: 32),
+              ],
+            ),
           ),
         ),
       ),
