@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { useTranslations } from 'next-intl'
 import { createClient } from '@/lib/supabase/client'
 import { toast } from 'sonner'
 import { InvoicePDF } from './invoice-pdf'
@@ -30,6 +31,7 @@ type PrintableInvoiceProps = {
 }
 
 export function PrintableInvoice({ invoiceId, onReady }: PrintableInvoiceProps) {
+  const t = useTranslations('invoices')
   const supabase = createClient()
   const [invoice, setInvoice] = useState<FullInvoice | null>(null)
   const [settings, setSettings] = useState<{ [key: string]: string }>({})
@@ -47,7 +49,7 @@ export function PrintableInvoice({ invoiceId, onReady }: PrintableInvoiceProps) 
         .select('*')
 
       if (invoiceError || settingsError || !invoiceData || !settingsData) {
-        toast.error('Failed to fetch invoice data for printing: ' + (invoiceError?.message || settingsError?.message))
+        toast.error(t('failedToFetchInvoiceForPrinting', { error: invoiceError?.message || settingsError?.message || 'Unknown error' }))
         return
       }
       

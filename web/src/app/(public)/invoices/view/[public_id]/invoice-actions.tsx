@@ -6,6 +6,7 @@ import { createRoot } from 'react-dom/client'
 import { PrintableInvoice } from '@/app/[locale]/(app)/invoices/printable-invoice'
 import { toast } from 'sonner'
 import { usePathname } from 'next/navigation'
+import { useTranslations } from 'next-intl'
 import { formatDate } from '@/lib/utils'
 
 export function InvoiceActions({
@@ -17,10 +18,11 @@ export function InvoiceActions({
   party_name: string
   invoice_date: string
 }) {
+  const t = useTranslations('publicInvoice')
   const pathname = usePathname()
 
   const handlePrint = () => {
-    toast.loading("Preparing document...", { id: "print-toast" });
+    toast.loading(t('preparingDocument'), { id: "print-toast" });
 
     const container = document.createElement("div");
     document.body.appendChild(container);
@@ -54,12 +56,12 @@ export function InvoiceActions({
   const handleCopyLink = () => {
     const publicUrl = `${window.location.origin}${pathname}`
     navigator.clipboard.writeText(publicUrl)
-    toast.success('Link copied to clipboard!')
+    toast.success(t('linkCopied'))
   }
 
   const handleShareOnWhatsApp = () => {
     const publicUrl = `${window.location.origin}${pathname}`;
-    const message = `*Hello ${party_name}*,\n\nHere is your invoice from *${formatDate(invoice_date)}*.\n\nYou can view it here: ${publicUrl}\n\nThank you for your business!`;
+    const message = t('whatsappMessage', { partyName: party_name, invoiceDate: formatDate(invoice_date), publicUrl });
     const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(message)}`;
     window.open(whatsappUrl, '_blank');
   };
@@ -68,15 +70,15 @@ export function InvoiceActions({
     <div className="flex items-center gap-2">
       <Button onClick={handleCopyLink} variant="outline">
         <Copy className="mr-2 h-4 w-4" />
-        Copy Link
+        {t('copyLink')}
       </Button>
       <Button onClick={handleShareOnWhatsApp} variant="outline">
         <Share2 className="mr-2 h-4 w-4" />
-        Share
+        {t('share')}
       </Button>
       <Button onClick={handlePrint} variant="outline">
         <FileDown className="mr-2 h-4 w-4" />
-        Download
+        {t('download')}
       </Button>
     </div>
   )

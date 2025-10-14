@@ -73,7 +73,7 @@ export default function InvoicesPage() {
       .order('deleted_at', { ascending: false })
 
     if (activeError || deletedError) {
-      toast.error(t('failedToFetchInvoices', { error: (activeError?.message || deletedError?.message) }))
+      toast.error(t('failedToFetchInvoices', { error: (activeError?.message || deletedError?.message || 'Unknown error') }))
     } else {
         const parseData = (data: any[]) => data.map(d => {
             const totalAmount = d.total_amount || 0;

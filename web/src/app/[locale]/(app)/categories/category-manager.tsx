@@ -404,7 +404,7 @@ const CategoryManager = forwardRef<CategoryManagerRef>((props, ref) => {
         </TabsList>
         <TabsContent value="active">
           <DataTable
-            columns={columns(openDialog, handleDelete)}
+            columns={columns(openDialog, handleDelete, t)}
             data={categories}
             loading={loading}
             onBulkDelete={handleBulkDelete}

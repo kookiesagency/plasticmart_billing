@@ -15,7 +15,8 @@ export type ItemCategory = {
 
 export const columns = (
   onEdit: (category: ItemCategory) => void,
-  onDelete: (categoryId: number) => void
+  onDelete: (categoryId: number) => void,
+  t: (key: string) => string
 ): ColumnDef<ItemCategory>[] => [
   {
     id: "select",
@@ -46,14 +47,14 @@ export const columns = (
         className="flex items-center cursor-pointer"
         onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
       >
-        Name
+        {t('name')}
         <ArrowUpDown className="ml-2 h-4 w-4" />
       </div>
     ),
   },
   {
     accessorKey: "description",
-    header: "Description",
+    header: t('description'),
     cell: ({ row }) => row.original.description || "-",
   },
   {
@@ -63,7 +64,7 @@ export const columns = (
         className="flex items-center cursor-pointer"
         onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
       >
-        Created At
+        {t('createdAt')}
         <ArrowUpDown className="ml-2 h-4 w-4" />
       </div>
     ),
@@ -86,7 +87,7 @@ export const columns = (
               </Button>
             </TooltipTrigger>
             <TooltipContent>
-              <p>Edit Category</p>
+              <p>{t('editCategory')}</p>
             </TooltipContent>
           </Tooltip>
           <Tooltip>
@@ -100,7 +101,7 @@ export const columns = (
               </Button>
             </TooltipTrigger>
             <TooltipContent>
-              <p>Delete Category</p>
+              <p>{t('deleteCategory')}</p>
             </TooltipContent>
           </Tooltip>
         </div>

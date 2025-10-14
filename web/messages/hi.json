@@ -149,7 +149,8 @@
     "itemNamePlaceholder": "जैसे, प्लास्टिक की बोतल",
     "enterPurchaseRate": "जैसे, 100",
     "unknownParty": "अज्ञात पार्टी",
-    "failedToFetchInvoice": "इनवॉयस डेटा फेच करने में फेल: {error}"
+    "failedToFetchInvoice": "इनवॉयस डेटा फेच करने में फेल: {error}",
+    "failedToFetchInvoiceForPrinting": "प्रिंटिंग के लिए इनवॉयस डेटा फेच करने में फेल: {error}"
   },
   "items": {
     "title": "आइटम",
@@ -266,7 +267,9 @@
     "partyName": "पार्टी नेम",
     "contactInfo": "कॉन्टैक्ट इन्फो",
     "address": "एड्रेस",
-    "deleteParty": "पार्टी डिलीट"
+    "deleteParty": "पार्टी डिलीट",
+    "errorFetchingParties": "पार्टी फेच करने में एरर: {error}",
+    "errorFetchingDeletedParties": "डिलीटेड पार्टी फेच करने में एरर: {error}"
   },
   "reports": {
     "title": "रिपोर्ट",
@@ -548,7 +551,8 @@
     "confirmBulkPermanentDeleteDescription": "यह एक्शन परमानेंट है और {count} कैटेगरी को हमेशा के लिए डिलीट कर देगा।",
     "nameRequired": "नेम जरूरी है",
     "nameMaxLength": "नेम 100 कैरेक्टर से कम होना चाहिए",
-    "isUsedByItems": "{name} {count} आइटम्स द्वारा यूज हो रहा है"
+    "isUsedByItems": "{name} {count} आइटम्स द्वारा यूज हो रहा है",
+    "createdAt": "बनाने की तारीख"
   },
   "purchaseParties": {
     "title": "परचेज पार्टी",
@@ -745,5 +749,13 @@
     "whatsappMessage": "*नमस्ते {partyName}*,\n\n*{invoiceDate}* से आपका इनवॉयस यहाँ है।\n\nआप इसे यहाँ देख सकते हैं: {publicUrl}\n\nधन्यवाद!",
     "viewPublicInvoice": "पब्लिक इनवॉयस देखें",
     "shareOnWhatsApp": "व्हाट्सएप पर शेयर करें"
+  },
+  "publicInvoice": {
+    "preparingDocument": "डॉक्यूमेंट तैयार हो रहा है...",
+    "linkCopied": "लिंक क्लिपबोर्ड में कॉपी हो गया!",
+    "whatsappMessage": "*नमस्ते {partyName}*,\n\n*{invoiceDate}* से आपका इनवॉयस यहाँ है।\n\nआप इसे यहाँ देख सकते हैं: {publicUrl}\n\nधन्यवाद!",
+    "copyLink": "लिंक कॉपी करें",
+    "share": "शेयर करें",
+    "download": "डाउनलोड करें"
   }
 }

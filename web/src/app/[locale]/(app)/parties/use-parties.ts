@@ -1,10 +1,12 @@
 'use client'
 import { useState, useEffect, useCallback } from 'react'
 import { toast } from 'sonner'
+import { useTranslations } from 'next-intl'
 import { createClient } from '@/lib/supabase/client'
 import { Party } from '@/lib/types'
 
 export default function useParties() {
+  const t = useTranslations('parties')
   const supabase = createClient()
   const [activeParties, setActiveParties] = useState<Party[]>([])
   const [deletedParties, setDeletedParties] = useState<Party[]>([])
@@ -19,7 +21,7 @@ export default function useParties() {
     ])
 
     if (activeRes.error) {
-      toast.error('Error fetching parties: ' + activeRes.error.message)
+      toast.error(t('errorFetchingParties', { error: activeRes.error.message }))
       setActiveParties([])
     } else {
       // Transform data to add invoice_count
@@ -32,7 +34,7 @@ export default function useParties() {
     }
 
     if (deletedRes.error) {
-      toast.error('Error fetching deleted parties: ' + deletedRes.error.message)
+      toast.error(t('errorFetchingDeletedParties', { error: deletedRes.error.message }))
       setDeletedParties([])
     } else {
       // Transform data to add invoice_count

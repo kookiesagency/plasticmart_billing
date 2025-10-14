@@ -149,7 +149,8 @@
     "itemNamePlaceholder": "جیسے، پلاسٹک کی بوتل",
     "enterPurchaseRate": "جیسے، 100",
     "unknownParty": "نامعلوم پارٹی",
-    "failedToFetchInvoice": "انوائس ڈیٹا فیچ کرنے میں فیل: {error}"
+    "failedToFetchInvoice": "انوائس ڈیٹا فیچ کرنے میں فیل: {error}",
+    "failedToFetchInvoiceForPrinting": "پرنٹنگ کے لیے انوائس ڈیٹا فیچ کرنے میں فیل: {error}"
   },
   "items": {
     "title": "آئٹم",
@@ -266,7 +267,9 @@
     "partyName": "پارٹی نیم",
     "contactInfo": "کانٹیکٹ انفو",
     "address": "ایڈریس",
-    "deleteParty": "پارٹی ڈیلیٹ"
+    "deleteParty": "پارٹی ڈیلیٹ",
+    "errorFetchingParties": "پارٹی فیچ کرنے میں ایرر: {error}",
+    "errorFetchingDeletedParties": "ڈیلیٹ شدہ پارٹی فیچ کرنے میں ایرر: {error}"
   },
   "reports": {
     "title": "رپورٹ",
@@ -548,7 +551,8 @@
     "cannotDeleteInUse": "ڈیلیٹ نہیں کیا جا سکتا۔ یہ کیٹیگری {count} آئٹمز کے ذریعے استعمال ہو رہی ہے۔ براہ کرم پہلے ان آئٹمز کو اپڈیٹ کریں۔",
     "failedToDeleteCategory": "کیٹیگری ڈیلیٹ کرنے میں فیل: {error}",
     "failedToPermanentlyDeleteCategory": "کیٹیگری مستقل طور پر ڈیلیٹ کرنے میں فیل: {error}",
-    "failedToRestoreCategory": "کیٹیگری ریسٹور کرنے میں فیل: {error}"
+    "failedToRestoreCategory": "کیٹیگری ریسٹور کرنے میں فیل: {error}",
+    "createdAt": "بنانے کی تاریخ"
   },
   "purchaseParties": {
     "title": "پرچیز پارٹی",
@@ -745,5 +749,13 @@
     "whatsappMessage": "*السلام علیکم {partyName}*,\n\n*{invoiceDate}* سے آپ کا انوائس یہاں ہے۔\n\nآپ اسے یہاں دیکھ سکتے ہیں: {publicUrl}\n\nشکریہ!",
     "viewPublicInvoice": "پبلک انوائس دیکھیں",
     "shareOnWhatsApp": "واٹس ایپ پر شیئر کریں"
+  },
+  "publicInvoice": {
+    "preparingDocument": "ڈاکومنٹ تیار ہو رہا ہے...",
+    "linkCopied": "لنک کلپ بورڈ میں کاپی ہو گیا!",
+    "whatsappMessage": "*السلام علیکم {partyName}*,\n\n*{invoiceDate}* سے آپ کا انوائس یہاں ہے۔\n\nآپ اسے یہاں دیکھ سکتے ہیں: {publicUrl}\n\nشکریہ!",
+    "copyLink": "لنک کاپی کریں",
+    "share": "شیئر کریں",
+    "download": "ڈاؤن لوڈ کریں"
   }
 }

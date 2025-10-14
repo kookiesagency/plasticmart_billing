@@ -149,7 +149,8 @@
     "itemNamePlaceholder": "e.g. Plastic Bottle",
     "enterPurchaseRate": "e.g. 100",
     "unknownParty": "Unknown Party",
-    "failedToFetchInvoice": "Failed to fetch invoice data: {error}"
+    "failedToFetchInvoice": "Failed to fetch invoice data: {error}",
+    "failedToFetchInvoiceForPrinting": "Failed to fetch invoice data for printing: {error}"
   },
   "items": {
     "title": "Items",
@@ -266,7 +267,9 @@
     "partyName": "Party Name",
     "contactInfo": "Contact Info",
     "address": "Address",
-    "deleteParty": "Delete Party"
+    "deleteParty": "Delete Party",
+    "errorFetchingParties": "Error fetching parties: {error}",
+    "errorFetchingDeletedParties": "Error fetching deleted parties: {error}"
   },
   "reports": {
     "title": "Reports",
@@ -548,7 +551,8 @@
     "confirmBulkPermanentDeleteDescription": "This action is IRREVERSIBLE and will permanently delete {count} categories.",
     "nameRequired": "Name is required",
     "nameMaxLength": "Name must be less than 100 characters",
-    "isUsedByItems": "{name} is used by {count} item(s)"
+    "isUsedByItems": "{name} is used by {count} item(s)",
+    "createdAt": "Created At"
   },
   "purchaseParties": {
     "title": "Purchase Parties",
@@ -745,5 +749,13 @@
     "whatsappMessage": "*Hello {partyName}*,\n\nHere is your invoice from *{invoiceDate}*.\n\nYou can view it here: {publicUrl}\n\nThank you for your business!",
     "viewPublicInvoice": "View Public Invoice",
     "shareOnWhatsApp": "Share on WhatsApp"
+  },
+  "publicInvoice": {
+    "preparingDocument": "Preparing document...",
+    "linkCopied": "Link copied to clipboard!",
+    "whatsappMessage": "*Hello {partyName}*,\n\nHere is your invoice from *{invoiceDate}*.\n\nYou can view it here: {publicUrl}\n\nThank you for your business!",
+    "copyLink": "Copy Link",
+    "share": "Share",
+    "download": "Download"
   }
 }
