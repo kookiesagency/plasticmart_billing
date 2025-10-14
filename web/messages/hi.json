@@ -229,7 +229,7 @@
     "createdAt": "बनाने की तारीख",
     "duplicateItem": "आइटम डुप्लीकेट करें",
     "importItemsFromCsv": "CSV से आइटम इम्पोर्ट करें",
-    "csvInstructions": "इम्पोर्ट करने के लिए CSV फाइल चुनें। फाइल में <b>'name'</b>, <b>'rate'</b>, <b>'purchase_rate'</b> (ऑप्शनल), और <b>'unit'</b> कॉलम होने चाहिए।",
+    "csvInstructions": "इम्पोर्ट करने के लिए CSV फाइल चुनें। फाइल में <b>name</b>, <b>rate</b>, <b>purchase_rate</b> (ऑप्शनल), और <b>unit</b> कॉलम होने चाहिए।",
     "downloadSampleTemplate": "सैंपल CSV टेम्प्लेट डाउनलोड करें",
     "dragDropText": "यहां CSV फाइल ड्रैग और ड्रॉप करें, या फाइल सेलेक्ट करने के लिए क्लिक करें।",
     "fileSelected": "<span>{fileName}</span> सेलेक्ट की गई।",
