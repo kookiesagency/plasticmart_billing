@@ -1,3 +1,5 @@
+import 'package:flutter/foundation.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import '../config/supabase_config.dart';
 import '../models/item.dart';
 import '../models/item_party_price.dart';
@@ -8,6 +10,13 @@ class ItemService {
   // Fetch items with optional deleted filter
   Future<List<Item>> fetchItems({bool includeDeleted = false}) async {
     try {
+      debugPrint('=== ItemService: Starting fetch items (includeDeleted: $includeDeleted) ===');
+
+      // Check authentication
+      final session = _supabase.auth.currentSession;
+      debugPrint('ItemService: Auth session exists: ${session != null}');
+      debugPrint('ItemService: User ID: ${session?.user?.id}');
+
       final query = _supabase
           .from('items')
           .select('''
@@ -15,16 +24,32 @@ class ItemService {
             units(id, name),
             item_categories(id, name),
             purchase_parties!purchase_party_id(id, party_code, name),
-            item_party_prices(*, purchase_parties(name))
+            item_party_prices(*)
           ''');
 
+      debugPrint('ItemService: Executing query...');
       final response = includeDeleted
           ? await query.not('deleted_at', 'is', null).order('deleted_at', ascending: false)
           : await query.isFilter('deleted_at', null).order('created_at', ascending: false);
 
-      return (response as List).map((json) => Item.fromJson(json)).toList();
-    } catch (e) {
-      throw Exception('Failed to fetch items: $e');
+      debugPrint('ItemService: Query successful. Response type: ${response.runtimeType}');
+      debugPrint('ItemService: Number of items: ${(response as List).length}');
+
+      final items = (response as List).map((json) => Item.fromJson(json)).toList();
+      debugPrint('ItemService: Successfully parsed ${items.length} items');
+
+      return items;
+    } on PostgrestException catch (e) {
+      // Supabase-specific error
+      debugPrint('ItemService ERROR (PostgrestException): ${e.message}');
+      debugPrint('ItemService ERROR code: ${e.code}');
+      debugPrint('ItemService ERROR details: ${e.details}');
+      throw Exception('Database error: ${e.message}. Code: ${e.code}');
+    } catch (e, stackTrace) {
+      // Generic error
+      debugPrint('ItemService ERROR (Generic): $e');
+      debugPrint('ItemService ERROR stackTrace: $stackTrace');
+      throw Exception('Network error: Unable to fetch items. ${e.toString()}');
     }
   }
 

@@ -10,6 +10,7 @@ import 'items/items_screen.dart';
 import 'items/add_edit_item_screen.dart';
 import 'parties/parties_screen.dart';
 import 'parties/add_edit_party_screen.dart';
+import 'purchase_parties/purchase_parties_screen.dart';
 import 'settings/settings_screen.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -41,11 +42,11 @@ class _HomeScreenState extends State<HomeScreen> {
 
   List<Widget> _getScreens(bool isBasicMode) {
     if (isBasicMode) {
-      // Basic Mode: Dashboard, Items, Parties, Settings
+      // Basic Mode: Dashboard, Items, Purchase Parties, Settings
       return [
         DashboardTab(onSwitchToTab: _switchToTab),
         const ItemsScreen(),
-        const PartiesScreen(),
+        PurchasePartiesScreen(key: purchasePartiesScreenKey),
         const SettingsScreen(),
       ];
     } else {
@@ -66,7 +67,7 @@ class _HomeScreenState extends State<HomeScreen> {
       return [
         l10n.dashboard_title,
         l10n.nav_items,
-        l10n.nav_parties,
+        l10n.settings_purchaseParties,
         l10n.nav_settings,
       ];
     } else {
@@ -162,7 +163,18 @@ class _HomeScreenState extends State<HomeScreen> {
                       tooltip: l10n.items_createItem,
                     ),
                   ]
-                : _selectedIndex == partiesTabIndex // Parties tab
+                : _selectedIndex == partiesTabIndex && isBasicMode // Purchase Parties tab (in basic mode)
+                    ? [
+                        IconButton(
+                          onPressed: () {
+                            // Call the add dialog from PurchasePartiesScreen
+                            purchasePartiesScreenKey.currentState?.showAddEditDialog();
+                          },
+                          icon: const Icon(Icons.add),
+                          tooltip: l10n.purchaseParties_createParty,
+                        ),
+                      ]
+                    : _selectedIndex == partiesTabIndex && !isBasicMode // Parties tab (only in full mode)
                     ? [
                         IconButton(
                           onPressed: () {
@@ -187,6 +199,8 @@ class _HomeScreenState extends State<HomeScreen> {
       bottomNavigationBar: BottomNavigationBar(
         type: BottomNavigationBarType.fixed,
         currentIndex: _selectedIndex,
+        selectedFontSize: 12,
+        unselectedFontSize: 11,
         onTap: (index) {
           setState(() {
             _selectedIndex = index;
@@ -203,8 +217,8 @@ class _HomeScreenState extends State<HomeScreen> {
                   label: l10n.nav_items,
                 ),
                 BottomNavigationBarItem(
-                  icon: const Icon(Icons.people),
-                  label: l10n.nav_parties,
+                  icon: const Icon(Icons.business_outlined),
+                  label: l10n.nav_suppliers,
                 ),
                 BottomNavigationBarItem(
                   icon: const Icon(Icons.settings),

@@ -33,6 +33,7 @@
   "nav_items": "آئٹم",
   "nav_settings": "سیٹنگ",
   "nav_reports": "رپورٹ",
+  "nav_suppliers": "سپلائر",
 
   "dashboard_title": "ڈیش بورڈ",
   "dashboard_quickActions": "کوک ایکشن",
@@ -583,5 +584,12 @@
   "itemView_itemDeletedSuccess": "آئٹم کامیابی سے ڈیلیٹ ہو گیا",
   "itemView_itemDeleteFailed": "آئٹم ڈیلیٹ نہیں ہو سکا",
   "itemView_per": "فی",
-  "itemView_NA": "N/A"
+  "itemView_NA": "N/A",
+
+  "filter_dateRange": "تاریخ کی حد",
+  "filter_startDate": "شروعاتی تاریخ",
+  "filter_endDate": "آخری تاریخ",
+  "filter_notSet": "سیٹ نہیں",
+  "filter_clearAll": "سب صاف کریں",
+  "filter_applyFilters": "فلٹر لگائیں"
 }

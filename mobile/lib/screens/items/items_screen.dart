@@ -43,20 +43,44 @@ class _ItemsScreenState extends State<ItemsScreen> with SingleTickerProviderStat
   }
 
   Future<void> _loadData() async {
+    debugPrint('=== ItemsScreen: Starting _loadData ===');
     final itemProvider = Provider.of<ItemProvider>(context, listen: false);
     final unitProvider = Provider.of<UnitProvider>(context, listen: false);
     final partyProvider = Provider.of<PartyProvider>(context, listen: false);
     final purchasePartyProvider = Provider.of<PurchasePartyProvider>(context, listen: false);
     final categoryProvider = Provider.of<ItemCategoryProvider>(context, listen: false);
 
-    await Future.wait([
-      itemProvider.fetchItems(),
-      itemProvider.fetchDeletedItems(),
-      unitProvider.fetchUnits(),
-      partyProvider.fetchParties(),
-      purchasePartyProvider.fetchPurchaseParties(),
-      categoryProvider.fetchCategories(),
-    ]);
+    try {
+      await Future.wait([
+        itemProvider.fetchItems(),
+        itemProvider.fetchDeletedItems(),
+        unitProvider.fetchUnits(),
+        partyProvider.fetchParties(),
+        purchasePartyProvider.fetchPurchaseParties(),
+        categoryProvider.fetchCategories(),
+      ]);
+      debugPrint('ItemsScreen: All data loaded successfully');
+
+      // Show error toast if there's an error
+      if (mounted && itemProvider.errorMessage != null) {
+        final l10n = AppLocalizations.of(context)!;
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(itemProvider.errorMessage!),
+            backgroundColor: Colors.red,
+            duration: const Duration(seconds: 5),
+            behavior: SnackBarBehavior.floating,
+            action: SnackBarAction(
+              label: 'Retry',
+              textColor: Colors.white,
+              onPressed: _loadData,
+            ),
+          ),
+        );
+      }
+    } catch (e) {
+      debugPrint('ItemsScreen ERROR: Failed to load data: $e');
+    }
   }
 
   List<Item> _getFilteredItems(List<Item> items) {
@@ -229,34 +253,34 @@ class _ItemsScreenState extends State<ItemsScreen> with SingleTickerProviderStat
             child: itemProvider.isLoading
                 ? const Center(child: CircularProgressIndicator())
                 : filteredItems.isEmpty
-                    ? Center(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(
-                              _showDeleted ? Icons.delete_outlined : Icons.inventory_2_outlined,
-                              size: 64,
-                              color: Colors.grey,
+                        ? Center(
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(
+                                  _showDeleted ? Icons.delete_outlined : Icons.inventory_2_outlined,
+                                  size: 64,
+                                  color: Colors.grey,
+                                ),
+                                const SizedBox(height: 16),
+                                Text(
+                                  _showDeleted ? l10n.items_noDeletedItems : l10n.items_noItemsYet,
+                                  style: const TextStyle(
+                                    fontSize: 18,
+                                    color: Colors.grey,
+                                  ),
+                                ),
+                                if (!_showDeleted) ...[
+                                  const SizedBox(height: 8),
+                                  TextButton.icon(
+                                    onPressed: () => _showAddEditDialog(),
+                                    icon: const Icon(Icons.add),
+                                    label: Text(l10n.items_createFirstItem),
+                                  ),
+                                ],
+                              ],
                             ),
-                            const SizedBox(height: 16),
-                            Text(
-                              _showDeleted ? l10n.items_noDeletedItems : l10n.items_noItemsYet,
-                              style: const TextStyle(
-                                fontSize: 18,
-                                color: Colors.grey,
-                              ),
-                            ),
-                            if (!_showDeleted) ...[
-                              const SizedBox(height: 8),
-                              TextButton.icon(
-                                onPressed: () => _showAddEditDialog(),
-                                icon: const Icon(Icons.add),
-                                label: Text(l10n.items_createFirstItem),
-                              ),
-                            ],
-                          ],
-                        ),
-                      )
+                          )
                     : RefreshIndicator(
                         onRefresh: _loadData,
                         child: ListView.builder(

@@ -36,6 +36,7 @@
   "nav_items": "Items",
   "nav_settings": "Settings",
   "nav_reports": "Reports",
+  "nav_suppliers": "Suppliers",
 
   "dashboard_title": "Dashboard",
   "dashboard_quickActions": "Quick Actions",
@@ -622,5 +623,12 @@
   "itemView_itemDeletedSuccess": "Item deleted successfully",
   "itemView_itemDeleteFailed": "Failed to delete item",
   "itemView_per": "per",
-  "itemView_NA": "N/A"
+  "itemView_NA": "N/A",
+
+  "filter_dateRange": "Date Range",
+  "filter_startDate": "Start Date",
+  "filter_endDate": "End Date",
+  "filter_notSet": "Not set",
+  "filter_clearAll": "Clear All",
+  "filter_applyFilters": "Apply Filters"
 }

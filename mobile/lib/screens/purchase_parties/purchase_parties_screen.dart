@@ -6,11 +6,16 @@ import '../../providers/purchase_party_provider.dart';
 import '../../models/purchase_party.dart';
 
 class PurchasePartiesScreen extends StatefulWidget {
-  const PurchasePartiesScreen({Key? key}) : super(key: key);
+  final bool showAppBar;
+
+  const PurchasePartiesScreen({Key? key, this.showAppBar = false}) : super(key: key);
 
   @override
   State<PurchasePartiesScreen> createState() => _PurchasePartiesScreenState();
 }
+
+// Global key to access PurchasePartiesScreen methods from parent
+final GlobalKey<_PurchasePartiesScreenState> purchasePartiesScreenKey = GlobalKey<_PurchasePartiesScreenState>();
 
 class _PurchasePartiesScreenState extends State<PurchasePartiesScreen> with SingleTickerProviderStateMixin {
   late TabController _tabController;
@@ -64,7 +69,7 @@ class _PurchasePartiesScreenState extends State<PurchasePartiesScreen> with Sing
     return DateFormat('dd MMM yyyy').format(date);
   }
 
-  void _showAddEditDialog({PurchaseParty? party}) {
+  void showAddEditDialog({PurchaseParty? party}) {
     _editingParty = party;
     _partyCodeController.text = party?.partyCode ?? '';
     _nameController.text = party?.name ?? '';
@@ -228,29 +233,15 @@ class _PurchasePartiesScreenState extends State<PurchasePartiesScreen> with Sing
     final parties = _showDeleted ? partyProvider.deletedPurchaseParties : partyProvider.purchaseParties;
     final filteredParties = _getFilteredParties(parties);
 
-    return GestureDetector(
-      onTap: () => FocusScope.of(context).unfocus(),
-      behavior: HitTestBehavior.opaque,
-      child: Scaffold(
-        appBar: AppBar(
-          title: Text(l10n.purchaseParties_title),
-          actions: [
-            IconButton(
-              icon: const Icon(Icons.add),
-              onPressed: () => _showAddEditDialog(),
-              tooltip: l10n.purchaseParties_createParty,
-            ),
-          ],
-        ),
-        body: Column(
-          children: [
-            TabBar(
-              controller: _tabController,
-              tabs: [
-                Tab(text: l10n.purchaseParties_active),
-                Tab(text: l10n.purchaseParties_deleted),
-              ],
-            ),
+    final content = Column(
+              children: [
+                TabBar(
+                  controller: _tabController,
+                  tabs: [
+                    Tab(text: l10n.purchaseParties_active),
+                    Tab(text: l10n.purchaseParties_deleted),
+                  ],
+                ),
             Padding(
               padding: const EdgeInsets.all(16.0),
               child: TextField(
@@ -302,7 +293,7 @@ class _PurchasePartiesScreenState extends State<PurchasePartiesScreen> with Sing
                               if (!_showDeleted) ...[
                                 const SizedBox(height: 8),
                                 TextButton.icon(
-                                  onPressed: () => _showAddEditDialog(),
+                                  onPressed: () => showAddEditDialog(),
                                   icon: const Icon(Icons.add),
                                   label: Text(l10n.purchaseParties_createFirstParty),
                                 ),
@@ -453,7 +444,7 @@ class _PurchasePartiesScreenState extends State<PurchasePartiesScreen> with Sing
                                                   children: [
                                                     IconButton(
                                                       icon: Icon(Icons.edit_outlined, color: colorScheme.primary, size: 22),
-                                                      onPressed: () => _showAddEditDialog(party: party),
+                                                      onPressed: () => showAddEditDialog(party: party),
                                                       tooltip: l10n.common_edit,
                                                       padding: EdgeInsets.zero,
                                                       constraints: const BoxConstraints(),
@@ -473,8 +464,37 @@ class _PurchasePartiesScreenState extends State<PurchasePartiesScreen> with Sing
                         ),
             ),
           ],
+        );
+
+    if (widget.showAppBar) {
+      return GestureDetector(
+        onTap: () => FocusScope.of(context).unfocus(),
+        behavior: HitTestBehavior.opaque,
+        child: Scaffold(
+          appBar: AppBar(
+            title: Text(l10n.purchaseParties_title),
+            actions: [
+              IconButton(
+                icon: const Icon(Icons.add),
+                onPressed: () => showAddEditDialog(),
+                tooltip: l10n.purchaseParties_createParty,
+              ),
+            ],
+          ),
+          body: content,
         ),
-      ),
-    );
+      );
+    } else {
+      return GestureDetector(
+        onTap: () => FocusScope.of(context).unfocus(),
+        behavior: HitTestBehavior.opaque,
+        child: Material(
+          color: Theme.of(context).scaffoldBackgroundColor,
+          child: SafeArea(
+            child: content,
+          ),
+        ),
+      );
+    }
   }
 }

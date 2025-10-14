@@ -73,7 +73,7 @@ class MyApp extends StatelessWidget {
             home: const SplashScreen(),
             routes: {
               '/categories': (context) => const CategoriesScreen(),
-              '/purchase-parties': (context) => const PurchasePartiesScreen(),
+              '/purchase-parties': (context) => const PurchasePartiesScreen(showAppBar: true),
               '/purchase-party-details': (context) => const PurchasePartyDetailsScreen(),
             },
           );

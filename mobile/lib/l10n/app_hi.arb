@@ -33,6 +33,7 @@
   "nav_items": "आइटम",
   "nav_settings": "सेटिंग",
   "nav_reports": "रिपोर्ट",
+  "nav_suppliers": "सप्लायर",
 
   "dashboard_title": "डैशबोर्ड",
   "dashboard_quickActions": "क्विक एक्शन",
@@ -583,5 +584,12 @@
   "itemView_itemDeletedSuccess": "आइटम सफलतापूर्वक डिलीट हो गया",
   "itemView_itemDeleteFailed": "आइटम डिलीट नहीं हो सका",
   "itemView_per": "प्रति",
-  "itemView_NA": "N/A"
+  "itemView_NA": "N/A",
+
+  "filter_dateRange": "तारीख सीमा",
+  "filter_startDate": "शुरुआती तारीख",
+  "filter_endDate": "अंतिम तारीख",
+  "filter_notSet": "सेट नहीं है",
+  "filter_clearAll": "सभी हटाएं",
+  "filter_applyFilters": "फ़िल्टर लगाएं"
 }

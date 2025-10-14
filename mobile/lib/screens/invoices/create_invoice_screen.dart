@@ -43,6 +43,7 @@ class _CreateInvoiceScreenState extends State<CreateInvoiceScreen> {
   String _partySearchQuery = '';
   final _bundleQtyController = TextEditingController();
   final _bundleRateController = TextEditingController();
+  final _bundleChargeController = TextEditingController();
   final _appSettingsService = AppSettingsService();
 
   // Helper to format quantity without unnecessary decimals
@@ -74,6 +75,7 @@ class _CreateInvoiceScreenState extends State<CreateInvoiceScreen> {
   void dispose() {
     _bundleQtyController.dispose();
     _bundleRateController.dispose();
+    _bundleChargeController.dispose();
     super.dispose();
   }
 
@@ -127,6 +129,7 @@ class _CreateInvoiceScreenState extends State<CreateInvoiceScreen> {
         _bundleCharge = invoice.bundleCharge;
         _bundleQtyController.text = _formatNumber(_bundleQuantity);
         _bundleRateController.text = _formatNumber(_bundleRate);
+        _bundleChargeController.text = _formatNumber(_bundleCharge);
       });
     }
   }
@@ -144,6 +147,7 @@ class _CreateInvoiceScreenState extends State<CreateInvoiceScreen> {
       _bundleCharge = bundleRate * 1.0;
       _bundleQtyController.text = '1';
       _bundleRateController.text = _formatNumber(bundleRate);
+      _bundleChargeController.text = _formatNumber(_bundleCharge);
     });
   }
 
@@ -881,6 +885,7 @@ class _CreateInvoiceScreenState extends State<CreateInvoiceScreen> {
                         setState(() {
                           _bundleQuantity = double.tryParse(value) ?? 1;
                           _bundleCharge = _bundleRate * _bundleQuantity;
+                          _bundleChargeController.text = _formatNumber(_bundleCharge);
                         });
                       },
                     ),
@@ -921,6 +926,7 @@ class _CreateInvoiceScreenState extends State<CreateInvoiceScreen> {
                         setState(() {
                           _bundleRate = double.tryParse(value) ?? 150;
                           _bundleCharge = _bundleRate * _bundleQuantity;
+                          _bundleChargeController.text = _formatNumber(_bundleCharge);
                         });
                       },
                     ),
@@ -932,9 +938,37 @@ class _CreateInvoiceScreenState extends State<CreateInvoiceScreen> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(AppLocalizations.of(context)!.invoiceForm_totalBundleCharge, style: const TextStyle(fontSize: 15)),
-                  Text(
-                    '₹${_formatNumber(_bundleCharge)}',
-                    style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
+                  SizedBox(
+                    width: 100,
+                    child: TextField(
+                      controller: _bundleChargeController,
+                      keyboardType: TextInputType.number,
+                      textAlign: TextAlign.right,
+                      decoration: InputDecoration(
+                        hintText: '0',
+                        filled: true,
+                        fillColor: isDark ? theme.scaffoldBackgroundColor : theme.cardColor,
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(8),
+                          borderSide: BorderSide(color: ThemeHelpers.borderColor(context), width: 1),
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(8),
+                          borderSide: BorderSide(color: ThemeHelpers.borderColor(context), width: 1),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(8),
+                          borderSide: BorderSide(color: Theme.of(context).colorScheme.primary, width: 2),
+                        ),
+                        contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                        isDense: true,
+                      ),
+                      onChanged: (value) {
+                        setState(() {
+                          _bundleCharge = double.tryParse(value) ?? 0;
+                        });
+                      },
+                    ),
                   ),
                 ],
               ),

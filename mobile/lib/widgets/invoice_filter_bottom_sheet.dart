@@ -34,8 +34,8 @@ class _InvoiceFilterBottomSheetState extends State<InvoiceFilterBottomSheet> {
     _selectedStatuses = Set.from(widget.initialStatuses);
   }
 
-  String _formatDate(DateTime? date) {
-    if (date == null) return 'Not set';
+  String _formatDate(DateTime? date, String notSetText) {
+    if (date == null) return notSetText;
     return DateFormat('dd MMM yyyy').format(date);
   }
 
@@ -147,7 +147,7 @@ class _InvoiceFilterBottomSheetState extends State<InvoiceFilterBottomSheet> {
 
           // Date Range Section
           Text(
-            'Date Range',
+            l10n.filter_dateRange,
             style: TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.w600,
@@ -172,7 +172,7 @@ class _InvoiceFilterBottomSheetState extends State<InvoiceFilterBottomSheet> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
-                    'Start Date',
+                    l10n.filter_startDate,
                     style: TextStyle(
                       color: theme.textTheme.bodyLarge?.color,
                     ),
@@ -180,7 +180,7 @@ class _InvoiceFilterBottomSheetState extends State<InvoiceFilterBottomSheet> {
                   Row(
                     children: [
                       Text(
-                        _formatDate(_startDate),
+                        _formatDate(_startDate, l10n.filter_notSet),
                         style: TextStyle(
                           color: _startDate == null
                               ? Colors.grey
@@ -218,7 +218,7 @@ class _InvoiceFilterBottomSheetState extends State<InvoiceFilterBottomSheet> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
-                    'End Date',
+                    l10n.filter_endDate,
                     style: TextStyle(
                       color: theme.textTheme.bodyLarge?.color,
                     ),
@@ -226,7 +226,7 @@ class _InvoiceFilterBottomSheetState extends State<InvoiceFilterBottomSheet> {
                   Row(
                     children: [
                       Text(
-                        _formatDate(_endDate),
+                        _formatDate(_endDate, l10n.filter_notSet),
                         style: TextStyle(
                           color: _endDate == null
                               ? Colors.grey
@@ -320,7 +320,7 @@ class _InvoiceFilterBottomSheetState extends State<InvoiceFilterBottomSheet> {
                         padding: const EdgeInsets.symmetric(vertical: 16),
                         alignment: Alignment.center,
                         child: Text(
-                          'Clear All',
+                          l10n.filter_clearAll,
                           style: TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.w600,
@@ -347,9 +347,9 @@ class _InvoiceFilterBottomSheetState extends State<InvoiceFilterBottomSheet> {
                       child: Container(
                         padding: const EdgeInsets.symmetric(vertical: 16),
                         alignment: Alignment.center,
-                        child: const Text(
-                          'Apply Filters',
-                          style: TextStyle(
+                        child: Text(
+                          l10n.filter_applyFilters,
+                          style: const TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.w600,
                             color: Colors.white,

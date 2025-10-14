@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import '../models/item.dart';
 import '../models/item_party_price.dart';
 import '../services/item_service.dart';
+import '../config/supabase_config.dart';
 
 class ItemProvider with ChangeNotifier {
   final ItemService _itemService = ItemService();
@@ -9,20 +10,37 @@ class ItemProvider with ChangeNotifier {
   List<Item> _items = [];
   List<Item> _deletedItems = [];
   bool _isLoading = false;
+  String? _errorMessage;
 
   List<Item> get items => _items;
   List<Item> get deletedItems => _deletedItems;
   bool get isLoading => _isLoading;
+  String? get errorMessage => _errorMessage;
 
   // Fetch active items
   Future<void> fetchItems() async {
     _isLoading = true;
+    _errorMessage = null;
     notifyListeners();
+
+    // Log authentication and connection status
+    final session = SupabaseConfig.client.auth.currentSession;
+    debugPrint('=== ItemProvider: fetchItems called ===');
+    debugPrint('ItemProvider: User authenticated: ${session != null}');
+    debugPrint('ItemProvider: User email: ${session?.user?.email}');
+    debugPrint('ItemProvider: Supabase URL: ${SupabaseConfig.supabaseUrl}');
 
     try {
       _items = await _itemService.fetchItems(includeDeleted: false);
+      _errorMessage = null;
+      debugPrint('ItemProvider: Successfully fetched ${_items.length} items');
     } catch (e) {
-      debugPrint('Error fetching items: $e');
+      debugPrint('ItemProvider ERROR: Failed to fetch items: $e');
+      // Extract error message from Exception or use the raw message
+      final errorStr = e.toString();
+      _errorMessage = errorStr.startsWith('Exception: ')
+          ? errorStr.substring('Exception: '.length)
+          : errorStr;
     } finally {
       _isLoading = false;
       notifyListeners();
@@ -32,12 +50,19 @@ class ItemProvider with ChangeNotifier {
   // Fetch deleted items
   Future<void> fetchDeletedItems() async {
     _isLoading = true;
+    _errorMessage = null;
     notifyListeners();
 
     try {
       _deletedItems = await _itemService.fetchItems(includeDeleted: true);
+      _errorMessage = null;
     } catch (e) {
       debugPrint('Error fetching deleted items: $e');
+      // Extract error message from Exception or use the raw message
+      final errorStr = e.toString();
+      _errorMessage = errorStr.startsWith('Exception: ')
+          ? errorStr.substring('Exception: '.length)
+          : errorStr;
     } finally {
       _isLoading = false;
       notifyListeners();
@@ -172,5 +197,11 @@ class ItemProvider with ChangeNotifier {
       debugPrint('Error checking item name: $e');
       return false;
     }
+  }
+
+  // Clear error message
+  void clearError() {
+    _errorMessage = null;
+    notifyListeners();
   }
 }
