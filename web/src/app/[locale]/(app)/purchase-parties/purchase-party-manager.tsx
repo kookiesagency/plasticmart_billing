@@ -9,6 +9,7 @@ import { ColumnDef } from '@tanstack/react-table'
 import { ArrowUpDown, Undo, Trash } from 'lucide-react'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { Checkbox } from '@/components/ui/checkbox'
+import { useTranslations } from 'next-intl'
 
 import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
@@ -36,12 +37,12 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { SetHeader } from '@/components/layout/header-context'
 
 // Define the schema for the form validation
-const purchasePartySchema = z.object({
+const getPurchasePartySchema = (t: any) => z.object({
   party_code: z.string()
-    .min(1, 'Party code is required')
-    .max(10, 'Party code must be less than 10 characters')
-    .regex(/^[A-Z0-9]+$/, 'Party code must contain only uppercase letters and numbers'),
-  name: z.string().min(1, 'Name is required').max(255, 'Name must be less than 255 characters'),
+    .min(1, t('partyCodeRequired'))
+    .max(10, t('partyCodeMaxLength'))
+    .regex(/^[A-Z0-9]+$/, t('partyCodeFormat')),
+  name: z.string().min(1, t('nameRequired')).max(255, t('nameMaxLength')),
 })
 
 export interface PurchasePartyManagerRef {
@@ -49,6 +50,7 @@ export interface PurchasePartyManagerRef {
 }
 
 const PurchasePartyManager = forwardRef<PurchasePartyManagerRef>((props, ref) => {
+  const t = useTranslations('purchaseParties')
   const supabase = createClient()
   const [parties, setParties] = useState<PurchaseParty[]>([])
   const [deletedParties, setDeletedParties] = useState<PurchaseParty[]>([])
@@ -63,6 +65,7 @@ const PurchasePartyManager = forwardRef<PurchasePartyManagerRef>((props, ref) =>
   const [bulkPermanentlyDeleteIds, setBulkPermanentlyDeleteIds] = useState<number[] | null>(null)
   const [bulkRestoreIds, setBulkRestoreIds] = useState<number[] | null>(null)
 
+  const purchasePartySchema = getPurchasePartySchema(t)
   const form = useForm<z.infer<typeof purchasePartySchema>>({
     resolver: zodResolver(purchasePartySchema),
     defaultValues: { party_code: '', name: '' },
@@ -96,7 +99,7 @@ const PurchasePartyManager = forwardRef<PurchasePartyManagerRef>((props, ref) =>
     const [activeRes, deletedRes] = await Promise.all([activeQuery, deletedQuery])
 
     if (activeRes.error) {
-      toast.error('Error fetching purchase parties: ' + activeRes.error.message)
+      toast.error(t('errorFetchingPurchaseParties', { error: activeRes.error.message }))
     } else {
       const partiesWithCount = (activeRes.data || []).map((party: any) => ({
         id: party.id,
@@ -109,7 +112,7 @@ const PurchasePartyManager = forwardRef<PurchasePartyManagerRef>((props, ref) =>
     }
 
     if (deletedRes.error) {
-      toast.error('Error fetching deleted purchase parties: ' + deletedRes.error.message)
+      toast.error(t('errorFetchingDeletedPurchaseParties', { error: deletedRes.error.message }))
     } else {
       const partiesWithCount = (deletedRes.data || []).map((party: any) => ({
         id: party.id,
@@ -149,7 +152,7 @@ const PurchasePartyManager = forwardRef<PurchasePartyManagerRef>((props, ref) =>
         .select('id, party_code, deleted_at')
 
       if (checkError) {
-        return toast.error('Validation check failed: ' + checkError.message)
+        return toast.error(t('validationCheckFailed', { error: checkError.message }))
       }
 
       const duplicate = allParties.find(
@@ -158,9 +161,9 @@ const PurchasePartyManager = forwardRef<PurchasePartyManagerRef>((props, ref) =>
 
       if (duplicate) {
         if (duplicate.deleted_at) {
-          return toast.error('A purchase party with this code is currently deleted. Please restore it from the deleted tab.')
+          return toast.error(t('purchasePartyDeletedRestore'))
         } else {
-          return toast.error('A purchase party with this code already exists.')
+          return toast.error(t('purchasePartyAlreadyExists'))
         }
       }
 
@@ -180,14 +183,14 @@ const PurchasePartyManager = forwardRef<PurchasePartyManagerRef>((props, ref) =>
       }
 
       if (error) {
-        toast.error('Failed to save purchase party: ' + error.message)
+        toast.error(t('failedToSavePurchaseParty', { error: error.message }))
       } else {
-        toast.success(`Purchase party ${editingParty ? 'updated' : 'created'} successfully!`)
+        toast.success(t(editingParty ? 'purchasePartyUpdated' : 'purchasePartyCreated'))
         setIsDialogOpen(false)
         fetchData()
       }
     } catch (error: any) {
-      toast.error('Failed to save purchase party: ' + error.message)
+      toast.error(t('failedToSavePurchaseParty', { error: error.message }))
     }
   }
 
@@ -205,13 +208,13 @@ const PurchasePartyManager = forwardRef<PurchasePartyManagerRef>((props, ref) =>
       .eq('purchase_party_id', deletingPartyId)
 
     if (checkError) {
-      return toast.error('Failed to check item usage: ' + checkError.message)
+      return toast.error(t('failedToCheckItemUsage', { error: checkError.message }))
     }
 
     if (count && count > 0) {
       setIsConfirmOpen(false)
       setDeletingPartyId(null)
-      return toast.error(`Cannot delete. This purchase party is used by ${count} item(s). Please update those items first.`)
+      return toast.error(t('cannotDeleteInUse', { count }))
     }
 
     const { error } = await supabase
@@ -220,9 +223,9 @@ const PurchasePartyManager = forwardRef<PurchasePartyManagerRef>((props, ref) =>
       .eq('id', deletingPartyId)
 
     if (error) {
-      toast.error('Failed to delete purchase party: ' + error.message)
+      toast.error(t('failedToDeletePurchaseParty', { error: error.message }))
     } else {
-      toast.success('Purchase party deleted successfully!')
+      toast.success(t('purchasePartyDeletedSuccess'))
       fetchData()
     }
     setDeletingPartyId(null)
@@ -241,9 +244,9 @@ const PurchasePartyManager = forwardRef<PurchasePartyManagerRef>((props, ref) =>
       .eq('id', permanentlyDeletingPartyId)
 
     if (error) {
-      toast.error('Failed to permanently delete purchase party: ' + error.message)
+      toast.error(t('failedToPermanentlyDeletePurchaseParty', { error: error.message }))
     } else {
-      toast.success('Purchase party permanently deleted successfully!')
+      toast.success(t('purchasePartyPermanentlyDeletedSuccess'))
       fetchData()
     }
     setPermanentlyDeletingPartyId(null)
@@ -262,9 +265,9 @@ const PurchasePartyManager = forwardRef<PurchasePartyManagerRef>((props, ref) =>
       .eq('id', restoringPartyId)
 
     if (error) {
-      toast.error('Failed to restore purchase party: ' + error.message)
+      toast.error(t('failedToRestorePurchaseParty', { error: error.message }))
     } else {
-      toast.success('Purchase party restored successfully!')
+      toast.success(t('purchasePartyRestoredSuccess'))
       fetchData()
     }
     setRestoringPartyId(null)
@@ -287,7 +290,7 @@ const PurchasePartyManager = forwardRef<PurchasePartyManagerRef>((props, ref) =>
     if (usageError) {
       setIsConfirmOpen(false)
       setBulkDeleteIds(null)
-      return toast.error('Failed to check item usage: ' + usageError.message)
+      return toast.error(t('failedToCheckItemUsage', { error: usageError.message }))
     }
 
     if (usageData && usageData.length > 0) {
@@ -298,12 +301,12 @@ const PurchasePartyManager = forwardRef<PurchasePartyManagerRef>((props, ref) =>
       }, {} as Record<string, number>)
 
       const errorMessages = Object.entries(usageCounts)
-        .map(([name, count]) => `${name} is used by ${count} item(s)`)
+        .map(([name, count]) => t('isUsedByItems', { name, count }))
         .join(', ')
 
       setIsConfirmOpen(false)
       setBulkDeleteIds(null)
-      return toast.error(`Cannot delete purchase parties in use: ${errorMessages}.`)
+      return toast.error(t('cannotDeletePartiesInUse', { details: errorMessages }))
     }
 
     const { error } = await supabase
@@ -312,9 +315,9 @@ const PurchasePartyManager = forwardRef<PurchasePartyManagerRef>((props, ref) =>
       .in('id', bulkDeleteIds)
 
     if (error) {
-      toast.error(`Failed to delete ${bulkDeleteIds.length} purchase parties: ` + error.message)
+      toast.error(t('failedToDeletePurchaseParties', { count: bulkDeleteIds.length, error: error.message }))
     } else {
-      toast.success(`${bulkDeleteIds.length} purchase parties deleted successfully!`)
+      toast.success(t('purchasePartiesDeletedSuccess', { count: bulkDeleteIds.length }))
       fetchData()
     }
     setBulkDeleteIds(null)
@@ -333,9 +336,9 @@ const PurchasePartyManager = forwardRef<PurchasePartyManagerRef>((props, ref) =>
       .in('id', bulkPermanentlyDeleteIds)
 
     if (error) {
-      toast.error(`Failed to permanently delete ${bulkPermanentlyDeleteIds.length} purchase parties: ` + error.message)
+      toast.error(t('failedToPermanentlyDeletePurchaseParties', { count: bulkPermanentlyDeleteIds.length, error: error.message }))
     } else {
-      toast.success(`${bulkPermanentlyDeleteIds.length} purchase parties permanently deleted successfully!`)
+      toast.success(t('purchasePartiesPermanentlyDeletedSuccess', { count: bulkPermanentlyDeleteIds.length }))
       fetchData()
     }
     setBulkPermanentlyDeleteIds(null)
@@ -354,9 +357,9 @@ const PurchasePartyManager = forwardRef<PurchasePartyManagerRef>((props, ref) =>
       .in('id', bulkRestoreIds)
 
     if (error) {
-      toast.error(`Failed to restore ${bulkRestoreIds.length} purchase parties: ` + error.message)
+      toast.error(t('failedToRestorePurchaseParties', { count: bulkRestoreIds.length, error: error.message }))
     } else {
-      toast.success(`${bulkRestoreIds.length} purchase parties restored successfully!`)
+      toast.success(t('purchasePartiesRestoredSuccess', { count: bulkRestoreIds.length }))
       fetchData()
     }
     setBulkRestoreIds(null)
@@ -389,7 +392,7 @@ const PurchasePartyManager = forwardRef<PurchasePartyManagerRef>((props, ref) =>
       accessorKey: 'name',
       header: ({ column }) => (
         <div className="flex items-center cursor-pointer" onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}>
-          Name
+          {t('name')}
           <ArrowUpDown className="ml-2 h-4 w-4" />
         </div>
       ),
@@ -398,7 +401,7 @@ const PurchasePartyManager = forwardRef<PurchasePartyManagerRef>((props, ref) =>
       accessorKey: 'party_code',
       header: ({ column }) => (
         <div className="flex items-center cursor-pointer" onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}>
-          Party Code
+          {t('partyCode')}
           <ArrowUpDown className="ml-2 h-4 w-4" />
         </div>
       ),
@@ -408,7 +411,7 @@ const PurchasePartyManager = forwardRef<PurchasePartyManagerRef>((props, ref) =>
       accessorKey: 'deleted_at',
       header: ({ column }) => (
         <div className="flex items-center cursor-pointer" onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}>
-          Deleted At
+          {t('deletedAt')}
           <ArrowUpDown className="ml-2 h-4 w-4" />
         </div>
       ),
@@ -426,7 +429,7 @@ const PurchasePartyManager = forwardRef<PurchasePartyManagerRef>((props, ref) =>
                 </Button>
               </TooltipTrigger>
               <TooltipContent>
-                <p>Restore Purchase Party</p>
+                <p>{t('restorePurchaseParty')}</p>
               </TooltipContent>
             </Tooltip>
             <Tooltip>
@@ -436,7 +439,7 @@ const PurchasePartyManager = forwardRef<PurchasePartyManagerRef>((props, ref) =>
                 </Button>
               </TooltipTrigger>
               <TooltipContent>
-                <p>Delete Permanently</p>
+                <p>{t('deletePermanently')}</p>
               </TooltipContent>
             </Tooltip>
           </div>
@@ -446,14 +449,14 @@ const PurchasePartyManager = forwardRef<PurchasePartyManagerRef>((props, ref) =>
   ]
 
   const getDialogInfo = () => {
-    let description = "Are you sure you want to proceed?"
+    let description = t('proceedConfirm')
 
-    if (deletingPartyId) description = "This will mark the purchase party as deleted. You can restore it within 30 days. This action will fail if the purchase party is currently in use by any items."
-    if (restoringPartyId) description = "This will restore the purchase party and make it active again."
-    if (permanentlyDeletingPartyId) description = "This action is IRREVERSIBLE and will permanently delete the purchase party."
-    if (bulkDeleteIds) description = `This will mark ${bulkDeleteIds.length} purchase parties as deleted. You can restore them within 30 days. This action will fail if any of the selected purchase parties are currently in use by items.`
-    if (bulkRestoreIds) description = `This will restore ${bulkRestoreIds.length} purchase parties and make them active again.`
-    if (bulkPermanentlyDeleteIds) description = `This action is IRREVERSIBLE and will permanently delete ${bulkPermanentlyDeleteIds.length} purchase parties.`
+    if (deletingPartyId) description = t('confirmDeleteDescription')
+    if (restoringPartyId) description = t('confirmRestoreDescription')
+    if (permanentlyDeletingPartyId) description = t('confirmPermanentDeleteDescription')
+    if (bulkDeleteIds) description = t('confirmBulkDeleteDescription', { count: bulkDeleteIds.length })
+    if (bulkRestoreIds) description = t('confirmBulkRestoreDescription', { count: bulkRestoreIds.length })
+    if (bulkPermanentlyDeleteIds) description = t('confirmBulkPermanentDeleteDescription', { count: bulkPermanentlyDeleteIds.length })
 
     return { description }
   }
@@ -472,8 +475,8 @@ const PurchasePartyManager = forwardRef<PurchasePartyManagerRef>((props, ref) =>
     <div>
       <Tabs defaultValue="active">
         <TabsList>
-          <TabsTrigger value="active">Active</TabsTrigger>
-          <TabsTrigger value="deleted">Deleted</TabsTrigger>
+          <TabsTrigger value="active">{t('active')}</TabsTrigger>
+          <TabsTrigger value="deleted">{t('deleted')}</TabsTrigger>
         </TabsList>
           <TabsContent value="active">
             <DataTable
@@ -481,7 +484,7 @@ const PurchasePartyManager = forwardRef<PurchasePartyManagerRef>((props, ref) =>
               data={parties}
               loading={loading}
               onBulkDelete={handleBulkDelete}
-              searchPlaceholder="Search purchase parties..."
+              searchPlaceholder={t('searchPurchaseParties')}
             />
           </TabsContent>
           <TabsContent value="deleted">
@@ -490,7 +493,7 @@ const PurchasePartyManager = forwardRef<PurchasePartyManagerRef>((props, ref) =>
               data={deletedParties as any}
               loading={loading}
               filterColumn="party_code"
-              filterPlaceholder="Filter by party code..."
+              filterPlaceholder={t('filterByPartyCode')}
               onBulkRestore={handleBulkRestore}
               onBulkPermanentDelete={handleBulkPermanentDelete}
             />
@@ -500,9 +503,9 @@ const PurchasePartyManager = forwardRef<PurchasePartyManagerRef>((props, ref) =>
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>{editingParty ? 'Edit Purchase Party' : 'Create Purchase Party'}</DialogTitle>
+              <DialogTitle>{t(editingParty ? 'editPurchaseParty' : 'createPurchaseParty')}</DialogTitle>
               <DialogDescription>
-                {editingParty ? 'Update the details of your purchase party.' : 'Add a new purchase party for inventory sourcing.'}
+                {t(editingParty ? 'updateDetails' : 'addNewForSourcing')}
               </DialogDescription>
             </DialogHeader>
             <Form {...form}>
@@ -512,9 +515,9 @@ const PurchasePartyManager = forwardRef<PurchasePartyManagerRef>((props, ref) =>
                   name="name"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Party Name</FormLabel>
+                      <FormLabel>{t('partyName')}</FormLabel>
                       <FormControl>
-                        <Input placeholder="e.g., Best Plastics Network" {...field} />
+                        <Input placeholder={t('partyNamePlaceholder')} {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -525,10 +528,10 @@ const PurchasePartyManager = forwardRef<PurchasePartyManagerRef>((props, ref) =>
                   name="party_code"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Party Code</FormLabel>
+                      <FormLabel>{t('partyCode')}</FormLabel>
                       <FormControl>
                         <Input
-                          placeholder="e.g., BPN, JY"
+                          placeholder={t('partyCodePlaceholder')}
                           {...field}
                           className="font-mono"
                           onChange={(e) => {
@@ -544,9 +547,9 @@ const PurchasePartyManager = forwardRef<PurchasePartyManagerRef>((props, ref) =>
                 />
                 <DialogFooter>
                   <Button type="button" variant="secondary" onClick={() => setIsDialogOpen(false)}>
-                    Cancel
+                    {t('cancel')}
                   </Button>
-                  <Button type="submit">Save Purchase Party</Button>
+                  <Button type="submit">{t('savePurchaseParty')}</Button>
                 </DialogFooter>
               </form>
             </Form>
@@ -564,7 +567,7 @@ const PurchasePartyManager = forwardRef<PurchasePartyManagerRef>((props, ref) =>
             setBulkRestoreIds(null)
           }}
           onConfirm={handleConfirmation}
-          title="Are you sure?"
+          title={t('areYouSure')}
           description={getDialogInfo().description}
         />
     </div>

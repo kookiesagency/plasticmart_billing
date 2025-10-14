@@ -232,7 +232,7 @@
     "csvInstructions": "इम्पोर्ट करने के लिए CSV फाइल चुनें। फाइल में <b>'name'</b>, <b>'rate'</b>, <b>'purchase_rate'</b> (ऑप्शनल), और <b>'unit'</b> कॉलम होने चाहिए।",
     "downloadSampleTemplate": "सैंपल CSV टेम्प्लेट डाउनलोड करें",
     "dragDropText": "यहां CSV फाइल ड्रैग और ड्रॉप करें, या फाइल सेलेक्ट करने के लिए क्लिक करें।",
-    "fileSelected": "<span class=\"font-semibold text-primary\">{fileName}</span> सेलेक्ट की गई।",
+    "fileSelected": "<span>{fileName}</span> सेलेक्ट की गई।",
     "parseFilePreview": "फाइल पार्स करें और प्रीव्यू देखें",
     "parsing": "पार्स हो रहा है...",
     "invalidCsvFile": "कृपया वैलिड CSV फाइल ड्रॉप करें।",

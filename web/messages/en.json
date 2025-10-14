@@ -232,7 +232,7 @@
     "csvInstructions": "Select a CSV file to import. The file must contain <b>'name'</b>, <b>'rate'</b>, <b>'purchase_rate'</b> (optional), and <b>'unit'</b> columns.",
     "downloadSampleTemplate": "Download sample CSV template",
     "dragDropText": "Drag & drop a CSV file here, or click to select a file.",
-    "fileSelected": "<span class=\"font-semibold text-primary\">{fileName}</span> selected.",
+    "fileSelected": "<span>{fileName}</span> selected.",
     "parseFilePreview": "Parse File and Preview",
     "parsing": "Parsing...",
     "invalidCsvFile": "Please drop a valid CSV file.",

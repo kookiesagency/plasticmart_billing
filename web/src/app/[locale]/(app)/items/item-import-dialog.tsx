@@ -160,7 +160,11 @@ export function ItemImportDialog({ isOpen, onOpenChange, onPreview, units }: Ite
               </svg>
             </div>
           )}
-          <p className="mb-2" dangerouslySetInnerHTML={{ __html: t('csvInstructions') }} />
+          <p className="mb-2">
+            {t.rich('csvInstructions', {
+              b: (chunks) => <b>{chunks}</b>
+            })}
+          </p>
           <a href="/sample-items.csv" download className="text-sm text-blue-500 hover:underline mb-4 block">
             {t('downloadSampleTemplate')}
           </a>
@@ -175,10 +179,16 @@ export function ItemImportDialog({ isOpen, onOpenChange, onPreview, units }: Ite
           >
             <Input id="file-upload-input" type="file" accept=".csv" className="hidden" onChange={handleFileSelect} disabled={isLoading} />
             <FileUp className="mx-auto h-10 w-10 text-muted-foreground mb-2" />
-            {file ?
-              <p className="text-muted-foreground" dangerouslySetInnerHTML={{ __html: t('fileSelected').replace('{fileName}', file.name) }} /> :
+            {file ? (
+              <p className="text-muted-foreground">
+                {t.rich('fileSelected', {
+                  fileName: file.name,
+                  span: (chunks) => <span className="font-semibold text-primary">{chunks}</span>
+                })}
+              </p>
+            ) : (
               <p className="text-muted-foreground">{t('dragDropText')}</p>
-            }
+            )}
           </div>
           <DialogFooter className="mt-4">
             <Button onClick={handleFileParse} disabled={!file || isLoading}>
