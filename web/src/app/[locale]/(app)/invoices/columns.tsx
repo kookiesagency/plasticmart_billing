@@ -269,11 +269,10 @@ export const columns = (
 
       const handleShareOnWhatsApp = () => {
         const publicUrl = `${window.location.origin}/invoices/view/${invoice.public_id}`;
-        const message = t('whatsappMessage', {
-          partyName: invoice.party_name,
-          invoiceDate: formatDate(invoice.invoice_date),
-          publicUrl: publicUrl
-        });
+        const message = t('whatsappMessage')
+          .replace('{partyName}', invoice.party_name)
+          .replace('{invoiceDate}', formatDate(invoice.invoice_date))
+          .replace('{publicUrl}', publicUrl);
         const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(message)}`;
         window.open(whatsappUrl, '_blank');
       };
