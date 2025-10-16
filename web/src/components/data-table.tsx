@@ -290,7 +290,7 @@ export function DataTable<TData, TValue>({
       </div>
       <div className="flex items-center justify-between space-x-2 py-4">
         <div className="flex-1 text-sm text-muted-foreground">
-          {t('rowsSelected', { count: table.getFilteredSelectedRowModel().rows.length, total: table.getFilteredRowModel().rows.length })}
+          {t('rowsSelected').replace('{count}', table.getFilteredSelectedRowModel().rows.length.toString()).replace('{total}', table.getFilteredRowModel().rows.length.toString())}
         </div>
         <div className="flex items-center space-x-6 lg:space-x-8">
             <div className="flex items-center space-x-2">
@@ -314,7 +314,7 @@ export function DataTable<TData, TValue>({
                 </Select>
             </div>
             <div className="flex w-[100px] items-center justify-center text-sm font-medium">
-                {t('pageOf', { current: table.getState().pagination.pageIndex + 1, total: table.getPageCount() })}
+                {t('pageOf').replace('{current}', (table.getState().pagination.pageIndex + 1).toString()).replace('{total}', table.getPageCount().toString())}
             </div>
             <div className="flex items-center space-x-2">
                 <Button

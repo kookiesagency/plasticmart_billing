@@ -65,7 +65,7 @@ const InlineEditableCell = ({
       setIsEditing(false);
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-      toast.error(t('failedToUpdateItem', { error: errorMessage }));
+      toast.error(t('failedToUpdateItem').replace('{error}', errorMessage));
     } finally {
       setIsLoading(false);
     }

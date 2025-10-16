@@ -58,12 +58,13 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
 
     return GestureDetector(
       onTap: () => FocusScope.of(context).unfocus(),
       behavior: HitTestBehavior.opaque,
       child: Scaffold(
-        backgroundColor: Colors.white,
         body: SafeArea(
         child: Center(
           child: SingleChildScrollView(
@@ -85,19 +86,19 @@ class _LoginScreenState extends State<LoginScreen> {
                   // Title
                   Text(
                     l10n.login_welcomeBack,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 28,
                       fontWeight: FontWeight.bold,
-                      color: Colors.black87,
+                      color: theme.colorScheme.onSurface,
                     ),
                     textAlign: TextAlign.center,
                   ),
                   const SizedBox(height: 8),
                   Text(
                     l10n.login_subtitle,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 16,
-                      color: Colors.black54,
+                      color: theme.colorScheme.onSurface.withOpacity(0.6),
                     ),
                     textAlign: TextAlign.center,
                   ),
@@ -114,7 +115,9 @@ class _LoginScreenState extends State<LoginScreen> {
                         borderRadius: BorderRadius.circular(12),
                       ),
                       filled: true,
-                      fillColor: Colors.grey.shade50,
+                      fillColor: isDark
+                          ? theme.colorScheme.surface
+                          : Colors.grey.shade50,
                     ),
                     validator: (value) {
                       if (value == null || value.isEmpty) {
@@ -151,7 +154,9 @@ class _LoginScreenState extends State<LoginScreen> {
                         borderRadius: BorderRadius.circular(12),
                       ),
                       filled: true,
-                      fillColor: Colors.grey.shade50,
+                      fillColor: isDark
+                          ? theme.colorScheme.surface
+                          : Colors.grey.shade50,
                     ),
                     validator: (value) {
                       if (value == null || value.isEmpty) {

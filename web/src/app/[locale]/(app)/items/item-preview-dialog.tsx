@@ -130,7 +130,7 @@ export function ItemPreviewDialog({ isOpen, onOpenChange, onSuccess, units, init
       .not('deleted_at', 'is', null)
       .select('id')
     if (error) {
-      toast.error(t('failedToRestoreItem', { error: error.message }))
+      toast.error(t('failedToRestoreItem').replace('{error}', error.message))
     } else {
       toast.success(t('itemRestoredSuccess'))
       // Update preview row: no longer a duplicate
@@ -165,7 +165,7 @@ export function ItemPreviewDialog({ isOpen, onOpenChange, onSuccess, units, init
         .in('name', finalItemNames)
 
       if (dbError) {
-        toast.error(t('couldNotVerifyNames', { error: dbError.message }))
+        toast.error(t('couldNotVerifyNames').replace('{error}', dbError.message))
         return
       }
       // Build normalized set of existing names
@@ -190,7 +190,7 @@ export function ItemPreviewDialog({ isOpen, onOpenChange, onSuccess, units, init
       let newUnits: Unit[] = []
       if (newUnitNames.length > 0) {
         const { data, error } = await supabase.from('units').insert(newUnitNames.map(name => ({ name: name }))).select()
-        if (error) { toast.error(t('failedToCreateUnits', { error: error.message })); return }
+        if (error) { toast.error(t('failedToCreateUnits').replace('{error}', error.message)); return }
         newUnits = data as Unit[]
       }
       // Merge all units (existing + new) into normalized map
@@ -214,7 +214,7 @@ export function ItemPreviewDialog({ isOpen, onOpenChange, onSuccess, units, init
       }
 
       const { error: insertError, data: insertedItems } = await supabase.from('items').insert(itemsToInsert).select('id, name');
-      if (insertError) { toast.error(t('failedToCreateItem', { error: insertError.message })); return }
+      if (insertError) { toast.error(t('failedToCreateItem').replace('{error}', insertError.message)); return }
 
       // Patch activity_logs for each imported item to add imported_via: 'import'
       if (insertedItems && Array.isArray(insertedItems)) {
@@ -250,9 +250,9 @@ export function ItemPreviewDialog({ isOpen, onOpenChange, onSuccess, units, init
       // Restore the dialog UI
       const finalDuplicates = finalParsedData.filter(item => item.is_duplicate).length
       const finalErrors = finalParsedData.filter(item => item.is_invalid).length
-      toast.success(t('itemsImportedSuccess', { count: itemsToInsert.length }))
-      if (finalDuplicates > 0) toast.info(t('duplicateItemsSkipped', { count: finalDuplicates }))
-      if (finalErrors > 0) toast.warning(t('itemsWithErrorsSkipped', { count: finalErrors }))
+      toast.success(t('itemsImportedSuccess').replace('{count}', itemsToInsert.length.toString()))
+      if (finalDuplicates > 0) toast.info(t('duplicateItemsSkipped').replace('{count}', finalDuplicates.toString()))
+      if (finalErrors > 0) toast.warning(t('itemsWithErrorsSkipped').replace('{count}', finalErrors.toString()))
       onSuccess()
     } finally {
       setIsLoading(false)
