@@ -29,8 +29,8 @@ class PdfService {
     final bundleCharge = invoice.bundleCharge != null ? invoice.bundleCharge!.toDouble() : 0.0;
     final totalAmount = subTotal + bundleCharge;
 
-    // Calculate 50% of available width (after margins)
-    final contentWidth = (PdfPageFormat.a4.width - 40) * 0.5; // 40 = margins (20 on each side)
+    // Calculate 65% of available width (after margins)
+    final contentWidth = (PdfPageFormat.a4.width - 40) * 0.65; // 40 = margins (20 on each side)
 
     pdf.addPage(
       pw.MultiPage(
@@ -189,7 +189,7 @@ class PdfService {
   pw.Widget _buildItemsTable(List<InvoiceItem> items) {
     return pw.Table(
       columnWidths: {
-        0: const pw.FlexColumnWidth(10), // SR. NO - 10%
+        0: const pw.FlexColumnWidth(10), // NO - 10%
         1: const pw.FlexColumnWidth(40), // ITEM - 40%
         2: const pw.FlexColumnWidth(10), // QTY - 10%
         3: const pw.FlexColumnWidth(10), // UNIT - 10%
@@ -206,7 +206,7 @@ class PdfService {
             ),
           ),
           children: [
-            _buildTableCell('SR. NO', isHeader: true, align: pw.TextAlign.center),
+            _buildTableCell('NO', isHeader: true, align: pw.TextAlign.center),
             _buildTableCell('ITEM', isHeader: true, align: pw.TextAlign.left),
             _buildTableCell('QTY', isHeader: true, align: pw.TextAlign.left),
             _buildTableCell('UNIT', isHeader: true, align: pw.TextAlign.left),
