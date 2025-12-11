@@ -105,25 +105,76 @@ export default function ItemManager() {
 
   const fetchData = async () => {
     setLoading(true)
+
+    // Fetch all active items with pagination
+    const fetchAllActiveItems = async () => {
+      let allItems: any[] = [];
+      let from = 0;
+      const pageSize = 1000;
+
+      while (true) {
+        const { data, error } = await supabase
+          .from('items')
+          .select('*, units(id, name), purchase_party:purchase_parties!purchase_party_id(id, name)')
+          .is('deleted_at', null)
+          .order('created_at', { ascending: false })
+          .range(from, from + pageSize - 1);
+
+        if (error) return { data: null, error };
+        if (!data || data.length === 0) break;
+
+        allItems = [...allItems, ...data];
+        if (data.length < pageSize) break;
+        from += pageSize;
+      }
+
+      return { data: allItems, error: null };
+    };
+
+    // Fetch all deleted items with pagination
+    const fetchAllDeletedItems = async () => {
+      let allItems: any[] = [];
+      let from = 0;
+      const pageSize = 1000;
+
+      while (true) {
+        const { data, error } = await supabase
+          .from('items')
+          .select('*, units(id, name), purchase_party:purchase_parties!purchase_party_id(id, name)')
+          .not('deleted_at', 'is', null)
+          .order('deleted_at', { ascending: false })
+          .range(from, from + pageSize - 1);
+
+        if (error) return { data: null, error };
+        if (!data || data.length === 0) break;
+
+        allItems = [...allItems, ...data];
+        if (data.length < pageSize) break;
+        from += pageSize;
+      }
+
+      return { data: allItems, error: null };
+    };
+
     const [itemsRes, deletedItemsRes, unitsRes, partiesRes] = await Promise.all([
-      supabase.from('items').select('*, units(id, name), purchase_party:purchase_parties!purchase_party_id(id, name)').is('deleted_at', null).order('created_at', { ascending: false }),
-      supabase.from('items').select('*, units(id, name), purchase_party:purchase_parties!purchase_party_id(id, name)').not('deleted_at', 'is', null).order('deleted_at', { ascending: false }),
-      supabase.from('units').select('id, name').is('deleted_at', null),
-      supabase.from('parties').select('id, name').is('deleted_at', null),
+      fetchAllActiveItems(),
+      fetchAllDeletedItems(),
+      supabase.from('units').select('id, name').is('deleted_at', null).limit(10000),
+      supabase.from('parties').select('id, name').is('deleted_at', null).limit(10000),
     ])
 
-    if (itemsRes.error) toast.error(t('failedToFetchItems').replace('{error}', itemsRes.error.message))
+    if (itemsRes.error) toast.error(t('failedToFetchItems', { error: itemsRes.error.message }))
     else setItems(itemsRes.data as Item[])
 
-    if (deletedItemsRes.error) toast.error(t('failedToFetchDeletedItems').replace('{error}', deletedItemsRes.error.message))
+    if (deletedItemsRes.error) toast.error(t('failedToFetchDeletedItems', { error: deletedItemsRes.error.message }))
     else setDeletedItems(deletedItemsRes.data as Item[])
 
-    if (unitsRes.error) toast.error(t('failedToFetchUnits').replace('{error}', unitsRes.error.message))
+    if (unitsRes.error) toast.error(t('failedToFetchUnits', { error: unitsRes.error.message }))
     else setUnits(unitsRes.data)
 
-    if (partiesRes.error) toast.error(t('failedToFetchParties').replace('{error}', partiesRes.error.message))
+    if (partiesRes.error) toast.error(t('failedToFetchParties', { error: partiesRes.error.message }))
     else setParties(partiesRes.data)
-    
+
     setLoading(false)
   }
 

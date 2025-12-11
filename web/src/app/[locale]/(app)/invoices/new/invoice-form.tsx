@@ -151,13 +151,16 @@ export function InvoiceForm({ invoiceId }: { invoiceId?: string }) {
       if (name && (name.startsWith('items') || ['bundle_rate', 'bundle_quantity', 'bundle_charge'].includes(name))) {
         const items = value.items || [];
         const subTotal = items.reduce((acc, item) => acc + (item?.quantity || 0) * (item?.rate || 0), 0);
-        
+
+        let currentBundleCharge = value.bundle_charge || 0;
+
         if (name === 'bundle_rate' || name === 'bundle_quantity') {
           const calculatedBundleCharge = (value.bundle_rate || 0) * (value.bundle_quantity || 0);
           form.setValue('bundle_charge', calculatedBundleCharge);
+          currentBundleCharge = calculatedBundleCharge; // Use the new calculated value
         }
 
-        const grandTotal = Number(subTotal) + Number(value.bundle_charge || 0);
+        const grandTotal = Number(subTotal) + Number(currentBundleCharge);
 
         if (form.getValues('subTotal') !== subTotal) {
           form.setValue('subTotal', subTotal, { shouldValidate: true });
@@ -172,16 +175,57 @@ export function InvoiceForm({ invoiceId }: { invoiceId?: string }) {
 
   useEffect(() => {
     const fetchInitialData = async () => {
+      // Fetch all items using pagination to bypass 1000 limit
+      const fetchAllItems = async () => {
+        let allItems: any[] = [];
+        let from = 0;
+        const pageSize = 1000;
+
+        while (true) {
+          const { data, error } = await supabase
+            .from('items')
+            .select('*, units(name), item_party_prices(party_id, price)')
+            .is('deleted_at', null)
+            .range(from, from + pageSize - 1);
+
+          if (error) return { data: null, error };
+          if (!data || data.length === 0) break;
+
+          allItems = [...allItems, ...data];
+          if (data.length < pageSize) break; // Last page
+          from += pageSize;
+        }
+
+        return { data: allItems, error: null };
+      };
+
       const [partiesRes, itemsRes, settingsRes, unitsRes] = await Promise.all([
-        supabase.from('parties').select('*').is('deleted_at', null),
-        supabase.from('items').select('*, units(name), item_party_prices(party_id, price)').is('deleted_at', null),
+        supabase.from('parties').select('*').is('deleted_at', null).limit(10000),
+        fetchAllItems(),
         supabase.from('app_settings').select('*'),
-        supabase.from('units').select('id, name').is('deleted_at', null),
+        supabase.from('units').select('id, name').is('deleted_at', null).limit(10000),
       ])
-      
-      if (partiesRes.data) setPartiesData(partiesRes.data)
-      if (itemsRes.data) setItemsData(itemsRes.data)
-      if (settingsRes.data) {
+
+      // Handle errors for each query
+      if (partiesRes.error) {
+        console.error('Error fetching parties:', partiesRes.error)
+        toast.error(t('failedToFetchParties') || 'Failed to fetch parties')
+      } else if (partiesRes.data) {
+        setPartiesData(partiesRes.data)
+      }
+
+      if (itemsRes.error) {
+        console.error('Error fetching items:', itemsRes.error)
+        toast.error(t('failedToFetchItems') || 'Failed to fetch items')
+      } else if (itemsRes.data) {
+        console.log('✅ Fetched items count:', itemsRes.data.length)
+        console.log('📋 All items:', itemsRes.data.map(item => item.name))
+        setItemsData(itemsRes.data)
+      }
+
+      if (settingsRes.error) {
+        console.error('Error fetching settings:', settingsRes.error)
+      } else if (settingsRes.data) {
         setSettings(settingsRes.data)
         // Set default bundle rate only for new invoices
         if (!invoiceId) {
@@ -189,7 +233,12 @@ export function InvoiceForm({ invoiceId }: { invoiceId?: string }) {
           form.setValue('bundle_rate', parseFloat(defaultBundleRate))
         }
       }
-      if (unitsRes.data) setUnitsData(unitsRes.data)
+
+      if (unitsRes.error) {
+        console.error('Error fetching units:', unitsRes.error)
+      } else if (unitsRes.data) {
+        setUnitsData(unitsRes.data)
+      }
       
       if (invoiceId) {
         const { data: invoiceData, error } = await supabase
@@ -219,7 +268,7 @@ export function InvoiceForm({ invoiceId }: { invoiceId?: string }) {
               .map((it: { position?: number; [key: string]: unknown }, idx: number) => ({ ...it, position: typeof it.position === 'number' ? it.position : idx })),
           })
         } else if (error) {
-          toast.error(t('failedToFetchInvoice').replace('{error}', error.message))
+          toast.error(t('failedToFetchInvoice', { error: error.message }))
         }
       }
     }
@@ -352,7 +401,7 @@ export function InvoiceForm({ invoiceId }: { invoiceId?: string }) {
     }
 
     if (error) {
-      toast.error(t('failedToSaveInvoice').replace('{error}', error.message))
+      toast.error(t('failedToSaveInvoice', { error: error.message }))
       setIsSubmitting(false)
     } else {
       toast.success(invoiceId ? t('invoiceUpdatedSuccess') : t('invoiceCreatedSuccess'))
@@ -643,7 +692,18 @@ export function InvoiceForm({ invoiceId }: { invoiceId?: string }) {
                         render={({ field }) => (
                           <FormItem>
                             <FormControl>
-                              <Input {...field} type="number" className="w-24 text-right" placeholder={t('qty')} onWheel={e => (e.target as HTMLInputElement).blur()} />
+                              <Input
+                                {...field}
+                                type="number"
+                                className="w-24 text-right"
+                                placeholder={t('qty')}
+                                onWheel={e => (e.target as HTMLInputElement).blur()}
+                                onKeyDown={e => {
+                                  if (e.key === 'Enter') {
+                                    e.preventDefault();
+                                  }
+                                }}
+                              />
                             </FormControl>
                           </FormItem>
                         )}
@@ -657,7 +717,18 @@ export function InvoiceForm({ invoiceId }: { invoiceId?: string }) {
                         render={({ field }) => (
                           <FormItem>
                             <FormControl>
-                              <Input {...field} type="number" className="w-24 text-right" placeholder={t('rate')} onWheel={e => (e.target as HTMLInputElement).blur()} />
+                              <Input
+                                {...field}
+                                type="number"
+                                className="w-24 text-right"
+                                placeholder={t('rate')}
+                                onWheel={e => (e.target as HTMLInputElement).blur()}
+                                onKeyDown={e => {
+                                  if (e.key === 'Enter') {
+                                    e.preventDefault();
+                                  }
+                                }}
+                              />
                             </FormControl>
                           </FormItem>
                         )}
@@ -671,7 +742,18 @@ export function InvoiceForm({ invoiceId }: { invoiceId?: string }) {
                         render={({ field }) => (
                           <FormItem>
                             <FormControl>
-                              <Input {...field} type="number" className="w-24 text-right font-semibold" placeholder={t('total')} onWheel={e => (e.target as HTMLInputElement).blur()} />
+                              <Input
+                                {...field}
+                                type="number"
+                                className="w-24 text-right font-semibold"
+                                placeholder={t('total')}
+                                onWheel={e => (e.target as HTMLInputElement).blur()}
+                                onKeyDown={e => {
+                                  if (e.key === 'Enter') {
+                                    e.preventDefault();
+                                  }
+                                }}
+                              />
                             </FormControl>
                           </FormItem>
                         )}
@@ -702,16 +784,41 @@ export function InvoiceForm({ invoiceId }: { invoiceId?: string }) {
         setItemSearch={setItemSearch}
         fields={fields}
         t={t}
-        onItemsRefresh={() => {
-          // Refresh items data
-          const fetchItems = async () => {
-            const { data } = await supabase
-              .from('items')
-              .select('*, units(name), item_party_prices(party_id, price)')
-              .is('deleted_at', null);
-            if (data) setItemsData(data);
-          };
-          fetchItems();
+        onItemsRefresh={async () => {
+          // Refresh items data with pagination
+          console.log('🔄 Refreshing items...');
+          try {
+            let allItems: any[] = [];
+            let from = 0;
+            const pageSize = 1000;
+
+            while (true) {
+              const { data, error } = await supabase
+                .from('items')
+                .select('*, units(name), item_party_prices(party_id, price)')
+                .is('deleted_at', null)
+                .range(from, from + pageSize - 1);
+
+              if (error) {
+                console.error('❌ Error fetching items:', error);
+                toast.error(t('failedToFetchItems') || 'Failed to fetch items');
+                return;
+              }
+
+              if (!data || data.length === 0) break;
+
+              allItems = [...allItems, ...data];
+              if (data.length < pageSize) break; // Last page
+              from += pageSize;
+            }
+
+            console.log('✅ Refreshed items count:', allItems.length);
+            console.log('📋 Refreshed items:', allItems.map(item => item.name));
+            setItemsData(allItems);
+          } catch (err) {
+            console.error('❌ Error refreshing items:', err);
+            toast.error(t('failedToFetchItems') || 'Failed to fetch items');
+          }
         }}
       />
     </Form>
@@ -728,7 +835,7 @@ type AddItemDialogProps = {
   setItemSearch: (value: string) => void;
   fields: { item_id: number | null }[];
   t: (key: string) => string;
-  onItemsRefresh: () => void;
+  onItemsRefresh: () => Promise<void>;
 }
 
 const AddItemDialog = ({ isOpen, onOpenChange, itemsData, quickAddItem, getItemPrice, itemSearch, setItemSearch, fields, t, onItemsRefresh }: AddItemDialogProps) => {
@@ -738,6 +845,15 @@ const AddItemDialog = ({ isOpen, onOpenChange, itemsData, quickAddItem, getItemP
   const listRef = React.useRef<HTMLDivElement | null>(null);
   const addedItemIds = fields.map(f => f.item_id)
 
+  // Debug: Log items data when it changes
+  useEffect(() => {
+    if (isOpen) {
+      console.log('🔍 AddItemDialog opened - Items in dialog:', itemsData.length);
+      console.log('📝 Item names:', itemsData.map(i => i.name));
+      console.log('🔎 Search term:', itemSearch);
+    }
+  }, [isOpen, itemsData, itemSearch]);
+
   // Filter out already added items from the list
   const availableItems = [...itemsData]
     .filter(i => !addedItemIds.includes(i.id))
@@ -746,6 +862,8 @@ const AddItemDialog = ({ isOpen, onOpenChange, itemsData, quickAddItem, getItemP
   const filteredItems = availableItems.filter(item =>
     item.name.toLowerCase().includes(itemSearch.toLowerCase())
   );
+
+  console.log('🎯 Filtered items for search "' + itemSearch + '":', filteredItems.map(i => i.name));
 
   // Check if search matches an existing item (including already added ones)
   const exactMatch = itemsData.find(item =>
@@ -855,7 +973,7 @@ const AddItemDialog = ({ isOpen, onOpenChange, itemsData, quickAddItem, getItemP
                         isExactMatchAlreadyAdded ? (
                           <div className="flex flex-col items-center gap-4 py-6">
                             <p className="text-muted-foreground text-sm">
-                              {t('itemAlreadyAdded').replace('{itemName}', itemSearch)}
+                              {t('itemAlreadyAdded', { itemName: itemSearch })}
                             </p>
                             <p className="text-xs text-muted-foreground">
                               {t('modifyInTable')}
@@ -863,7 +981,7 @@ const AddItemDialog = ({ isOpen, onOpenChange, itemsData, quickAddItem, getItemP
                           </div>
                         ) : exactMatch ? (
                           <div className="flex flex-col items-center gap-4 py-6">
-                            <p className="text-muted-foreground text-sm">{t('itemFound').replace('{itemName}', itemSearch)}</p>
+                            <p className="text-muted-foreground text-sm">{t('itemFound', { itemName: itemSearch })}</p>
                             <Button
                               variant="default"
                               size="default"
@@ -871,12 +989,12 @@ const AddItemDialog = ({ isOpen, onOpenChange, itemsData, quickAddItem, getItemP
                               className="min-w-[200px] h-10"
                             >
                               <PlusCircle className="mr-2 h-4 w-4" />
-                              {t('addToInvoice').replace('{itemName}', itemSearch)}
+                              {t('addToInvoice', { itemName: itemSearch })}
                             </Button>
                           </div>
                         ) : (
                           <div className="flex flex-col items-center gap-4 py-6">
-                            <p className="text-muted-foreground text-sm">{t('noItemsFound').replace('{searchTerm}', itemSearch)}</p>
+                            <p className="text-muted-foreground text-sm">{t('noItemsFound', { searchTerm: itemSearch })}</p>
                             <Button
                               variant="outline"
                               size="default"
@@ -884,7 +1002,7 @@ const AddItemDialog = ({ isOpen, onOpenChange, itemsData, quickAddItem, getItemP
                               className="min-w-[200px] h-10 bg-slate-900 text-white border-slate-900 hover:bg-slate-800 hover:border-slate-800 hover:text-white"
                             >
                               <PlusCircle className="mr-2 h-4 w-4" />
-                              {t('createNewItem').replace('{itemName}', itemSearch)}
+                              {t('createNewItem', { itemName: itemSearch })}
                             </Button>
                           </div>
                         )
@@ -905,8 +1023,8 @@ const AddItemDialog = ({ isOpen, onOpenChange, itemsData, quickAddItem, getItemP
       <CreateItemDialog
         isOpen={isCreateItemDialogOpen}
         onOpenChange={setIsCreateItemDialogOpen}
-        onItemCreated={() => {
-          onItemsRefresh();
+        onItemCreated={async () => {
+          await onItemsRefresh();
           setIsCreateItemDialogOpen(false);
         }}
         initialName={itemNameForCreation}
@@ -944,7 +1062,7 @@ const CreateItemDialog = ({
 }: {
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
-  onItemCreated: () => void;
+  onItemCreated: () => Promise<void>;
   initialName?: string;
   t: (key: string) => string;
 }) => {
@@ -1015,7 +1133,7 @@ const CreateItemDialog = ({
       .select('id, name, deleted_at')
 
     if (checkError) {
-      return toast.error(t('errorCheckingDuplicate').replace('{error}', checkError.message))
+      return toast.error(t('errorCheckingDuplicate', { error: checkError.message }))
     }
 
     // Check if an item with the same normalized name exists
@@ -1031,18 +1149,18 @@ const CreateItemDialog = ({
     const { party_prices, ...itemData } = { ...values, name: trimmedName }
 
     const { data, error } = await supabase.from('items').insert(itemData).select('id').single()
-    if (error) return toast.error(t('failedToCreateItem').replace('{error}', error.message))
+    if (error) return toast.error(t('failedToCreateItem', { error: error.message }))
 
     const itemId = data.id
 
     if (party_prices && party_prices.length > 0) {
       const pricesToInsert = party_prices.map(pp => ({ ...pp, item_id: itemId }))
       const { error: insertPricesError } = await supabase.from('item_party_prices').insert(pricesToInsert)
-      if (insertPricesError) return toast.error(t('failedToSavePartyPrices').replace('{error}', insertPricesError.message))
+      if (insertPricesError) return toast.error(t('failedToSavePartyPrices', { error: insertPricesError.message }))
     }
 
     toast.success(t('itemCreatedSuccess'))
-    onItemCreated()
+    await onItemCreated()
     onOpenChange(false)
 
     // Reset form
