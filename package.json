@@ -11,5 +11,8 @@
     "build:mobile:android": "cd mobile && flutter build apk",
     "build:mobile:ios": "cd mobile && flutter build ios"
   },
-  "description": "PlasticMart Billing System - Web and Mobile"
+  "description": "PlasticMart Billing System - Web and Mobile",
+  "dependencies": {
+    "next": "15.3.4"
+  }
 }
