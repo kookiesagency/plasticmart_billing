@@ -157,7 +157,7 @@ export default function UnitManager() {
     if (count && count > 0) {
       setIsConfirmOpen(false)
       setDeletingUnitId(null)
-      return toast.error(t('cannotDeleteUnitInUse', { count: count.toString( })))
+      return toast.error(t('cannotDeleteUnitInUse', { count: count.toString()}))
     }
 
     const { error } = await supabase.from('units').update({ deleted_at: new Date().toISOString() }).eq('id', deletingUnitId)
@@ -242,9 +242,9 @@ export default function UnitManager() {
 
     const { error } = await supabase.from('units').update({ deleted_at: new Date().toISOString() }).in('id', bulkDeleteIds)
     if (error) {
-      toast.error(t('failedToDeleteUnits', { count: bulkDeleteIds.length.toString( })) + error.message)
+      toast.error(t('failedToDeleteUnits', { count: bulkDeleteIds.length.toString()}) + error.message)
     } else {
-      toast.success(t('unitsDeletedSuccess', { count: bulkDeleteIds.length.toString( })))
+      toast.success(t('unitsDeletedSuccess', { count: bulkDeleteIds.length.toString()}))
       fetchData()
     }
     setBulkDeleteIds(null);
@@ -259,9 +259,9 @@ export default function UnitManager() {
     if (!bulkPermanentlyDeleteIds) return
     const { error } = await supabase.from('units').delete().in('id', bulkPermanentlyDeleteIds)
     if (error) {
-      toast.error(t('failedToPermanentlyDeleteUnits', { count: bulkPermanentlyDeleteIds.length.toString( })) + error.message)
+      toast.error(t('failedToPermanentlyDeleteUnits', { count: bulkPermanentlyDeleteIds.length.toString()}) + error.message)
     } else {
-      toast.success(t('unitsPermanentlyDeletedSuccess', { count: bulkPermanentlyDeleteIds.length.toString( })))
+      toast.success(t('unitsPermanentlyDeletedSuccess', { count: bulkPermanentlyDeleteIds.length.toString()}))
       fetchData()
     }
     setBulkPermanentlyDeleteIds(null)
@@ -276,9 +276,9 @@ export default function UnitManager() {
     if (!bulkRestoreIds) return;
     const { error } = await supabase.from('units').update({ deleted_at: null }).in('id', bulkRestoreIds)
     if (error) {
-      toast.error(t('failedToRestoreUnits', { count: bulkRestoreIds.length.toString( })) + error.message)
+      toast.error(t('failedToRestoreUnits', { count: bulkRestoreIds.length.toString()}) + error.message)
     } else {
-      toast.success(t('unitsRestoredSuccess', { count: bulkRestoreIds.length.toString( })))
+      toast.success(t('unitsRestoredSuccess', { count: bulkRestoreIds.length.toString()}))
       fetchData()
     }
     setBulkRestoreIds(null);
@@ -363,9 +363,9 @@ export default function UnitManager() {
     if (deletingUnitId) description = t('confirmDeleteDescription')
     if (restoringUnitId) description = t('confirmRestoreDescription')
     if (permanentlyDeletingUnitId) description = t('confirmPermanentDeleteDescription')
-    if (bulkDeleteIds) description = t('confirmBulkDeleteDescription', { count: bulkDeleteIds.length.toString( }))
-    if (bulkRestoreIds) description = t('confirmBulkRestoreDescription', { count: bulkRestoreIds.length.toString( }))
-    if (bulkPermanentlyDeleteIds) description = t('confirmBulkPermanentDeleteDescription', { count: bulkPermanentlyDeleteIds.length.toString( }))
+    if (bulkDeleteIds) description = t('confirmBulkDeleteDescription', { count: bulkDeleteIds.length.toString()})
+    if (bulkRestoreIds) description = t('confirmBulkRestoreDescription', { count: bulkRestoreIds.length.toString()})
+    if (bulkPermanentlyDeleteIds) description = t('confirmBulkPermanentDeleteDescription', { count: bulkPermanentlyDeleteIds.length.toString()})
 
     return { description };
   }

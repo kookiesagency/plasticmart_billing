@@ -214,7 +214,7 @@ const PurchasePartyManager = forwardRef<PurchasePartyManagerRef>((props, ref) =>
     if (count && count > 0) {
       setIsConfirmOpen(false)
       setDeletingPartyId(null)
-      return toast.error(t('cannotDeleteInUse', { count: count .toString( })))
+      return toast.error(t('cannotDeleteInUse', { count: count.toString()}))
     }
 
     const { error } = await supabase
@@ -315,9 +315,9 @@ const PurchasePartyManager = forwardRef<PurchasePartyManagerRef>((props, ref) =>
       .in('id', bulkDeleteIds)
 
     if (error) {
-      toast.error(t('failedToDeletePurchaseParties', { count: bulkDeleteIds.length.toString( })).replace('{error}', error.message))
+      toast.error(t('failedToDeletePurchaseParties', { count: bulkDeleteIds.length.toString()}).replace('{error}', error.message))
     } else {
-      toast.success(t('purchasePartiesDeletedSuccess', { count: bulkDeleteIds.length.toString( })))
+      toast.success(t('purchasePartiesDeletedSuccess', { count: bulkDeleteIds.length.toString()}))
       fetchData()
     }
     setBulkDeleteIds(null)
@@ -336,9 +336,9 @@ const PurchasePartyManager = forwardRef<PurchasePartyManagerRef>((props, ref) =>
       .in('id', bulkPermanentlyDeleteIds)
 
     if (error) {
-      toast.error(t('failedToPermanentlyDeletePurchaseParties', { count: bulkPermanentlyDeleteIds.length.toString( })).replace('{error}', error.message))
+      toast.error(t('failedToPermanentlyDeletePurchaseParties', { count: bulkPermanentlyDeleteIds.length.toString()}).replace('{error}', error.message))
     } else {
-      toast.success(t('purchasePartiesPermanentlyDeletedSuccess', { count: bulkPermanentlyDeleteIds.length.toString( })))
+      toast.success(t('purchasePartiesPermanentlyDeletedSuccess', { count: bulkPermanentlyDeleteIds.length.toString()}))
       fetchData()
     }
     setBulkPermanentlyDeleteIds(null)
@@ -357,9 +357,9 @@ const PurchasePartyManager = forwardRef<PurchasePartyManagerRef>((props, ref) =>
       .in('id', bulkRestoreIds)
 
     if (error) {
-      toast.error(t('failedToRestorePurchaseParties', { count: bulkRestoreIds.length.toString( })).replace('{error}', error.message))
+      toast.error(t('failedToRestorePurchaseParties', { count: bulkRestoreIds.length.toString()}).replace('{error}', error.message))
     } else {
-      toast.success(t('purchasePartiesRestoredSuccess', { count: bulkRestoreIds.length.toString( })))
+      toast.success(t('purchasePartiesRestoredSuccess', { count: bulkRestoreIds.length.toString()}))
       fetchData()
     }
     setBulkRestoreIds(null)
@@ -454,9 +454,9 @@ const PurchasePartyManager = forwardRef<PurchasePartyManagerRef>((props, ref) =>
     if (deletingPartyId) description = t('confirmDeleteDescription')
     if (restoringPartyId) description = t('confirmRestoreDescription')
     if (permanentlyDeletingPartyId) description = t('confirmPermanentDeleteDescription')
-    if (bulkDeleteIds) description = t('confirmBulkDeleteDescription', { count: bulkDeleteIds.length.toString( }))
-    if (bulkRestoreIds) description = t('confirmBulkRestoreDescription', { count: bulkRestoreIds.length.toString( }))
-    if (bulkPermanentlyDeleteIds) description = t('confirmBulkPermanentDeleteDescription', { count: bulkPermanentlyDeleteIds.length.toString( }))
+    if (bulkDeleteIds) description = t('confirmBulkDeleteDescription', { count: bulkDeleteIds.length.toString()})
+    if (bulkRestoreIds) description = t('confirmBulkRestoreDescription', { count: bulkRestoreIds.length.toString()})
+    if (bulkPermanentlyDeleteIds) description = t('confirmBulkPermanentDeleteDescription', { count: bulkPermanentlyDeleteIds.length.toString()})
 
     return { description }
   }

@@ -123,9 +123,9 @@ export default function PartyManager() {
     const { error } = await supabase.from('parties').update({ deleted_at: new Date().toISOString() }).in('id', bulkDeleteIds)
 
     if (error) {
-      toast.error(t('failedToDeleteParties', { count: bulkDeleteIds.length.toString( })))
+      toast.error(t('failedToDeleteParties', { count: bulkDeleteIds.length.toString()}))
     } else {
-      toast.success(t('partiesDeletedSuccess', { count: bulkDeleteIds.length.toString( })))
+      toast.success(t('partiesDeletedSuccess', { count: bulkDeleteIds.length.toString()}))
       refetch()
     }
     setBulkDeleteIds(null)
@@ -157,9 +157,9 @@ export default function PartyManager() {
     if (!bulkRestoreIds || bulkRestoreIds.length === 0) return
     const { error } = await supabase.from('parties').update({ deleted_at: null }).in('id', bulkRestoreIds)
     if (error) {
-      toast.error(t('failedToRestoreParties', { count: bulkRestoreIds.length.toString( })).replace('{error}', error.message))
+      toast.error(t('failedToRestoreParties', { count: bulkRestoreIds.length.toString()}).replace('{error}', error.message))
     } else {
-      toast.success(t('partiesRestoredSuccess', { count: bulkRestoreIds.length.toString( })))
+      toast.success(t('partiesRestoredSuccess', { count: bulkRestoreIds.length.toString()}))
       refetch()
     }
     setBulkRestoreIds(null)
@@ -207,9 +207,9 @@ export default function PartyManager() {
     // Then, delete the parties themselves
     const { error } = await supabase.from('parties').delete().in('id', bulkPermanentDeleteIds)
     if (error) {
-      toast.error(t('failedToPermanentlyDeleteParties', { count: bulkPermanentDeleteIds.length.toString( })).replace('{error}', error.message))
+      toast.error(t('failedToPermanentlyDeleteParties', { count: bulkPermanentDeleteIds.length.toString()}).replace('{error}', error.message))
     } else {
-      toast.success(t('partiesPermanentlyDeletedSuccess', { count: bulkPermanentDeleteIds.length.toString( })))
+      toast.success(t('partiesPermanentlyDeletedSuccess', { count: bulkPermanentDeleteIds.length.toString()}))
       refetch()
     }
     setBulkPermanentDeleteIds(null)
@@ -368,11 +368,11 @@ export default function PartyManager() {
         }}
         title={t('areYouSure')}
         description={
-          bulkDeleteIds ? t('moveMultipleToDeleted', { count: bulkDeleteIds.length.toString( }))
+          bulkDeleteIds ? t('moveMultipleToDeleted', { count: bulkDeleteIds.length.toString()})
           : partyToDelete ? t('moveToDeleted')
           : partyToRestore ? t('restoreConfirm')
-          : bulkRestoreIds ? t('restoreMultipleConfirm', { count: bulkRestoreIds.length.toString( }))
-          : bulkPermanentDeleteIds ? t('permanentDeleteMultipleConfirm', { count: bulkPermanentDeleteIds.length.toString( }))
+          : bulkRestoreIds ? t('restoreMultipleConfirm', { count: bulkRestoreIds.length.toString()})
+          : bulkPermanentDeleteIds ? t('permanentDeleteMultipleConfirm', { count: bulkPermanentDeleteIds.length.toString()})
           : partyToPermanentlyDelete ? t('permanentDeleteConfirm')
           : t('proceedConfirm')
         }

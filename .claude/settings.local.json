@@ -38,7 +38,21 @@
       "Bash(ls:*)",
       "Bash(for:*)",
       "Bash(do echo \"=== $file ===\")",
-      "Bash(done)"
+      "Bash(done)",
+      "Bash(git diff:*)",
+      "Read(//Users/abdulquadir/**)",
+      "Bash(xattr:*)",
+      "Bash(xcodebuild:*)",
+      "Bash(log stream:*)",
+      "Bash(xcrun simctl spawn:*)",
+      "Bash(npm run dev)",
+      "Bash(git rm:*)",
+      "Bash(cd:*)",
+      "Bash(perl -i -pe:*)",
+      "Bash(open /Users/abdulquadir/Desktop/Projects/plasticmart/mobile/ios/Runner.xcworkspace)",
+      "Bash(python3:*)",
+      "Bash(xargs sed:*)",
+      "Bash(timeout 120 npm run build:*)"
     ],
     "deny": [],
     "ask": []

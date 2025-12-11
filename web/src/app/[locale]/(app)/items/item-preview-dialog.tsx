@@ -250,9 +250,9 @@ export function ItemPreviewDialog({ isOpen, onOpenChange, onSuccess, units, init
       // Restore the dialog UI
       const finalDuplicates = finalParsedData.filter(item => item.is_duplicate).length
       const finalErrors = finalParsedData.filter(item => item.is_invalid).length
-      toast.success(t('itemsImportedSuccess', { count: itemsToInsert.length.toString( })))
-      if (finalDuplicates > 0) toast.info(t('duplicateItemsSkipped', { count: finalDuplicates.toString( })))
-      if (finalErrors > 0) toast.warning(t('itemsWithErrorsSkipped', { count: finalErrors.toString( })))
+      toast.success(t('itemsImportedSuccess', { count: itemsToInsert.length.toString()}))
+      if (finalDuplicates > 0) toast.info(t('duplicateItemsSkipped', { count: finalDuplicates.toString()}))
+      if (finalErrors > 0) toast.warning(t('itemsWithErrorsSkipped', { count: finalErrors.toString()}))
       onSuccess()
     } finally {
       setIsLoading(false)

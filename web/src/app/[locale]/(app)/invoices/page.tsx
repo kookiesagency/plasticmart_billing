@@ -73,7 +73,7 @@ export default function InvoicesPage() {
       .order('deleted_at', { ascending: false })
 
     if (activeError || deletedError) {
-      toast.error(t('failedToFetchInvoices', { error: (activeError?.message || deletedError?.message || 'Unknown error' }) ))
+      toast.error(t('failedToFetchInvoices', { error: (activeError?.message || deletedError?.message || 'Unknown error') }))
     } else {
         const parseData = (data: any[]) => data.map(d => {
             const totalAmount = d.total_amount || 0;
@@ -140,9 +140,9 @@ export default function InvoicesPage() {
   const confirmBulkDelete = async () => {
     if (!bulkDeleteIds) return;
     const { error } = await supabase.from('invoices').update({ deleted_at: new Date().toISOString() }).in('id', bulkDeleteIds);
-    if (error) toast.error(t('failedToDeleteInvoices', { count: bulkDeleteIds.length .toString( })));
+    if (error) toast.error(t('failedToDeleteInvoices', { count: bulkDeleteIds.length.toString()}));
     else {
-      toast.success(t('invoicesMovedToDeleted', { count: bulkDeleteIds.length .toString( })));
+      toast.success(t('invoicesMovedToDeleted', { count: bulkDeleteIds.length.toString()}));
       fetchData();
     }
   };
@@ -170,9 +170,9 @@ export default function InvoicesPage() {
   const confirmBulkRestore = async () => {
     if (!bulkRestoreIds) return;
     const { error } = await supabase.from('invoices').update({ deleted_at: null }).in('id', bulkRestoreIds);
-    if (error) toast.error(t('failedToRestoreInvoices', { count: bulkRestoreIds.length .toString( })));
+    if (error) toast.error(t('failedToRestoreInvoices', { count: bulkRestoreIds.length.toString()}));
     else {
-      toast.success(t('invoicesRestoredSuccess', { count: bulkRestoreIds.length .toString( })));
+      toast.success(t('invoicesRestoredSuccess', { count: bulkRestoreIds.length.toString()}));
       fetchData();
     }
   };
@@ -208,9 +208,9 @@ export default function InvoicesPage() {
     await supabase.from('invoice_items').delete().in('invoice_id', bulkPermanentDeleteIds);
     const { error } = await supabase.from('invoices').delete().in('id', bulkPermanentDeleteIds);
 
-    if (error) toast.error(t('failedToPermanentlyDeleteInvoices', { count: bulkPermanentDeleteIds.length .toString( })));
+    if (error) toast.error(t('failedToPermanentlyDeleteInvoices', { count: bulkPermanentDeleteIds.length.toString()}));
     else {
-      toast.success(t('invoicesPermanentlyDeletedSuccess', { count: bulkPermanentDeleteIds.length .toString( })));
+      toast.success(t('invoicesPermanentlyDeletedSuccess', { count: bulkPermanentDeleteIds.length.toString()}));
       fetchData();
     }
   };
@@ -227,11 +227,11 @@ export default function InvoicesPage() {
   };
 
   const confirmationDescription = () => {
-    if (bulkDeleteIds) return t('moveMultipleToDeleted', { count: bulkDeleteIds.length .toString( }))
+    if (bulkDeleteIds) return t('moveMultipleToDeleted', { count: bulkDeleteIds.length.toString()})
     if (invoiceToDelete) return t('moveToDeleted')
-    if (bulkRestoreIds) return t('restoreMultipleConfirm', { count: bulkRestoreIds.length .toString( }))
+    if (bulkRestoreIds) return t('restoreMultipleConfirm', { count: bulkRestoreIds.length.toString()})
     if (invoiceToRestore) return t('restoreConfirm')
-    if (bulkPermanentDeleteIds) return t('permanentDeleteMultipleConfirm', { count: bulkPermanentDeleteIds.length .toString( }))
+    if (bulkPermanentDeleteIds) return t('permanentDeleteMultipleConfirm', { count: bulkPermanentDeleteIds.length.toString()})
     if (invoiceToPermanentlyDelete) return t('permanentDeleteConfirm')
     return t('areYouSure')
   }

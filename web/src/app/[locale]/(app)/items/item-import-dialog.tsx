@@ -62,7 +62,7 @@ export function ItemImportDialog({ isOpen, onOpenChange, onPreview, units }: Ite
           const requiredFields = ['name', 'rate', 'unit']
           const headers = results.meta.fields || []
           if (!requiredFields.every(field => headers.includes(field))) {
-            toast.error(t('csvHeadersError', { headers: requiredFields.join(', ' })))
+            toast.error(t('csvHeadersError', { headers: requiredFields.join(', ') }))
             setIsLoading(false)
             return
           }
