@@ -192,7 +192,7 @@ export default function ItemManager() {
         .eq('item_id', item.id)
 
       if (error) {
-        toast.error(t('failedToFetchPartyPrices', { error: error.message }))
+        toast.error(t('failedToFetchPartyPrices').replace('{error}', error.message))
       }
       
       form.reset({
@@ -221,7 +221,7 @@ export default function ItemManager() {
       .select('id, name, deleted_at')
 
     if (checkError) {
-      return toast.error(t('errorCheckingDuplicate', { error: checkError.message }))
+      return toast.error(t('errorCheckingDuplicate').replace('{error}', checkError.message))
     }
 
     // If an item with the same normalized name exists AND it's not the item we are currently editing
@@ -240,22 +240,22 @@ export default function ItemManager() {
 
     if (editingItem) {
       const { error } = await supabase.from('items').update(itemData).eq('id', editingItem.id)
-      if (error) return toast.error(t('failedToUpdateItem', { error: error.message }))
+      if (error) return toast.error(t('failedToUpdateItem').replace('{error}', error.message))
     } else {
       const { data, error } = await supabase.from('items').insert(itemData).select('id').single()
-      if (error) return toast.error(t('failedToCreateItem', { error: error.message }))
+      if (error) return toast.error(t('failedToCreateItem').replace('{error}', error.message))
       itemId = data.id
     }
 
     if (!itemId) return toast.error(t('couldNotGetItemId'))
 
     const { error: deleteError } = await supabase.from('item_party_prices').delete().eq('item_id', itemId)
-    if (deleteError) return toast.error(t('failedToClearOldPartyPrices', { error: deleteError.message }))
+    if (deleteError) return toast.error(t('failedToClearOldPartyPrices').replace('{error}', deleteError.message))
 
     if (party_prices && party_prices.length > 0) {
       const pricesToInsert = party_prices.map(pp => ({ ...pp, item_id: itemId }))
       const { error: insertPricesError } = await supabase.from('item_party_prices').insert(pricesToInsert)
-      if (insertPricesError) return toast.error(t('failedToSavePartyPrices', { error: insertPricesError.message }))
+      if (insertPricesError) return toast.error(t('failedToSavePartyPrices').replace('{error}', insertPricesError.message))
     }
 
     toast.success(editingItem ? t('itemUpdatedSuccess') : t('itemCreatedSuccess'))
@@ -281,7 +281,7 @@ export default function ItemManager() {
     if (!itemToDelete) return
     const { error } = await supabase.from('items').update({ deleted_at: new Date().toISOString() }).eq('id', itemToDelete)
     if (error) {
-      toast.error(t('failedToDeleteItem', { error: error.message }))
+      toast.error(t('failedToDeleteItem').replace('{error}', error.message))
     } else {
       toast.success(t('itemDeletedSuccess'))
       fetchData()
@@ -298,7 +298,7 @@ export default function ItemManager() {
     if (!itemToRestore) return
     const { error } = await supabase.from('items').update({ deleted_at: null }).eq('id', itemToRestore)
     if (error) {
-      toast.error(t('failedToRestoreItem', { error: error.message }))
+      toast.error(t('failedToRestoreItem').replace('{error}', error.message))
     } else {
       toast.success(t('itemRestoredSuccess'))
       fetchData()
@@ -315,9 +315,9 @@ export default function ItemManager() {
     if (!bulkDeleteIds || bulkDeleteIds.length === 0) return;
     const { error } = await supabase.from('items').update({ deleted_at: new Date().toISOString() }).in('id', bulkDeleteIds)
     if (error) {
-      toast.error(t('failedToDeleteItems', { count: bulkDeleteIds.length, error: error.message }))
+      toast.error(t('failedToDeleteItems').replace('{count}', bulkDeleteIds.length.toString()).replace('{error}', error.message))
     } else {
-      toast.success(t('itemsDeletedSuccess', { count: bulkDeleteIds.length }))
+      toast.success(t('itemsDeletedSuccess').replace('{count}', bulkDeleteIds.length.toString()))
       fetchData()
     }
     setBulkDeleteIds(null)
@@ -337,13 +337,13 @@ export default function ItemManager() {
     // First, delete related party prices, as they don't have a cascading delete rule.
     const { error: pricesError } = await supabase.from('item_party_prices').delete().eq('item_id', itemToPermanentlyDelete)
     if (pricesError) {
-      return toast.error(t('failedToDeletePrices', { error: pricesError.message }))
+      return toast.error(t('failedToDeletePrices').replace('{error}', pricesError.message))
     }
 
     // Finally, delete the item itself
     const { error } = await supabase.from('items').delete().eq('id', itemToPermanentlyDelete)
     if (error) {
-      toast.error(t('failedToPermanentlyDeleteItem', { error: error.message }))
+      toast.error(t('failedToPermanentlyDeleteItem').replace('{error}', error.message))
     } else {
       toast.success(t('itemPermanentlyDeletedSuccess'))
       fetchData()
@@ -365,14 +365,14 @@ export default function ItemManager() {
     // First, delete related party prices
     const { error: pricesError } = await supabase.from('item_party_prices').delete().in('item_id', bulkPermanentDeleteIds)
     if (pricesError) {
-      return toast.error(t('failedToDeletePrices', { error: pricesError.message }))
+      return toast.error(t('failedToDeletePrices').replace('{error}', pricesError.message))
     }
 
     const { error } = await supabase.from('items').delete().in('id', bulkPermanentDeleteIds)
     if (error) {
-      toast.error(t('failedToPermanentlyDeleteItems', { count: bulkPermanentDeleteIds.length, error: error.message }))
+      toast.error(t('failedToPermanentlyDeleteItems').replace('{count}', bulkPermanentDeleteIds.length.toString()).replace('{error}', error.message))
     } else {
-      toast.success(t('itemsPermanentlyDeletedSuccess', { count: bulkPermanentDeleteIds.length }))
+      toast.success(t('itemsPermanentlyDeletedSuccess').replace('{count}', bulkPermanentDeleteIds.length.toString()))
       fetchData()
     }
     setBulkPermanentDeleteIds(null)
@@ -387,9 +387,9 @@ export default function ItemManager() {
     if (!bulkRestoreIds || bulkRestoreIds.length === 0) return
     const { error } = await supabase.from('items').update({ deleted_at: null }).in('id', bulkRestoreIds)
     if (error) {
-      toast.error(t('failedToRestoreItems', { count: bulkRestoreIds.length, error: error.message }))
+      toast.error(t('failedToRestoreItems').replace('{count}', bulkRestoreIds.length.toString()).replace('{error}', error.message))
     } else {
-      toast.success(t('itemsRestoredSuccess', { count: bulkRestoreIds.length }))
+      toast.success(t('itemsRestoredSuccess').replace('{count}', bulkRestoreIds.length.toString()))
       fetchData()
     }
     setBulkRestoreIds(null)
@@ -943,11 +943,11 @@ export default function ItemManager() {
         }}
         title={t('areYouSure')}
         description={
-          bulkDeleteIds ? t('moveMultipleToDeleted', { count: bulkDeleteIds.length })
+          bulkDeleteIds ? t('moveMultipleToDeleted').replace('{count}', bulkDeleteIds.length.toString())
           : itemToDelete ? t('moveToDeleted')
           : itemToRestore ? t('restoreConfirm')
-          : bulkRestoreIds ? t('restoreMultipleConfirm', { count: bulkRestoreIds.length })
-          : bulkPermanentDeleteIds ? t('permanentDeleteMultipleConfirm', { count: bulkPermanentDeleteIds.length })
+          : bulkRestoreIds ? t('restoreMultipleConfirm').replace('{count}', bulkRestoreIds.length.toString())
+          : bulkPermanentDeleteIds ? t('permanentDeleteMultipleConfirm').replace('{count}', bulkPermanentDeleteIds.length.toString())
           : itemToPermanentlyDelete ? t('permanentDeleteConfirm')
           : t('proceedConfirm')
         }
