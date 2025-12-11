@@ -268,7 +268,7 @@ export function InvoiceForm({ invoiceId }: { invoiceId?: string }) {
               .map((it: { position?: number; [key: string]: unknown }, idx: number) => ({ ...it, position: typeof it.position === 'number' ? it.position : idx })),
           })
         } else if (error) {
-          toast.error(t('failedToFetchInvoice', { error: error.message }))
+          toast.error((t as any)('failedToFetchInvoice', { error: error.message }))
         }
       }
     }
@@ -401,7 +401,7 @@ export function InvoiceForm({ invoiceId }: { invoiceId?: string }) {
     }
 
     if (error) {
-      toast.error(t('failedToSaveInvoice', { error: error.message }))
+      toast.error((t as any)('failedToSaveInvoice', { error: error.message }))
       setIsSubmitting(false)
     } else {
       toast.success(invoiceId ? t('invoiceUpdatedSuccess') : t('invoiceCreatedSuccess'))
@@ -973,7 +973,7 @@ const AddItemDialog = ({ isOpen, onOpenChange, itemsData, quickAddItem, getItemP
                         isExactMatchAlreadyAdded ? (
                           <div className="flex flex-col items-center gap-4 py-6">
                             <p className="text-muted-foreground text-sm">
-                              {t('itemAlreadyAdded', { itemName: itemSearch })}
+                              {(t as any)('itemAlreadyAdded', { itemName: itemSearch })}
                             </p>
                             <p className="text-xs text-muted-foreground">
                               {t('modifyInTable')}
@@ -981,7 +981,7 @@ const AddItemDialog = ({ isOpen, onOpenChange, itemsData, quickAddItem, getItemP
                           </div>
                         ) : exactMatch ? (
                           <div className="flex flex-col items-center gap-4 py-6">
-                            <p className="text-muted-foreground text-sm">{t('itemFound', { itemName: itemSearch })}</p>
+                            <p className="text-muted-foreground text-sm">{(t as any)('itemFound', { itemName: itemSearch })}</p>
                             <Button
                               variant="default"
                               size="default"
@@ -989,12 +989,12 @@ const AddItemDialog = ({ isOpen, onOpenChange, itemsData, quickAddItem, getItemP
                               className="min-w-[200px] h-10"
                             >
                               <PlusCircle className="mr-2 h-4 w-4" />
-                              {t('addToInvoice', { itemName: itemSearch })}
+                              {(t as any)('addToInvoice', { itemName: itemSearch })}
                             </Button>
                           </div>
                         ) : (
                           <div className="flex flex-col items-center gap-4 py-6">
-                            <p className="text-muted-foreground text-sm">{t('noItemsFound', { searchTerm: itemSearch })}</p>
+                            <p className="text-muted-foreground text-sm">{(t as any)('noItemsFound', { searchTerm: itemSearch })}</p>
                             <Button
                               variant="outline"
                               size="default"
@@ -1002,7 +1002,7 @@ const AddItemDialog = ({ isOpen, onOpenChange, itemsData, quickAddItem, getItemP
                               className="min-w-[200px] h-10 bg-slate-900 text-white border-slate-900 hover:bg-slate-800 hover:border-slate-800 hover:text-white"
                             >
                               <PlusCircle className="mr-2 h-4 w-4" />
-                              {t('createNewItem', { itemName: itemSearch })}
+                              {(t as any)('createNewItem', { itemName: itemSearch })}
                             </Button>
                           </div>
                         )
@@ -1133,7 +1133,7 @@ const CreateItemDialog = ({
       .select('id, name, deleted_at')
 
     if (checkError) {
-      return toast.error(t('errorCheckingDuplicate', { error: checkError.message }))
+      return toast.error((t as any)('errorCheckingDuplicate', { error: checkError.message }))
     }
 
     // Check if an item with the same normalized name exists
@@ -1149,14 +1149,14 @@ const CreateItemDialog = ({
     const { party_prices, ...itemData } = { ...values, name: trimmedName }
 
     const { data, error } = await supabase.from('items').insert(itemData).select('id').single()
-    if (error) return toast.error(t('failedToCreateItem', { error: error.message }))
+    if (error) return toast.error((t as any)('failedToCreateItem', { error: error.message }))
 
     const itemId = data.id
 
     if (party_prices && party_prices.length > 0) {
       const pricesToInsert = party_prices.map(pp => ({ ...pp, item_id: itemId }))
       const { error: insertPricesError } = await supabase.from('item_party_prices').insert(pricesToInsert)
-      if (insertPricesError) return toast.error(t('failedToSavePartyPrices', { error: insertPricesError.message }))
+      if (insertPricesError) return toast.error((t as any)('failedToSavePartyPrices', { error: insertPricesError.message }))
     }
 
     toast.success(t('itemCreatedSuccess'))
