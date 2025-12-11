@@ -21,7 +21,7 @@ export default function useParties() {
     ])
 
     if (activeRes.error) {
-      toast.error(t('errorFetchingParties').replace('{error}', activeRes.error.message ))
+      toast.error(t('errorFetchingParties', { error: activeRes.error.message }))
       setActiveParties([])
     } else {
       // Transform data to add invoice_count
@@ -34,7 +34,7 @@ export default function useParties() {
     }
 
     if (deletedRes.error) {
-      toast.error(t('errorFetchingDeletedParties').replace('{error}', deletedRes.error.message ))
+      toast.error(t('errorFetchingDeletedParties', { error: deletedRes.error.message }))
       setDeletedParties([])
     } else {
       // Transform data to add invoice_count

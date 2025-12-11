@@ -31,7 +31,7 @@ export function InvoiceActions({
     // Use environment variable for public URL in production, fallback to current origin
     const baseUrl = process.env.NEXT_PUBLIC_APP_URL || window.location.origin;
     const publicUrl = `${baseUrl}${pathname}`;
-    const message = t('whatsappMessage').replace('{partyName}', party_name).replace('{invoiceDate}', formatDate(invoice_date)).replace('{publicUrl}', publicUrl);
+    const message = t('whatsappMessage', { partyName: party_name }).replace('{invoiceDate}', formatDate(invoice_date)).replace('{publicUrl}', publicUrl);
     const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(message)}`;
     window.open(whatsappUrl, '_blank');
   };

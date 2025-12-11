@@ -67,7 +67,7 @@ export default function PartyManager() {
     const { data: existingParty, error: checkError } = await query.maybeSingle()
 
     if (checkError) {
-      return toast.error(t('validationCheckFailed').replace('{error}', checkError.message))
+      return toast.error(t('validationCheckFailed', { error: checkError.message }))
     }
 
     if (existingParty) {
@@ -89,7 +89,7 @@ export default function PartyManager() {
     }
 
     if (error) {
-      toast.error(t('failedToSaveParty').replace('{error}', error.message))
+      toast.error(t('failedToSaveParty', { error: error.message }))
     } else {
       toast.success(partyId ? t('partyUpdatedSuccess') : t('partyCreatedSuccess'))
       closePartyForm()
@@ -105,7 +105,7 @@ export default function PartyManager() {
     if (!partyToDelete) return
     const { error } = await supabase.from('parties').update({ deleted_at: new Date().toISOString() }).eq('id', partyToDelete)
     if (error) {
-      toast.error(t('failedToDeleteParty').replace('{error}', error.message))
+      toast.error(t('failedToDeleteParty', { error: error.message }))
     } else {
       toast.success(t('partyDeletedSuccess'))
       refetch()
@@ -123,9 +123,9 @@ export default function PartyManager() {
     const { error } = await supabase.from('parties').update({ deleted_at: new Date().toISOString() }).in('id', bulkDeleteIds)
 
     if (error) {
-      toast.error(t('failedToDeleteParties').replace('{count}', bulkDeleteIds.length.toString()))
+      toast.error(t('failedToDeleteParties', { count: bulkDeleteIds.length.toString( })))
     } else {
-      toast.success(t('partiesDeletedSuccess').replace('{count}', bulkDeleteIds.length.toString()))
+      toast.success(t('partiesDeletedSuccess', { count: bulkDeleteIds.length.toString( })))
       refetch()
     }
     setBulkDeleteIds(null)
@@ -140,7 +140,7 @@ export default function PartyManager() {
     if (!partyToRestore) return
     const { error } = await supabase.from('parties').update({ deleted_at: null }).eq('id', partyToRestore)
     if (error) {
-      toast.error(t('failedToRestoreParty').replace('{error}', error.message))
+      toast.error(t('failedToRestoreParty', { error: error.message }))
     } else {
       toast.success(t('partyRestoredSuccess'))
       refetch()
@@ -157,9 +157,9 @@ export default function PartyManager() {
     if (!bulkRestoreIds || bulkRestoreIds.length === 0) return
     const { error } = await supabase.from('parties').update({ deleted_at: null }).in('id', bulkRestoreIds)
     if (error) {
-      toast.error(t('failedToRestoreParties').replace('{count}', bulkRestoreIds.length.toString()).replace('{error}', error.message))
+      toast.error(t('failedToRestoreParties', { count: bulkRestoreIds.length.toString( })).replace('{error}', error.message))
     } else {
-      toast.success(t('partiesRestoredSuccess').replace('{count}', bulkRestoreIds.length.toString()))
+      toast.success(t('partiesRestoredSuccess', { count: bulkRestoreIds.length.toString( })))
       refetch()
     }
     setBulkRestoreIds(null)
@@ -176,13 +176,13 @@ export default function PartyManager() {
     // First, delete related party prices
     const { error: pricesError } = await supabase.from('item_party_prices').delete().eq('party_id', partyToPermanentlyDelete)
     if (pricesError) {
-      return toast.error(t('failedToDeletePrices').replace('{error}', pricesError.message))
+      return toast.error(t('failedToDeletePrices', { error: pricesError.message }))
     }
 
     // Then, delete the party itself
     const { error } = await supabase.from('parties').delete().eq('id', partyToPermanentlyDelete)
     if (error) {
-      toast.error(t('failedToPermanentlyDeleteParty').replace('{error}', error.message))
+      toast.error(t('failedToPermanentlyDeleteParty', { error: error.message }))
     } else {
       toast.success(t('partyPermanentlyDeletedSuccess'))
       refetch()
@@ -201,15 +201,15 @@ export default function PartyManager() {
     // First, delete related party prices
     const { error: pricesError } = await supabase.from('item_party_prices').delete().in('party_id', bulkPermanentDeleteIds)
     if (pricesError) {
-      return toast.error(t('failedToDeletePrices').replace('{error}', pricesError.message))
+      return toast.error(t('failedToDeletePrices', { error: pricesError.message }))
     }
 
     // Then, delete the parties themselves
     const { error } = await supabase.from('parties').delete().in('id', bulkPermanentDeleteIds)
     if (error) {
-      toast.error(t('failedToPermanentlyDeleteParties').replace('{count}', bulkPermanentDeleteIds.length.toString()).replace('{error}', error.message))
+      toast.error(t('failedToPermanentlyDeleteParties', { count: bulkPermanentDeleteIds.length.toString( })).replace('{error}', error.message))
     } else {
-      toast.success(t('partiesPermanentlyDeletedSuccess').replace('{count}', bulkPermanentDeleteIds.length.toString()))
+      toast.success(t('partiesPermanentlyDeletedSuccess', { count: bulkPermanentDeleteIds.length.toString( })))
       refetch()
     }
     setBulkPermanentDeleteIds(null)
@@ -368,11 +368,11 @@ export default function PartyManager() {
         }}
         title={t('areYouSure')}
         description={
-          bulkDeleteIds ? t('moveMultipleToDeleted').replace('{count}', bulkDeleteIds.length.toString())
+          bulkDeleteIds ? t('moveMultipleToDeleted', { count: bulkDeleteIds.length.toString( }))
           : partyToDelete ? t('moveToDeleted')
           : partyToRestore ? t('restoreConfirm')
-          : bulkRestoreIds ? t('restoreMultipleConfirm').replace('{count}', bulkRestoreIds.length.toString())
-          : bulkPermanentDeleteIds ? t('permanentDeleteMultipleConfirm').replace('{count}', bulkPermanentDeleteIds.length.toString())
+          : bulkRestoreIds ? t('restoreMultipleConfirm', { count: bulkRestoreIds.length.toString( }))
+          : bulkPermanentDeleteIds ? t('permanentDeleteMultipleConfirm', { count: bulkPermanentDeleteIds.length.toString( }))
           : partyToPermanentlyDelete ? t('permanentDeleteConfirm')
           : t('proceedConfirm')
         }

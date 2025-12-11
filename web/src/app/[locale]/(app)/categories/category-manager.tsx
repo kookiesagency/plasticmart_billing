@@ -83,10 +83,10 @@ const CategoryManager = forwardRef<CategoryManagerRef>((props, ref) => {
       supabase.from('item_categories').select('*').not('deleted_at', 'is', null).order('deleted_at', { ascending: false })
     ])
 
-    if (activeRes.error) toast.error(t('errorFetchingCategories').replace('{error}', activeRes.error.message ))
+    if (activeRes.error) toast.error(t('errorFetchingCategories', { error: activeRes.error.message }))
     else setCategories(activeRes.data as ItemCategory[])
 
-    if (deletedRes.error) toast.error(t('errorFetchingDeletedCategories').replace('{error}', deletedRes.error.message ))
+    if (deletedRes.error) toast.error(t('errorFetchingDeletedCategories', { error: deletedRes.error.message }))
     else setDeletedCategories(deletedRes.data as ItemCategory[])
 
     setLoading(false)
@@ -114,7 +114,7 @@ const CategoryManager = forwardRef<CategoryManagerRef>((props, ref) => {
         .select('id, name, deleted_at')
 
       if (checkError) {
-        return toast.error(t('validationCheckFailed').replace('{error}', checkError.message ))
+        return toast.error(t('validationCheckFailed', { error: checkError.message }))
       }
 
       const normalizedNew = normalizeName(values.name)
@@ -136,14 +136,14 @@ const CategoryManager = forwardRef<CategoryManagerRef>((props, ref) => {
         error = insertError
       }
       if (error) {
-        toast.error(t('failedToSaveCategory').replace('{error}', error.message ))
+        toast.error(t('failedToSaveCategory', { error: error.message }))
       } else {
         toast.success(t(editingCategory ? 'categoryUpdated' : 'categoryCreated'))
         setIsDialogOpen(false)
         fetchData()
       }
     } catch (error: any) {
-      toast.error(t('failedToSaveCategory').replace('{error}', error.message ))
+      toast.error(t('failedToSaveCategory', { error: error.message }))
     }
   }
 
@@ -161,18 +161,18 @@ const CategoryManager = forwardRef<CategoryManagerRef>((props, ref) => {
       .eq('category_id', deletingCategoryId)
 
     if (checkError) {
-      return toast.error(t('failedToCheckItemUsage').replace('{error}', checkError.message ))
+      return toast.error(t('failedToCheckItemUsage', { error: checkError.message }))
     }
 
     if (count && count > 0) {
       setIsConfirmOpen(false)
       setDeletingCategoryId(null)
-      return toast.error(t('cannotDeleteInUse').replace('{count}', count .toString()))
+      return toast.error(t('cannotDeleteInUse', { count: count .toString( })))
     }
 
     const { error } = await supabase.from('item_categories').update({ deleted_at: new Date().toISOString() }).eq('id', deletingCategoryId)
     if (error) {
-      toast.error(t('failedToDeleteCategory').replace('{error}', error.message ))
+      toast.error(t('failedToDeleteCategory', { error: error.message }))
     } else {
       toast.success(t('categoryDeletedSuccess'))
       fetchData()
@@ -189,7 +189,7 @@ const CategoryManager = forwardRef<CategoryManagerRef>((props, ref) => {
     if (!permanentlyDeletingCategoryId) return
     const { error } = await supabase.from('item_categories').delete().eq('id', permanentlyDeletingCategoryId)
     if (error) {
-      toast.error(t('failedToPermanentlyDeleteCategory').replace('{error}', error.message ))
+      toast.error(t('failedToPermanentlyDeleteCategory', { error: error.message }))
     } else {
       toast.success(t('categoryPermanentlyDeletedSuccess'))
       fetchData()
@@ -206,7 +206,7 @@ const CategoryManager = forwardRef<CategoryManagerRef>((props, ref) => {
     if (!restoringCategoryId) return
     const { error } = await supabase.from('item_categories').update({ deleted_at: null }).eq('id', restoringCategoryId)
     if (error) {
-      toast.error(t('failedToRestoreCategory').replace('{error}', error.message ))
+      toast.error(t('failedToRestoreCategory', { error: error.message }))
     } else {
       toast.success(t('categoryRestoredSuccess'))
       fetchData()
@@ -231,7 +231,7 @@ const CategoryManager = forwardRef<CategoryManagerRef>((props, ref) => {
     if (usageError) {
       setIsConfirmOpen(false)
       setBulkDeleteIds(null)
-      return toast.error(t('failedToCheckItemUsage').replace('{error}', usageError.message ));
+      return toast.error(t('failedToCheckItemUsage', { error: usageError.message }));
     }
 
     if (usageData && usageData.length > 0) {
@@ -242,19 +242,19 @@ const CategoryManager = forwardRef<CategoryManagerRef>((props, ref) => {
       }, {} as Record<string, number>);
 
       const errorMessages = Object.entries(usageCounts)
-        .map(([name, count]) => t('isUsedByItems').replace('{name}', name).replace('{count}', count.toString()))
+        .map(([name, count]) => t('isUsedByItems', { name: name }).replace('{count}', count.toString()))
         .join(', ');
 
       setIsConfirmOpen(false)
       setBulkDeleteIds(null)
-      return toast.error(t('cannotDeleteCategoriesInUse').replace('{details}', errorMessages ));
+      return toast.error(t('cannotDeleteCategoriesInUse', { details: errorMessages }));
     }
 
     const { error } = await supabase.from('item_categories').update({ deleted_at: new Date().toISOString() }).in('id', bulkDeleteIds)
     if (error) {
-      toast.error(t('failedToDeleteCategories').replace('{count}', bulkDeleteIds.length.toString()).replace('{error}', error.message))
+      toast.error(t('failedToDeleteCategories', { count: bulkDeleteIds.length.toString( })).replace('{error}', error.message))
     } else {
-      toast.success(t('categoriesDeletedSuccess').replace('{count}', bulkDeleteIds.length .toString()))
+      toast.success(t('categoriesDeletedSuccess', { count: bulkDeleteIds.length .toString( })))
       fetchData()
     }
     setBulkDeleteIds(null);
@@ -269,9 +269,9 @@ const CategoryManager = forwardRef<CategoryManagerRef>((props, ref) => {
     if (!bulkPermanentlyDeleteIds) return
     const { error } = await supabase.from('item_categories').delete().in('id', bulkPermanentlyDeleteIds)
     if (error) {
-      toast.error(t('failedToPermanentlyDeleteCategories').replace('{count}', bulkPermanentlyDeleteIds.length.toString()).replace('{error}', error.message))
+      toast.error(t('failedToPermanentlyDeleteCategories', { count: bulkPermanentlyDeleteIds.length.toString( })).replace('{error}', error.message))
     } else {
-      toast.success(t('categoriesPermanentlyDeletedSuccess').replace('{count}', bulkPermanentlyDeleteIds.length .toString()))
+      toast.success(t('categoriesPermanentlyDeletedSuccess', { count: bulkPermanentlyDeleteIds.length .toString( })))
       fetchData()
     }
     setBulkPermanentlyDeleteIds(null)
@@ -286,9 +286,9 @@ const CategoryManager = forwardRef<CategoryManagerRef>((props, ref) => {
     if (!bulkRestoreIds) return;
     const { error } = await supabase.from('item_categories').update({ deleted_at: null }).in('id', bulkRestoreIds)
     if (error) {
-      toast.error(t('failedToRestoreCategories').replace('{count}', bulkRestoreIds.length.toString()).replace('{error}', error.message))
+      toast.error(t('failedToRestoreCategories', { count: bulkRestoreIds.length.toString( })).replace('{error}', error.message))
     } else {
-      toast.success(t('categoriesRestoredSuccess').replace('{count}', bulkRestoreIds.length .toString()))
+      toast.success(t('categoriesRestoredSuccess', { count: bulkRestoreIds.length .toString( })))
       fetchData()
     }
     setBulkRestoreIds(null);
@@ -378,9 +378,9 @@ const CategoryManager = forwardRef<CategoryManagerRef>((props, ref) => {
     if (deletingCategoryId) description = t('confirmDeleteDescription')
     if (restoringCategoryId) description = t('confirmRestoreDescription')
     if (permanentlyDeletingCategoryId) description = t('confirmPermanentDeleteDescription')
-    if (bulkDeleteIds) description = t('confirmBulkDeleteDescription').replace('{count}', bulkDeleteIds.length .toString())
-    if (bulkRestoreIds) description = t('confirmBulkRestoreDescription').replace('{count}', bulkRestoreIds.length .toString())
-    if (bulkPermanentlyDeleteIds) description = t('confirmBulkPermanentDeleteDescription').replace('{count}', bulkPermanentlyDeleteIds.length .toString())
+    if (bulkDeleteIds) description = t('confirmBulkDeleteDescription', { count: bulkDeleteIds.length .toString( }))
+    if (bulkRestoreIds) description = t('confirmBulkRestoreDescription', { count: bulkRestoreIds.length .toString( }))
+    if (bulkPermanentlyDeleteIds) description = t('confirmBulkPermanentDeleteDescription', { count: bulkPermanentlyDeleteIds.length .toString( }))
 
     return { description };
   }

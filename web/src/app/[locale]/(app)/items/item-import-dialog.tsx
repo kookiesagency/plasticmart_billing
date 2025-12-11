@@ -62,7 +62,7 @@ export function ItemImportDialog({ isOpen, onOpenChange, onPreview, units }: Ite
           const requiredFields = ['name', 'rate', 'unit']
           const headers = results.meta.fields || []
           if (!requiredFields.every(field => headers.includes(field))) {
-            toast.error(t('csvHeadersError').replace('{headers}', requiredFields.join(', ')))
+            toast.error(t('csvHeadersError', { headers: requiredFields.join(', ' })))
             setIsLoading(false)
             return
           }
@@ -76,7 +76,7 @@ export function ItemImportDialog({ isOpen, onOpenChange, onPreview, units }: Ite
             .in('name', parsedNames)
 
           if (dbError) {
-            toast.error(t('couldNotCheckExistingItems').replace('{error}', dbError.message))
+            toast.error(t('couldNotCheckExistingItems', { error: dbError.message }))
             setIsLoading(false)
             return
           }
@@ -133,7 +133,7 @@ export function ItemImportDialog({ isOpen, onOpenChange, onPreview, units }: Ite
         }
       },
       error: (error) => {
-        toast.error(t('errorParsingCsv').replace('{error}', error.message))
+        toast.error(t('errorParsingCsv', { error: error.message }))
         setIsLoading(false)
       },
     })

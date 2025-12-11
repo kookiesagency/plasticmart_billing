@@ -48,7 +48,7 @@ export default function BundleRateManager() {
         form.setValue('rate', parseFloat(data.value))
       }
       if (error && error.code !== 'PGRST116') { // Ignore 'exact one row' error if no setting exists
-        toast.error(t('failedToFetchBundleRate').replace('{error}', error.message ))
+        toast.error(t('failedToFetchBundleRate', { error: error.message }))
       }
       setLoading(false)
     }
@@ -62,7 +62,7 @@ export default function BundleRateManager() {
       .upsert({ key: 'default_bundle_rate', value: values.rate.toString() })
 
     if (error) {
-      toast.error(t('failedToSaveBundleRate').replace('{error}', error.message ))
+      toast.error(t('failedToSaveBundleRate', { error: error.message }))
     } else {
       toast.success(t('bundleRateSavedSuccess'))
     }
